@@ -80,8 +80,8 @@ kernel on deploy.
 
 ### Building different architectures
 
-By default, images are produces for amd64. You can build for arm64 as well if
-you specify the `architecture` parameter:
+By default, images are produces for amd64. You can build for arm64 or riscv64
+as well if you specify the `architecture` parameter:
 
 ```shell
 packer init .
@@ -148,7 +148,8 @@ Specify the Ubuntu Series to build. The default value is set to Jammy.
 
 #### ARCH
 
-Target image architecture. Supported values are amd64 (default) and arm64.
+Target image architecture. Supported values are amd64 (default), arm64, and
+riscv64.
 
 #### URL
 
