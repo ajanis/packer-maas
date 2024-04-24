@@ -30,12 +30,12 @@ in BIOS and UEFI modes. The process currently works with the following Debian se
 
 ## Supported Architectures
 
-Currently amd64 (x86_64) and arm64 (aarch64) architectures are supported with aemd64
+Currently amd64 (x86_64) and arm64 (aarch64) architectures are supported with amd64
 being the default.
 
 ## Known Issues
 
-* UEFI images fro Debian 10 (Buster) and 11 (Bullseye) are usable on both BIOS and 
+* UEFI images fro Debian 10 (Buster) and 11 (Bullseye) are usable on both BIOS and
 UEFI systems. However for Debian 12 (Bookworm) explicit images are required to
 support BIOS and UEFI modes. See BOOT make parameter for more details.
 
@@ -94,7 +94,7 @@ You can also install the kernel manually in your `my-changes.sh` script.
 ### Custom Preseed for Debian
 
 As mentioned above, Debian images require a custom preseed file to be present in the
-preseeds directory of MAAS region controllers. 
+preseeds directory of MAAS region controllers.
 
 When used snaps, the path is /var/snap/maas/current/preseeds/curtin_userdata_custom
 
@@ -122,7 +122,7 @@ Specify the Debian Series to build. The default value is set to bullseye.
 #### BOOT
 
 Supported boot mode baked into the image. The default is set to uefi. Please
-see the Known Issues section for more details. This parameter is only valid 
+see the Known Issues section for more details. This parameter is only valid
 for amd64 architecture.
 
 #### ARCH
