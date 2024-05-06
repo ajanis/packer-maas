@@ -1,0 +1,31 @@
+{
+  "builders": [
+    {
+      "type": "qemu",
+      "iso_url": "http://releases.ubuntu.com/20.04/ubuntu-20.04-live-server-amd64.iso",
+      "iso_checksum": "sha256:12345abcdef...",
+      "disk_size": "10240",
+      "http_url": "http://{{ .HTTPIP }}:{{ .HTTPPort }}/",
+      "http_directory": "http",
+      "boot_command": [
+        "<esc><wait>",
+        "linux /casper/vmlinuz boot=casper initrd=/casper/initrd quiet -- <enter>",
+        "initrd /casper/initrd<enter>",
+        "boot<enter>"
+      ],
+      "ssh_username": "ubuntu",
+      "ssh_password": "ubuntu",
+      "ssh_wait_timeout": "10000s"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "inline": [
+        "sudo apt-get update",
+        "sudo apt-get upgrade -y",
+        "sudo apt-get install -y nginx"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "builders": [
+    {
+      "type": "qemu",
+      "format": "qcow2",
+      "accelerator": "kvm",
+      "iso_url": "path/to/debian.iso",
+      "iso_checksum": "checksum",
+      "iso_checksum_type": "sha256",
+      "disk_size": 4096,
+      "http_directory": "path/to/http",
+      "boot_command": [
+        "<esc><wait>",
+        "linux /install.amd/vmlinuz initrd=/install.amd/initrd.gz debirf.boot=live fetch=http://{{ .HTTPIP }}:{{ .HTTPPort }}/debirf.cgz<enter>"
+      ]
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "inline": [
+        "echo 'Packer Provisioning Complete'"
+      ]
+    }
+  ]
+}
