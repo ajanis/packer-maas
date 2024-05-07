@@ -16,21 +16,17 @@ export PACKER_LOG
 .PHONY: all clean
 
 all: cableos.tar.gz
-$(eval $(call check_packages_deps debirf))
+$(eval $(call check_packages_deps))
 
 debirf.tar.gz: check-deps clean
-  cp -r /usr/share/doc/debirf/example-profiles/minimal.tgz
+  # ${PACKER} build template.json
+	${PACKER} init . cableos.pkr.hcl && ${PACKER} build -var timeout=${TIMEOUT} cableos.pkr.hcl
 
-	mv debirf.cgz
-	${PACKER} init . && ${PACKER} build \
-		-only='cloudimg.*' \
-		-var ubuntu_series=${SERIES} \
-		-var architecture=${ARCH} \
-		-var timeout=${TIMEOUT} .
+
 
 cableos.tar.gz: check-deps clean
-  ${PACKER} build template.json
-	${PACKER} init debirf.pkr.hcl && ${PACKER} build -var timeout=${TIMEOUT} debirf.pkr.hcl
+  # ${PACKER} build template.json
+	${PACKER} init . debirf.pkr.hcl && ${PACKER} build -var timeout=${TIMEOUT} debirf.pkr.hcl
 
 
 clean:

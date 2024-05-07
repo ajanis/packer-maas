@@ -19,3 +19,16 @@ d-i passwd/user-password-again password insecure
 d-i grub-installer/only_debian boolean true
 d-i grub-installer/with_other_os boolean true
 d-i finish-install/reboot_in_progress note
+url ${KS_OS_REPOS} ${KS_PROXY}
+poweroff
+firewall --enabled --service=ssh
+firstboot --disable
+ignoredisk --only-use=vda
+lang en_US.UTF-8
+keyboard us
+network --device eth0 --bootproto=dhcp
+firewall --enabled --service=ssh
+selinux --enforcing
+timezone UTC --isUtc
+bootloader --location=mbr --driveorder="vda" --timeout=1
+rootpw --plaintext password
