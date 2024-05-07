@@ -24,14 +24,25 @@ variable "http_directory" {
   default = "http"
   description = "HTTP directory accessible to images during build"
 }
-
-variable "apollo_iso_src_path" {
+variable "scripts_directory" {
   type = string
-  default = "/opt/APOLLO_PLATFORM-release-3.21.3.0-7+auto15.iso"
+  default = "scripts"
+  description "Build script directory"
+}
+variable "apollo_iso" {
+  type = string
+  default = "APOLLO_PLATFORM-release-3.21.3.0-7+auto15.iso"
   description = "Apollo PLatform iso location"
 }
 
-variable "debirf_build_path" {
+variable "source_iso_directory" {
+  type = string
+  default = "/opt"
+  description = "Location of source Debirf and Apollo ISO files"
+}
+
+
+variable "debirf_tmp_path" {
   type = string
   default = "debirf"
   description = "Debian LiveImage build directory"
@@ -42,14 +53,20 @@ variable "image_path" {
   default = "images"
   description = "Boot image directory"
 }
-variable "debirf_live_bullseye_amd64_iso_src_path" {
+variable "debirf_live_bullseye_amd64_iso" {
   type    = string
-  default = "/opt/debirf-live_bullseye_amd64.iso"
+  default = "debirf-live_bullseye_amd64.iso"
   description = "Pre-Existing Debirf-Liveimage path"
 }
-variable "debirf_src_filename" {
+
+variable "deb_netinst_url" {
   type = string
-  default = "minimal.tgz"
+  default = "https://cdimage.debian.org/cdimage/daily-builds/daily/arch-latest/amd64/iso-cd/debian-testing-amd64-netinst.iso"
+  description = "debian netinstall iso url"
+}
+variable "debirf_initrd_filename" {
+  type = string
+  default = "live_bullseye_6.0.0-0.deb11.6-amd64.cgz"
   description = "Name of the 'debirf' creation sourcefiles"
 }
 
