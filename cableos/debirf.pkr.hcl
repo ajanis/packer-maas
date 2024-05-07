@@ -29,7 +29,6 @@ source "qemu" "debirf" {
   cpus           = 2
   disk_image     = true
   disk_size      = "4G"
-  accelerator
   type           = "qemu"
   format         = "qcow2"
   headless       = var.headless
@@ -64,13 +63,12 @@ build {
 
   provisioner "shell-local" {
     inline = [
-      "mkdir ${var.debirf_build_path}"
       "cd ${var.debirf_build_path}"
       "tar -zxvf ${debirf_tgz_path}"
       "debirf makeiso minimal"
       "cd ${path.root}"
-      "mv ${var.debirf_iso_path} ${var.http_path}/"
-      "mv ${var.apollo_iso_path} ${var.http_path}/"
+      "mv ${var.debirf_livecreator_path} ${var.image_path}/"
+      "mv ${var.apollo_iso_src_path} ${var.http_path}/"
     ]
     inline_shebang = "/bin/bash -e"
   }
