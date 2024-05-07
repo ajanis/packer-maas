@@ -22,20 +22,35 @@ variable "debirf_apollo_filename" {
 variable "http_directory" {
   type    = string
   default = "http"
+  description = "HTTP directory accessible to images during build"
 }
 
 variable "apollo_iso_src_path" {
   type = string
   default = "/opt/APOLLO_PLATFORM-release-3.21.3.0-7+auto15.iso"
+  description = "Apollo PLatform iso location"
 }
 
-variable "debirf_livecreator_path" {
+variable "debirf_build_path" {
   type = string
-  default =
+  default = "debirf"
+  description = "Debian LiveImage build directory"
+}
+
+variable "image_path" {
+  type = string
+  default = "images"
+  description = "Boot image directory"
 }
 variable "debirf_live_bullseye_amd64_iso_src_path" {
   type    = string
   default = "/opt/debirf-live_bullseye_amd64.iso"
+  description = "Pre-Existing Debirf-Liveimage path"
+}
+variable "debirf_src_filename" {
+  type = string
+  default = "minimal.tgz"
+  description = "Name of the 'debirf' creation sourcefiles"
 }
 
 variable "timeout" {
