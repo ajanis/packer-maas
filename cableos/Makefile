@@ -18,6 +18,9 @@ export PACKER_LOG
 all: cableos.tar.gz
 $(eval $(call check_packages_deps))
 
+deps: check-deps clean
+	${PACKER} init . deps.pkr.hcl && ${PACKER} build -var timeout=${TIMEOUT} deps.pkr.hcl
+
 debirf.tar.gz: check-deps clean
   # ${PACKER} build template.json
 	${PACKER} init . cableos.pkr.hcl && ${PACKER} build -var timeout=${TIMEOUT} cableos.pkr.hcl
