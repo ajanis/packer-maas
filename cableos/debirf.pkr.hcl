@@ -64,7 +64,7 @@ build {
   provisioner "shell-local" {
     inline = [
       "cd ${var.debirf_build_path}"
-      "tar -zxvf ${debirf_tgz_path}"
+      "tar -zxvf ${debirf_src_filename}"
       "debirf makeiso minimal"
       "cd ${path.root}"
       "mv ${var.debirf_livecreator_path} ${var.image_path}/"
