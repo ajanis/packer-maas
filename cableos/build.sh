@@ -1,2 +1,2 @@
 #!/bin/bash
-packer build template.json
+packer build build.json

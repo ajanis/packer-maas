@@ -1,84 +1,120 @@
+packer {
+  required_version = ">= 1.7.0"
+  required_plugins {
+    qemu = {
+      version = "~> 1.0"
+      source  = "github.com/hashicorp/qemu"
+    }
+  }
+}
 
+variable "filename" {
+  type        = string
+  default     = "cableos.tar.gz"
+  description = "The filename of the tarball to produce"
+}
+variable "source_iso_directory" {
+  type = string
+  default = "/opt"
+  description = "Location of source Debirf and Apollo ISO files"
+}
+variable "http_directory" {
+  type    = string
+  default = "http"
+  description = "HTTP directory accessible to images during build"
+}
+variable "scripts_directory" {
+  type = string
+  default = "scripts"
+  description "Build script directory"
+}
 
-locals {
-  qemu_arch = {
-    "amd64" = "x86_64"
-    "arm64" = "aarch64"
-  }
-  uefi_imp = {
-    "amd64" = "OVMF"
-    "arm64" = "AAVMF"
-  }
-  qemu_machine = {
-    "amd64" = "accel=kvm"
-    "arm64" = "virt"
-  }
-  qemu_cpu = {
-    "amd64" = "host"
-    "arm64" = "cortex-a57"
-  }
+variable "image_path" {
+  type = string
+  default = "images"
+  description = "Boot image directory"
+}
 
+variable "debirf_build_path" {
+  type = string
+  default = "debirf"
+  description = "Debian LiveImage build directory"
+}
+
+variable "debirf_iso" {
+  type    = string
+  default = "debirf-live_bullseye_amd64.iso"
+  description = "Pre-Existing Debirf-Liveimage path"
+}
+variable "debirf_iso_md5sum" {
+  type = string
+  default = " e7a29730bf6f0740ba37e9352d22b3cb"
+  description "debirf iso md5sum"
+}variable "apollo_iso" {
+  type = string
+  default ="APOLLO_PLATFORM-release-3.21.3.0-7+auto15.iso"
+  description = "Apollo PLatform iso location"
+}
+variable "apollo_iso_md5sum" {
+  type = string
+  default = "c594fc647758bc607257f036a0fcd2b5"
+  description = "Tristed Apollo checksum"
+}
+variable "deb_netinst_url" {
+  type = string
+  default = "https://cdimage.debian.org/cdimage/daily-builds/daily/arch-latest/amd64/iso-cd/debian-testing-amd64-netinst.iso"
+  description = "debian netinstall iso url"
+}
+variable "debirf_initrd_filename" {
+  type = string 
+  default = "live_bullseye_6.0.0-0.deb11.6-amd64.cgz"
+  description = "Name of the 'debirf' creation sourcefiles"
+}
+
+variable "timeout" {
+  type        = string
+  default     = "1h"
+  description = "Timeout for building the image"
 }
 
 
 source "qemu" "debirf" {
-
-  vm_name        = "debirf-live"
-  boot_wait      = "2s"
-  cpus           = 2
-  disk_image     = true
-  format         = qcow2
-  disk_size      = "10G"
-  type           = "qemu"
-  headless       = var.headless
-  http_directory = var.http_directory
-  http_url       = "http://{{ .HTTPIP }}:{{ .HTTPPort }}/"
-  iso_checksum   = "none"
-  iso_url        = var.image_path/var.debirf_live_bullseye_amd64_iso
-  memory         = 2048
-  qemu_binary    = "qemu-system-${lookup(local.qemu_arch, var.architecture, "")}"
-  qemuargs = [
-    ["-machine", "${lookup(local.qemu_machine, var.architecture, "")}"],
-    ["-cpu", "${lookup(local.qemu_cpu, var.architecture, "")}"],
-    ["-device", "virtio-gpu-pci"]
-  ]
-  qemu_img_args  = [
-    create = ["-F", "qcow2"]
-  ]
-  boot_command = [
-   ["<esc><wait>"],
-   ["linux", "/install.amd/vmlinuz", "initrd=/install.amd/initrd.gz", "debirf.boot=live", "fetch=http://{{ .HTTPIP }}:{{ .HTTPPort }}/debirf.cgz<enter>"]
-  ]
-  shutdown_command       = "sudo -S shutdown -P now"
-  ssh_handshake_attempts = 50
-  ssh_password           = "install"
-  ssh_timeout            = var.timeout
-  ssh_username           = "root"
-  ssh_wait_timeout       = var.timeout
-  use_backing_file       = true
+  accelerator = "kvm"
+  disk_size = "10240"
+  format = "qcow2"
+  iso_url = var.debirf_iso
+  iso_checksum = "md5:checksum_here"
+      "boot_command": [
+        "<enter><wait>",
+        "linux /live/vmlinuz boot=live union=overlay username=user config components quiet noswap edd=on nomodeset nodmraid noeject ip=frommedia<enter>",
+        "initrd /live/initrd.img<enter>",
+        "boot<enter>"
+  ]  
+  http_directory = "http"
+  ssh_username = "root"
+  ssh_password = "install"
+  ssh_timeout = "1h"
 }
 
-
-
 build {
-  name    = "debirf.image"
   sources = ["source.qemu.debirf"]
 
-  provisioner "shell" {
-    environment_vars  = ["DEBIAN_FRONTEND=noninteractive"]
-    expect_disconnect = true
-    scripts           = ["${var.scripts_directory}/apollo_install.sh"]
+  provisioner "file" {
+    source = "path_to_iso.iso"
+    destination = "/tmp/install.iso"
   }
 
-  post-processor "shell-local" {
+  provisioner "shell" {
     inline = [
-      "IMG_FMT=qcow2",
-      "SOURCE=debirf",
-      "ROOT_PARTITION=1",
-      "OUTPUT=${var.filename}",
-      "source ../scripts/fuse-nbd",
-      "source ../scripts/fuse-tar-root"
+      "sudo mount /tmp/install.iso /mnt",
+      "sudo ostree admin deploy --os=production /mnt",
+      "sudo umount /mnt"
     ]
-    inline_shebang = "/bin/bash -e"
+  }
+
+  post-processor "qemu" {
+    output = "debirf_ostree_production.qcow2"
+    format = "qcow2"
+    compression_level = 9
   }
 }
