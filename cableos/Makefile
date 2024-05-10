@@ -1,29 +1,33 @@
+#!/usr/bin/make -f
 
 include ../scripts/check.mk
 
 PACKER ?= packer
 PACKER_LOG ?= 0
-TIMEOUT ?= 1h
-RM ?= RM
-SERIES ?= jammy
-ARCH ?= amd64
-URL ?= http://releases.ubuntu.com
-SUMS ?= SHA256SUMS
-TIMEOUT ?= 1h
 export PACKER_LOG
+BOOT ?= uefi
+ARCH ?= amd64
+TIMEOUT ?= 1h
+ISO= ?= boot-images/debirf-live_bullseye_amd64.iso
+
 
 .PHONY: all clean
 
-all: cableos-installer.qcow2
-$(eval $(call check_packages_deps))
+all: cableos-installer.tar.gz
+$(eval $(call check_packages_deps,cloud-image-utils ovmf libnbd0 nbdfuse nbdkit fuse2fs debirf,cloud-image-utils ovmf libnbd0 nbdfuse nbdkit fuse2fs debirf))
 
-cableos-installer.qcow2: check-deps clean
-  # ${PACKER} build template.json
-	${PACKER} init . build.pkr.hcl && ${PACKER} build -var timeout=${TIMEOUT} build.pkr.hcl
+lint:
+	packer validate .
+	packer fmt -check -diff .
 
-# cableos-installer.tar.gz: check-deps clean
-#   # ${PACKER} build template.json
-# 	${PACKER} init . build.pkr.hcl && ${PACKER} build -var timeout=${TIMEOUT} build.pkr.hcl
+format:
+	packer fmt .
+
+cableos-installer.tar.gz: check-deps clean
+	${PACKER} init cableos-installer.pkr.hcl && ${PACKER} build \
+		-var architecture=${ARCH} \
+		-var boot_mode=${BOOT} \
+		-var timeout=${TIMEOUT} cableos-installer.pkr.hcl
 
 clean:
-	${RM} -rf output-images/cableos-installer.qcow2 cableos-installer.tar.gz
+	${RM} -rf output-cableos-installer/* cableos-installer-*.gz
