@@ -159,7 +159,6 @@ build {
 // Post-processors to create new images and prepare for MAAS
 
   // Create tar.gz file
-
   post-processor "shell-local" {
     inline = [
       "IMG_FMT=qcow2",
@@ -173,19 +172,26 @@ build {
     inline_shebang = "/bin/bash -e"
   }
 
-  // Create .qcow and .iso images
-  post-processor "qemu" {
-    only = ["qemu"]
-    output = "output-cableos-installer/${base_filename}.qcow"
-    format = "qcow2"
-    disk_interface = "virtio"
+  // Create manifest of packer objects
+  post-processor "manifest" {
+      output = "manifest.json"
+      strip_path = true
   }
-  post-processor "shell-local" {
-    inline = [
-      "qemu-img convert -f qcow2 -O raw output-cableos-installer/${base_filename}.qcow output-cableos-installer/${base-filename}.img",
-      "maas admin boot-resources create name=custom/new name_title='New Image' architecture=amd64/generic content@=new.img",
-      "echo 'Packer Provisioning Complete'"
 
-    ]
-  }
+
+  # // Create .qcow and .iso images
+  # post-processor "qemu" {
+  #   only = ["qemu"]
+  #   output = "output-cableos-installer/${base_filename}.qcow"
+  #   format = "qcow2"
+  #   disk_interface = "virtio"
+  # }
+  # post-processor "shell-local" {
+  #   inline = [
+  #     "qemu-img convert -f qcow2 -O raw output-cableos-installer/${base_filename}.qcow output-cableos-installer/${base-filename}.img",
+  #     "maas admin boot-resources create name=custom/new name_title='New Image' architecture=amd64/generic content@=new.img",
+  #     "echo 'Packer Provisioning Complete'"
+
+  #   ]
+  # }
 }
