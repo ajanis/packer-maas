@@ -23,6 +23,9 @@ lint:
 format:
 	packer fmt .
 
+OVMF_VARS.fd: /usr/share/OVMF/OVMF_VARS.fd
+	cp -v $< $@
+
 cableos-installer.tar.gz: check-deps clean
 	${PACKER} init cableos-installer.pkr.hcl && ${PACKER} build \
 		-var architecture=${ARCH} \
@@ -30,4 +33,9 @@ cableos-installer.tar.gz: check-deps clean
 		-var timeout=${TIMEOUT} cableos-installer.pkr.hcl
 
 clean:
-	${RM} -rf output-cableos-installer/* cableos-installer-*.gz
+	${RM} -rf output-cableos-installer/* cableos-installer-*.gz \
+		seeds-cloudimg.iso \
+		OVMF_VARS.fd \
+		AAVMF_VARS.fd
+
+.INTERMEDIATE: OVMF_VARS.fd seeds-cloudimg.iso
