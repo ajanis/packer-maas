@@ -29,13 +29,13 @@ build {
 
   // Provisioners for installation and file extraction
   provisioner "file" {
-    source      = "/buildfiles/APOLLO_PLATFORM-release-3.21.3.0-7+auto15.iso",
+    source      = "/buildfiles/APOLLO_PLATFORM-release-3.21.3.0-7+auto15.iso"
     destination = "/opt/APOLLO_PLATFORM-release-3.21.3.0-7+auto15.iso"
   }
 
   provisioner "file" {
     source      = "/buildfiles/startup.sh"
-    destination = "/etc/init.d/startup.sh",
+    destination = "/etc/init.d/startup.sh"
 
   }
   provisioner "shell" {
