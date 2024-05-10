@@ -108,7 +108,7 @@ locals {
 // Define Packer Source for QEMU
 
 
-source "qemu" "cableos" {
+source "qemu" "cableos-installer" {
   boot_wait      = "2s"
   cpus           = 2
   disk_image     = true
@@ -117,7 +117,7 @@ source "qemu" "cableos" {
   headless       = var.headless
   http_directory = var.http_directory
   iso_checksum   = "md5:e7a29730bf6f0740ba37e9352d22b3cb"
-  iso_url        = "build_images/${var.live_iso}"
+  iso_url        = "${path.root}/boot-images/${var.live_iso}"
   memory         = 2048
   qemu_binary    = "qemu-system-${lookup(local.qemu_arch, var.architecture, "")}"
   qemu_img_args {
@@ -142,21 +142,21 @@ source "qemu" "cableos" {
 build {
   name = "cableos-installer"
   sources = [
-    "source.qemu.cableos"
+    "source.qemu.cableos-installer"
   ]
 
   // Provisioners for installation and file extraction
   provisioner "file" {
-    source      = "buildfiles/${var.apollo_iso}"
-    destination = "/opt/${var.apollo_iso}"
+    destination = "/etc/init.d/"
+    sources     = ["${path.root}/buildfiles/startup.sh"]
   }
 
   provisioner "file" {
-    source      = "buildfiles/startup.sh"
-    destination = "/etc/init.d/startup.sh"
-
+    destination = "/opt/"
+    sources     = ["${path.root}/buildfiles/${var.apollo_iso}"]
   }
-  provisioner "shell" {
+
+  provisioner "shell-local" {
     inline = [
       "echo 'Files copied successfully..'"
     ]
