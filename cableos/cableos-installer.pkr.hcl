@@ -113,13 +113,13 @@ source "qemu" "cableos" {
   iso_checksum   = "none"
   iso_url        = "build_images/${var.live_iso}"
   memory         = 2048
-  qemu_binary    = "qemu-system-${lookup(local.qemu_arch, var.architecture, "")}"
+  qemu_binary    = "qemu-system-${lookup(local.qemu_arch, local.qemu_arch, "")}"
   qemu_img_args {
     create = ["-F", "qcow2"]
   }
   qemuargs = [
-    ["-machine", "${lookup(local.qemu_machine, var.architecture, "")}"],
-    ["-cpu", "${lookup(local.qemu_cpu, var.architecture, "")}"],
+    ["-machine", "${lookup(local.qemu_machine, local.qemu_arch, "")}"],
+    ["-cpu", "${lookup(local.qemu_cpu, local.qemu_arch, "")}"],
     ["-device", "virtio-gpu-pci"],
     ["-drive", "file=output-cableos-installer/${var.base_filename},format=qcow2"],
   ]
