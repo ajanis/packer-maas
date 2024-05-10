@@ -118,8 +118,8 @@ source "qemu" "cableos-installer" {
   format         = "qcow2"
   headless       = var.headless
   http_directory = var.http_directory
-  iso_checksum   = "md5:e7a29730bf6f0740ba37e9352d22b3cb"
-  iso_url        = "${path.root}/boot-images/${var.live_iso}"
+  iso_checksum   = "md5:37f6ddeaf58b7dfa70bc3615047e4d09"
+  iso_url        = "${path.root}/boot-images/${var.live_img}.qcow2"
   memory         = 2048
   qemu_binary    = "qemu-system-${lookup(local.qemu_arch, var.architecture, "")}"
   qemu_img_args {

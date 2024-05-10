@@ -8,7 +8,7 @@ export PACKER_LOG
 BOOT ?= uefi
 ARCH ?= amd64
 TIMEOUT ?= 1h
-ISO= ?= boot-images/debirf-live_bullseye_amd64.iso
+ISO= ?= boot-images/debirf-live_bullseye_amd64.qcow2
 
 
 .PHONY: all clean
