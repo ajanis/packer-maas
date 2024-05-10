@@ -126,8 +126,7 @@ source "qemu" "cableos-installer" {
   qemuargs = [
     ["-machine", "${lookup(local.qemu_machine, var.architecture, "")}"],
     ["-cpu", "${lookup(local.qemu_cpu, var.architecture, "")}"],
-    ["-device", "virtio-gpu-pci"],
-    ["-drive", "file=output-cableos-installer/${var.base_filename},format=qcow2"],
+    ["-device", "virtio-gpu-pci"]
   ]
   shutdown_command       = "sudo -S shutdown -P now"
   ssh_handshake_attempts = 50
@@ -180,24 +179,9 @@ build {
 
   // Create manifest of packer objects
   post-processor "manifest" {
-    output     = "manifest.json"
+    output     = "${path.root}/manifest.json"
     strip_path = true
   }
 
 
-  # // Create .qcow and .iso images
-  # post-processor "qemu" {
-  #   only = ["qemu"]
-  #   output = "output-cableos-installer/${base_filename}.qcow"
-  #   format = "qcow2"
-  #   disk_interface = "virtio"
-  # }
-  # post-processor "shell-local" {
-  #   inline = [
-  #     "qemu-img convert -f qcow2 -O raw output-cableos-installer/${base_filename}.qcow output-cableos-installer/${base-filename}.img",
-  #     "maas admin boot-resources create name=custom/new name_title='New Image' architecture=amd64/generic content@=new.img",
-  #     "echo 'Packer Provisioning Complete'"
-
-  #   ]
-  # }
 }
