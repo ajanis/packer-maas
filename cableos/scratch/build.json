@@ -12,12 +12,12 @@
       "http_directory": "http",
       "boot_command": [
         "<enter><wait>",
-        "linux /install/vmlinuz auto hostname=debirf-live <wait>",
-        "initrd /install/initrd.gz <wait>",
+        "linux /boot-images/vmlinuz-6.0.0-0.deb11.6-amd64 auto hostname=debirf-live <wait>",
+        "initrd /boot-images/debirf-live_bullseye_6.0.0-0.deb11.6-amd64.cgz <wait>",
         "boot<enter>"
       ],
       "ssh_username": "root",
-      "ssh_password": "root",
+      "ssh_password": "install",
       "ssh_port": 22,
       "ssh_wait_timeout": "10000s",
       "headless": false
