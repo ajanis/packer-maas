@@ -44,9 +44,9 @@ variable "apollo_iso" {
   type    = string
   default = "APOLLO_PLATFORM-release-3.21.3.0-7+auto15.iso"
 }
-variable "live_iso" {
+variable "live_img" {
   type    = string
-  default = "debirf-live_bullseye_amd64.iso"
+  default = "debirf-live_bullseye_amd64"
 }
 
 variable "base_filename" {
