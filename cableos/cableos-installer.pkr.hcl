@@ -10,7 +10,7 @@ packer {
 
 
 variable "architecture" {
-  type = string
+  type    = string
   default = "amd64"
 }
 variable "boot_mode" {
@@ -41,11 +41,11 @@ variable "http_proxy" {
 }
 
 variable "apollo_iso" {
-  type        = string
-  default     = "APOLLO_PLATFORM-release-3.21.3.0-7+auto15.iso"
+  type    = string
+  default = "APOLLO_PLATFORM-release-3.21.3.0-7+auto15.iso"
 }
 variable "live_iso" {
-  type = string
+  type    = string
   default = "debirf-live_bullseye_amd64.iso"
 }
 
@@ -116,7 +116,7 @@ source "qemu" "cableos" {
   format         = "qcow2"
   headless       = var.headless
   http_directory = var.http_directory
-  iso_checksum   = "none"
+  iso_checksum   = "md5:e7a29730bf6f0740ba37e9352d22b3cb"
   iso_url        = "build_images/${var.live_iso}"
   memory         = 2048
   qemu_binary    = "qemu-system-${lookup(local.qemu_arch, var.architecture, "")}"
@@ -140,19 +140,19 @@ source "qemu" "cableos" {
 
 // Define Build
 build {
-  name    = "cableos-installer"
+  name = "cableos-installer"
   sources = [
     "source.qemu.cableos"
   ]
 
   // Provisioners for installation and file extraction
   provisioner "file" {
-    source      = "/buildfiles/${var.apollo_iso}"
+    source      = "buildfiles/${var.apollo_iso}"
     destination = "/opt/${var.apollo_iso}"
   }
 
   provisioner "file" {
-    source      = "/buildfiles/startup.sh"
+    source      = "buildfiles/startup.sh"
     destination = "/etc/init.d/startup.sh"
 
   }
@@ -162,7 +162,7 @@ build {
     ]
   }
 
-// Post-processors to create new images and prepare for MAAS
+  // Post-processors to create new images and prepare for MAAS
 
   // Create tar.gz file
   post-processor "shell-local" {
@@ -180,8 +180,8 @@ build {
 
   // Create manifest of packer objects
   post-processor "manifest" {
-      output = "manifest.json"
-      strip_path = true
+    output     = "manifest.json"
+    strip_path = true
   }
 
 
