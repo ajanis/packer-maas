@@ -160,21 +160,23 @@ build {
 
  provisioner "shell" {
     inline = [
-      "mkdir /data"
+      "mkdir /data",
+      "cd /data",
+      "wget http://{{ .HTTPIP }}:{{ .HTTPPort }}/${var.apollo_iso}"
     ]
   }
 
-  provisioner "file" {
-    destination = "/data/"
-    source    = "${path.root}/buildfiles/${var.apollo_iso}"
-    timeout = "10m"
-  }
+  # provisioner "file" {
+  #   destination = "/data/"
+  #   source    = "${path.root}/buildfiles/${var.apollo_iso}"
+  #   timeout = "10m"
+  # }
 
-  provisioner "shell-local" {
-    inline = [
-      "echo 'Files copied successfully..'"
-    ]
-  }
+  # provisioner "shell-local" {
+  #   inline = [
+  #     "echo 'Files copied successfully..'"
+  #   ]
+  # }
 
   // Post-processors to create new images and prepare for MAAS
   // Create tar.gz file
