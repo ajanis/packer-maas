@@ -114,7 +114,7 @@ source "qemu" "cableos-installer" {
   boot_wait      = "2s"
   cpus           = 2
   disk_image     = true
-  disk_size      = "10G"
+  disk_size      = "15G"
   format         = "qcow2"
   headless       = var.headless
   http_directory = var.http_directory
