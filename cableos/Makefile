@@ -3,7 +3,7 @@
 include ../scripts/check.mk
 
 PACKER ?= packer
-PACKER_LOG ?= 0
+PACKER_LOG ?= 1
 export PACKER_LOG
 BOOT ?= uefi
 ARCH ?= amd64
@@ -29,8 +29,9 @@ format:
 cableos-installer.tar.gz: check-deps clean
 	${PACKER} init cableos-installer.pkr.hcl && ${PACKER} build \
 		-var architecture=${ARCH} \
+		-var boot_mode=${BOOT} \
 		-var timeout=${TIMEOUT} cableos-installer.pkr.hcl
-# -var boot_mode=${BOOT}
+
 
 
 clean:
