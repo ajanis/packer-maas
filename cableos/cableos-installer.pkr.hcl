@@ -107,14 +107,14 @@ locals {
 }
 // Define Packer Source for QEMU
 
-source "null" "dependencies" {
-  communicator = "none"
-}
+# source "null" "dependencies" {
+#   communicator = "none"
+# }
 source "qemu" "cableos-installer" {
   boot_wait      = "2s"
   cpus           = 2
   disk_image     = true
-  disk_size      = "4G"
+  disk_size      = "10G"
   format         = "qcow2"
   headless       = var.headless
   http_directory = var.http_directory
@@ -122,17 +122,17 @@ source "qemu" "cableos-installer" {
   iso_url        = "${path.root}/boot-images/${var.live_img}.qcow2"
   memory         = 2048
   qemu_binary    = "qemu-system-${lookup(local.qemu_arch, var.architecture, "")}"
-  qemu_img_args {
+  qemu_img_args = [
     create = ["-F", "qcow2"]
-  }
+  ]
   qemuargs = [
     ["-machine", "${lookup(local.qemu_machine, var.architecture, "")}"],
     ["-cpu", "${lookup(local.qemu_cpu, var.architecture, "")}"],
     ["-device", "virtio-gpu-pci"],
     ["-drive", "if=pflash,format=raw,id=ovmf_code,readonly=on,file=/usr/share/${lookup(local.uefi_imp, var.architecture, "")}/${lookup(local.uefi_imp, var.architecture, "")}_CODE.fd"],
     ["-drive", "if=pflash,format=raw,id=ovmf_vars,file=${lookup(local.uefi_imp, var.architecture, "")}_VARS.fd"]
-    # ["-drive", "file=output-cloudimg/packer-cloudimg,format=qcow2"],
-    # ["-drive", "file=seeds-cloudimg.iso,format=raw"]
+    # ["-drive", "file=output-cableos-installer/packer-cableos-installer-img,format=qcow2"]
+    # ["-drive", "file=seeds-cableos-installer.iso,format=raw"]
   ]
   shutdown_command       = "sudo -S shutdown -P now"
   ssh_handshake_attempts = 50
@@ -143,19 +143,21 @@ source "qemu" "cableos-installer" {
   use_backing_file       = true
 }
 
-// Define Build
-build {
-  name    = "cloudimg.deps"
-  sources = ["source.null.dependencies"]
+# build {
+#   name    = "cableos.deps"
+#   sources = ["source.null.dependencies"]
 
-  provisioner "shell-local" {
-    inline = [
-      "cp /usr/share/${lookup(local.uefi_imp, var.architecture, "")}/${lookup(local.uefi_imp, var.architecture, "")}_VARS.fd ${lookup(local.uefi_imp, var.architecture, "")}_VARS.fd",
-      "cloud-localds seeds-cloudimg.iso user-data-cloudimg meta-data"
-    ]
-    inline_shebang = "/bin/bash -e"
-  }
-}
+#   provisioner "shell-local" {
+#     inline = [
+#       "cp /usr/share/${lookup(local.uefi_imp, var.architecture, "")}/${lookup(local.uefi_imp, var.architecture, "")}_VARS.fd ${lookup(local.uefi_imp, var.architecture, "")}_VARS.fd",
+#       "cloud-localds seeds-cableos-installer.iso user-data-cableos-installer meta-data"
+#     ]
+#     inline_shebang = "/bin/bash -e"
+#   }
+# }
+
+
+// Define Build
 
 build {
   name = "cableos-installer"
@@ -181,7 +183,6 @@ build {
   }
 
   // Post-processors to create new images and prepare for MAAS
-
   // Create tar.gz file
   post-processor "shell-local" {
     inline = [
@@ -201,6 +202,4 @@ build {
     output     = "${path.root}/manifest.json"
     strip_path = true
   }
-
-
 }

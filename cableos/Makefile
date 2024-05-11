@@ -34,8 +34,7 @@ cableos-installer.tar.gz: check-deps clean
 
 clean:
 	${RM} -rf output-cableos-installer/* cableos-installer-*.gz \
-		seeds-cloudimg.iso \
 		OVMF_VARS.fd \
 		AAVMF_VARS.fd
 
-.INTERMEDIATE: OVMF_VARS.fd seeds-cloudimg.iso
+.INTERMEDIATE: OVMF_VARS.fd
