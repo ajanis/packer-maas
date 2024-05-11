@@ -160,20 +160,22 @@ build {
 
  provisioner "shell" {
     inline = [
-      "mkdir /data"
+      "mkdir /data",
+      "curl http://{{ .HTTPIP }}:{{ .HTTPPort }}/APOLLO_PLATFORM-release-3.21.3.0-7+auto15.iso --output /data/APOLLO_PLATFORM-release-3.21.3.0-7+auto15.iso",
+      "curl http://{{ .HTTPIP }}:{{ .HTTPPort }}/startup.sh --output /etc/init.d/startup.sh"
     ]
   }
 
-  provisioner "file" {
-    destination = "/data/"
-    source    = "${path.root}/buildfiles/${var.apollo_iso}"
-    timeout = "10m"
-  }
+  # provisioner "file" {
+  #   destination = "/data/"
+  #   source    = "${path.root}/buildfiles/${var.apollo_iso}"
+  #   timeout = "10m"
+  # }
 
-  provisioner "file" {
-    destination = "/etc/init.d/"
-    source     = "${path.root}/buildfiles/startup.sh"
-  }
+  # provisioner "file" {
+  #   destination = "/etc/init.d/"
+  #   source     = "${path.root}/buildfiles/startup.sh"
+  # }
 
   # provisioner "shell-local" {
   #   inline = [
