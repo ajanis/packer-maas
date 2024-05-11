@@ -155,7 +155,7 @@ build {
   // Provisioners for installation and file extraction
   provisioner "file" {
     destination = "/etc/init.d/"
-    sources     = ["${path.root}/buildfiles/startup.sh"]
+    source     = "${path.root}/buildfiles/startup.sh"
   }
 
  provisioner "shell" {
@@ -166,7 +166,8 @@ build {
 
   provisioner "file" {
     destination = "/data/"
-    sources     = ["${path.root}/buildfiles/${var.apollo_iso}"]
+    source    = "${path.root}/buildfiles/${var.apollo_iso}"
+    timeout = "10m"
   }
 
   provisioner "shell-local" {
