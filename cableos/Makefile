@@ -23,18 +23,19 @@ lint:
 format:
 	packer fmt .
 
-OVMF_VARS.fd: /usr/share/OVMF/OVMF_VARS.fd
-	cp -v $< $@
+# OVMF_VARS.fd: /usr/share/OVMF/OVMF_VARS.fd
+# 	cp -v $< $@
 
 cableos-installer.tar.gz: check-deps clean
 	${PACKER} init cableos-installer.pkr.hcl && ${PACKER} build \
 		-var architecture=${ARCH} \
-		-var boot_mode=${BOOT} \
 		-var timeout=${TIMEOUT} cableos-installer.pkr.hcl
+# -var boot_mode=${BOOT}
+
 
 clean:
-	${RM} -rf output-cableos-installer/* cableos-installer-*.gz \
-		OVMF_VARS.fd \
-		AAVMF_VARS.fd
+	${RM} -rf output-cableos-installer/* cableos-installer-*.gz
+# OVMF_VARS.fd
+# AAVMF_VARS.fd
 
-.INTERMEDIATE: OVMF_VARS.fd
+# .INTERMEDIATE: OVMF_VARS.fd
