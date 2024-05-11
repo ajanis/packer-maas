@@ -128,33 +128,20 @@ source "qemu" "cableos-installer" {
   qemuargs = [
     ["-machine", "${lookup(local.qemu_machine, var.architecture, "")}"],
     ["-cpu", "${lookup(local.qemu_cpu, var.architecture, "")}"],
-    ["-device", "virtio-gpu-pci"]
+    ["-device", "virtio-gpu-pci"],
     # ["-drive", "if=pflash,format=raw,id=ovmf_code,readonly=on,file=/usr/share/${lookup(local.uefi_imp, var.architecture, "")}/${lookup(local.uefi_imp, var.architecture, "")}_CODE.fd"],
     # ["-drive", "if=pflash,format=raw,id=ovmf_vars,file=${lookup(local.uefi_imp, var.architecture, "")}_VARS.fd"]
     # ["-drive", "file=output-cableos-installer/packer-cableos-installer-img,format=qcow2"]
-    # ["-drive", "file=seeds-cableos-installer.iso,format=raw"]
+    ["-drive", "file=${path.root}/buildfiles/${apollo_iso},if=none,id=cdrom0,media=cdrom"]
   ]
   shutdown_command       = "sudo -S shutdown -P now"
   ssh_handshake_attempts = 50
   ssh_password           = var.ssh_password
-  ssh_timeout            = 1h
+  ssh_timeout            = "60m"
   ssh_username           = var.ssh_username
-  ssh_wait_timeout       = 1h
-  use_backing_file       = true
+  ssh_wait_timeout       = "60m"
+  # use_backing_file       = true
 }
-
-# build {
-#   name    = "cableos.deps"
-#   sources = ["source.null.dependencies"]
-
-#   provisioner "shell-local" {
-#     inline = [
-#       "cp /usr/share/${lookup(local.uefi_imp, var.architecture, "")}/${lookup(local.uefi_imp, var.architecture, "")}_VARS.fd ${lookup(local.uefi_imp, var.architecture, "")}_VARS.fd",
-#       "cloud-localds seeds-cableos-installer.iso user-data-cableos-installer meta-data"
-#     ]
-#     inline_shebang = "/bin/bash -e"
-#   }
-# }
 
 
 // Define Build
@@ -179,7 +166,7 @@ build {
 
   provisioner "file" {
     destination = "/data/"
-    sources     = ["buildfiles/${var.apollo_iso}"]
+    sources     = ["${path.root}/buildfiles/${var.apollo_iso}"]
   }
 
   provisioner "shell-local" {
@@ -194,7 +181,7 @@ build {
     inline = [
       "IMG_FMT=qcow2",
       "SOURCE=cableos",
-      "ROOT_PARTITION=3",
+      "ROOT_PARTITION=2",
       "DETECT_BLS_BOOT=1",
       "OUTPUT=${var.base_filename}.tar.gz",
       "source ../scripts/fuse-nbd",
