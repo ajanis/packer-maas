@@ -141,7 +141,7 @@ source "qemu" "cableos-installer" {
   ssh_username           = var.ssh_username
   ssh_wait_timeout       = "300s"
   use_backing_file       = true
-  ssh_file_transfer_protocol = "sftp"
+  ssh_file_transfer_method = "sftp"
   ssh_keep_alive_interval = "3s"
   ssh_read_write_timeout = "600s"
 }
