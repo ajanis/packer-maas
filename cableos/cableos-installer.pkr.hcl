@@ -128,7 +128,7 @@ source "qemu" "cableos-installer" {
   qemuargs = [
     ["-machine", "${lookup(local.qemu_machine, var.architecture, "")}"],
     ["-cpu", "${lookup(local.qemu_cpu, var.architecture, "")}"],
-    ["-device", "virtio-gpu-pci"],
+    ["-device", "virtio-gpu-pci"]
     # ["-drive", "if=pflash,format=raw,id=ovmf_code,readonly=on,file=/usr/share/${lookup(local.uefi_imp, var.architecture, "")}/${lookup(local.uefi_imp, var.architecture, "")}_CODE.fd"],
     # ["-drive", "if=pflash,format=raw,id=ovmf_vars,file=${lookup(local.uefi_imp, var.architecture, "")}_VARS.fd"]
     # ["-drive", "file=output-cableos-installer/packer-cableos-installer-img,format=qcow2"]
@@ -152,7 +152,7 @@ source "qemu" "cableos-installer" {
 build {
   name = "cableos-installer"
   sources = [
-    "source.qemu.cableos-installer" 
+    "source.qemu.cableos-installer"
   ]
 
   // Provisioners for installation and file extraction
