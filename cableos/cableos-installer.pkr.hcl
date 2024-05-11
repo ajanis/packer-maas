@@ -171,9 +171,15 @@ build {
     sources     = ["${path.root}/buildfiles/startup.sh"]
   }
 
+ provisioner "shell" {
+    inline = [
+      "mkdir /data"
+    ]
+  }
+
   provisioner "file" {
-    destination = "/opt/"
-    sources     = ["${path.root}/buildfiles/${var.apollo_iso}"]
+    destination = "/data/"
+    sources     = ["buildfiles/${var.apollo_iso}"]
   }
 
   provisioner "shell-local" {
