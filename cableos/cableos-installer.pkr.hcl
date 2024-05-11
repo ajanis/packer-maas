@@ -122,9 +122,9 @@ source "qemu" "cableos-installer" {
   iso_url        = "${path.root}/boot-images/${var.live_img}.qcow2"
   memory         = 2048
   qemu_binary    = "qemu-system-${lookup(local.qemu_arch, var.architecture, "")}"
-  qemu_img_args = [
+  qemu_img_args {
     create = ["-F", "qcow2"]
-  ]
+  }
   qemuargs = [
     ["-machine", "${lookup(local.qemu_machine, var.architecture, "")}"],
     ["-cpu", "${lookup(local.qemu_cpu, var.architecture, "")}"],
