@@ -137,10 +137,13 @@ source "qemu" "cableos-installer" {
   shutdown_command       = "sudo -S shutdown -P now"
   ssh_handshake_attempts = 50
   ssh_password           = var.ssh_password
-  ssh_timeout            = "60m"
+  ssh_timeout            = "300s"
   ssh_username           = var.ssh_username
-  ssh_wait_timeout       = "60m"
+  ssh_wait_timeout       = "300s"
   use_backing_file       = true
+  ssh_file_transfer_protocol = "sftp"
+  ssh_keep_alive_interval = "3s"
+  ssh_read_write_timeout = "600s"
 }
 
 
@@ -149,7 +152,7 @@ source "qemu" "cableos-installer" {
 build {
   name = "cableos-installer"
   sources = [
-    "source.qemu.cableos-installer"
+    "source.qemu.cableos-installer" 
   ]
 
   // Provisioners for installation and file extraction
@@ -160,17 +163,15 @@ build {
 
  provisioner "shell" {
     inline = [
-      "mkdir /data",
-      "cd /data",
-      "wget http://{{ .HTTPIP }}:{{ .HTTPPort }}/${var.apollo_iso}"
+      "mkdir /data"
     ]
   }
 
-  # provisioner "file" {
-  #   destination = "/data/"
-  #   source    = "${path.root}/buildfiles/${var.apollo_iso}"
-  #   timeout = "10m"
-  # }
+  provisioner "file" {
+    destination = "/data/"
+    source    = "${path.root}/buildfiles/${var.apollo_iso}"
+    timeout = "10m"
+  }
 
   # provisioner "shell-local" {
   #   inline = [
