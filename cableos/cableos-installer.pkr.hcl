@@ -137,9 +137,9 @@ source "qemu" "cableos-installer" {
   shutdown_command       = "sudo -S shutdown -P now"
   ssh_handshake_attempts = 50
   ssh_password           = var.ssh_password
-  ssh_timeout            = var.timeout
+  ssh_timeout            = 1h
   ssh_username           = var.ssh_username
-  ssh_wait_timeout       = var.timeout
+  ssh_wait_timeout       = 1h
   use_backing_file       = true
 }
 
