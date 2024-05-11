@@ -132,7 +132,7 @@ source "qemu" "cableos-installer" {
     # ["-drive", "if=pflash,format=raw,id=ovmf_code,readonly=on,file=/usr/share/${lookup(local.uefi_imp, var.architecture, "")}/${lookup(local.uefi_imp, var.architecture, "")}_CODE.fd"],
     # ["-drive", "if=pflash,format=raw,id=ovmf_vars,file=${lookup(local.uefi_imp, var.architecture, "")}_VARS.fd"]
     # ["-drive", "file=output-cableos-installer/packer-cableos-installer-img,format=qcow2"]
-    ["-drive", "file=${path.root}/buildfiles/${apollo_iso},if=none,id=cdrom0,media=cdrom"]
+    # ["-drive", "file=${path.root}/buildfiles/${apollo_iso},if=none,id=cdrom0,media=cdrom"]
   ]
   shutdown_command       = "sudo -S shutdown -P now"
   ssh_handshake_attempts = 50
@@ -140,7 +140,7 @@ source "qemu" "cableos-installer" {
   ssh_timeout            = "60m"
   ssh_username           = var.ssh_username
   ssh_wait_timeout       = "60m"
-  # use_backing_file       = true
+  use_backing_file       = true
 }
 
 
