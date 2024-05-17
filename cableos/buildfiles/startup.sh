@@ -1,5 +1,6 @@
 #!/bin/bash -ex
 # /root/cableos.sh
+
 export APOLLO_ISONAME=APOLLO_PLATFORM-release-3.21.3.0-7+auto15.iso
 export MAAS_RESOURCE_URL=http://maas.spoc.charterlab.com:5248/images
 export PROXY_URL='http://proxy4.spoc.charterlab.com:8080'
@@ -41,11 +42,12 @@ ostree-production -D /dev/sda from "/data/${APOLLO_ISONAME}"
 }
 
 
+parted /dev/sda print
 
 proxyTeardown
 ostreeSetup
 ostreeInstall
-f
+
 
 # For MAAS version <= 3.4 you can deploy ubuntu images “ephemerally” (i.e. loaded in memory) using the CLI with
 
