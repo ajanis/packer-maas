@@ -35,7 +35,7 @@ cableos-installer.tar.gz: check-deps clean
 
 
 clean:
-	${RM} -rf output-cableos-installer/* cableos-installer-*.gz
+	${RM} -rf output-cableos-installer cableos-installer-*.gz
 # OVMF_VARS.fd
 # AAVMF_VARS.fd
 
