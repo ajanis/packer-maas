@@ -159,13 +159,13 @@ build {
   // Provisioners for installation and file extraction
 
 
- provisioner "shell" {
-    inline = [
-      "mkdir /data",
-      "curl http://{{ .HTTPIP }}:{{ .HTTPPort }}/APOLLO_PLATFORM-release-3.21.3.0-7+auto15.iso --output /data/APOLLO_PLATFORM-release-3.21.3.0-7+auto15.iso",
-      "curl http://{{ .HTTPIP }}:{{ .HTTPPort }}/startup.sh --output /etc/init.d/startup.sh"
-    ]
-  }
+  # provisioner "shell" {
+  #   inline = [
+  #     "mkdir /data",
+  #     "curl http://{{ .HTTPIP }}:{{ .HTTPPort }}/APOLLO_PLATFORM-release-3.21.3.0-7+auto15.iso --output /data/APOLLO_PLATFORM-release-3.21.3.0-7+auto15.iso",
+  #     "curl http://{{ .HTTPIP }}:{{ .HTTPPort }}/startup.sh --output /etc/init.d/startup.sh"
+  #   ]
+  # }
 
   # provisioner "file" {
   #   destination = "/data/"
@@ -180,7 +180,7 @@ build {
 
   # provisioner "shell-local" {
   #   inline = [
-  #     "echo 'Files copied successfully..'"
+  #     "echo 'CableOS-Installer 1-Shot System-D service file copied to '"
   #   ]
   # }
 
@@ -190,8 +190,8 @@ build {
     inline = [
       "IMG_FMT=qcow2",
       "SOURCE=cableos",
-      "ROOT_PARTITION=2",
-      "DETECT_BLS_BOOT=1",
+      "ROOT_PARTITION=3",
+      # "DETECT_BLS_BOOT=1",
       "OUTPUT=${var.base_filename}.tar.gz",
       "source ../scripts/fuse-nbd",
       "source ../scripts/fuse-tar-root"
