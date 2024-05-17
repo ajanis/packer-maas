@@ -143,6 +143,7 @@ source "qemu" "cableos-installer" {
   use_backing_file       = true
   ssh_file_transfer_method = "sftp"
   ssh_keep_alive_interval = "3s"
+  pause_before_connecting = "300s"
   ssh_read_write_timeout = "600s"
 }
 
