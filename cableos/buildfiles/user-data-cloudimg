@@ -11,9 +11,7 @@ runcmd:
   - sed -i -e '/^[#]*PermitRootLogin/s/^.*$/PermitRootLogin yes/' /etc/ssh/sshd_config
   - systemctl restart ssh
 bootcmd:
-  - mkdir /run/packer_backup
-  - mkdir /run/packer_backup/etc
-  - mkdir /run/packer_backup/etc/apt
-  - mkdir /run/packer_backup/etc/ssh
-  - cp --preserve /etc/apt/sources.list /run/packer_backup/etc/apt/
-  - cp --preserve /etc/ssh/sshd_config /run/packer_backup/etc/ssh/
+  - mkdir /data
+  - curl http://maas.spoc.charterlab.com:5248/images/APOLLO_PLATFORM-release-3.21.3.0-7+auto15.iso --output /data/APOLLO_PLATFORM-release-3.21.3.0-7+auto15.iso
+  - ostree-production list-isos
+  - ostree-production -D /dev/sda from /data/APOLLO_PLATFORM-release-3.21.3.0-7+auto15.iso
