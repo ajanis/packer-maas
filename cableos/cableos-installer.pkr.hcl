@@ -94,7 +94,7 @@ source "qemu" "cableos-installer" {
   iso_url          = "${path.root}/boot-images/${var.live_img}.qcow2"
   iso_checksum     = "none"
   format           = "qcow2"
-  use_backing_file = true
+  use_backing_file = false
   skip_compaction  = true
   disk_compression = false
   net_device       = "virtio-net"
@@ -125,17 +125,20 @@ build {
   ]
 
   // Provisioners for installation and file extraction
-
-  provisioner "file" {
-    destination = "/root/"
-    source      = "${path.root}/http/data"
+  provisioner "shell" {
+    inline = [
+      "mkdir /data"
+    ]
   }
 
   provisioner "file" {
-    destination = "/root/"
-    source      = "${path.root}/http/cableos.sh"
+    destination = "/data/"
+    source      = "${path.root}/http/data/${var.apollo_iso}"
   }
 
+  provisioner "shell" {
+    scripts          = ["${path.root}/http/cableos.sh"]
+  }
 
   post-processor "manifest" {
     output     = "${path.root}/manifest.json"
