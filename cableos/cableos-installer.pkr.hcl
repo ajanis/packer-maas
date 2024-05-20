@@ -82,37 +82,30 @@ variable "timeout" {
 
 
 source "qemu" "cableos-installer" {
-  vm_name                = "cableos-installer"
-  type                   = "qemu"
-  qemu_binary            = "qemu-system-x86_64"
-  accelerator            = "kvm"
-  cpu_model              = "host"
-  cpus                   = 2
-  memory                 = 5120
-  disk_image             = true
-  disk_interface         = "virtio"
-  disk_size              = "5120M"
-  iso_url                = "${path.root}/boot-images/${var.live_img}.iso"
-  iso_checksum           = "none"
-  format                 = "raw"
-  use_backing_file       = true
-  skip_compaction        = true
-  disk_compression       = false
-  net_device             = "virtio-net"
-  http_content           =  {
-    "/apollo.iso"        = file("http/data/${var.apollo_iso}")
-    "/cableos.sh"        = file("http/cableos.sh")
-    "/startup.sh"        = file("http/startup.sh")
-    "/userdata"          = file("http/user-data-cableos")
-  }
-  cd_files               = ["${path.root}/http/data/${var.apollo_iso}", "${path.root}/http/cableos.sh"]
-  cd_label               = "data"
+  vm_name          = "cableos-installer"
+  qemu_binary      = "qemu-system-x86_64"
+  accelerator      = "kvm"
+  cpu_model        = "host"
+  cpus             = 2
+  memory           = 5120
+  disk_image       = true
+  disk_interface   = "virtio"
+  disk_size        = "5120M"
+  iso_url          = "${path.root}/boot-images/${var.live_img}.iso"
+  iso_checksum     = "none"
+  format           = "raw"
+  use_backing_file = false
+  skip_compaction  = true
+  disk_compression = false
+  net_device       = "virtio-net"
+  http_directory   = var.http_directory
+  cd_files         = ["${path.root}/http/data/${var.apollo_iso}", "${path.root}/http/cableos.sh"]
+  cd_label         = "data"
   qemu_img_args {
     create = ["-F", "raw"]
   }
-
   headless               = var.headless
-  efi_boot 	             = true
+  efi_boot               = true
   efi_drop_efivars       = true
   boot_wait              = "10s"
   shutdown_command       = "echo 'packer' | shutdown -P now"
@@ -136,7 +129,6 @@ build {
   provisioner "file" {
     destination = "/"
     source      = "${path.root}/http/data"
-    timeout     = "10m"
   }
 
   provisioner "file" {
