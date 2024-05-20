@@ -41,9 +41,6 @@ ostree-production list-isos
 ostree-production -D /dev/sda from "/data/${APOLLO_ISONAME}"
 }
 
-
-parted /dev/sda print
-
 proxyTeardown
 ostreeSetup
 ostreeInstall
