@@ -91,18 +91,18 @@ source "qemu" "cableos-installer" {
   disk_image       = true
   disk_interface   = "virtio"
   disk_size        = "5120M"
-  iso_url          = "${path.root}/boot-images/${var.live_img}.iso"
+  iso_url          = "${path.root}/boot-images/${var.live_img}.qcow2"
   iso_checksum     = "none"
-  format           = "raw"
-  use_backing_file = false
+  format           = "qcow2"
+  use_backing_file = true
   skip_compaction  = true
   disk_compression = false
   net_device       = "virtio-net"
   http_directory   = var.http_directory
   cd_files         = ["${path.root}/http/data/${var.apollo_iso}", "${path.root}/http/cableos.sh"]
-  cd_label         = "data"
+  cd_label         = "cidata"
   qemu_img_args {
-    create = ["-F", "raw"]
+    create = ["-F", "qcow2"]
   }
   headless               = var.headless
   efi_boot               = true
@@ -127,12 +127,12 @@ build {
   // Provisioners for installation and file extraction
 
   provisioner "file" {
-    destination = "/"
+    destination = "/root/"
     source      = "${path.root}/http/data"
   }
 
   provisioner "file" {
-    destination = "/"
+    destination = "/root/"
     source      = "${path.root}/http/cableos.sh"
   }
 
