@@ -13,12 +13,12 @@ ISO= ?= boot-images/debirf-live_bullseye_amd64.qcow2
 
 .PHONY: all clean
 
-all: cableos-installer.tar.gz
+all: cableos-installer
 $(eval $(call check_packages_deps,cloud-image-utils ovmf libnbd0 nbdfuse nbdkit fuse2fs debirf,cloud-image-utils ovmf libnbd0 nbdfuse nbdkit fuse2fs debirf))
 
 lint:
 	packer validate .
-	packer fmt -check -diff .
+	packer fmt -check .
 
 format:
 	packer fmt .
@@ -26,7 +26,7 @@ format:
 # OVMF_VARS.fd: /usr/share/OVMF/OVMF_VARS.fd
 # 	cp -v $< $@
 
-cableos-installer.tar.gz: check-deps clean
+cableos-installer: check-deps clean
 	${PACKER} init cableos-installer.pkr.hcl && ${PACKER} build \
 		-var architecture=${ARCH} \
 		-var boot_mode=${BOOT} \
@@ -35,7 +35,7 @@ cableos-installer.tar.gz: check-deps clean
 
 
 clean:
-	${RM} -rf output-cableos-installer cableos-installer-*.gz
+	${RM} -rf output-cableos-builder output-cableos-installer cableos-installer-*.gz
 # OVMF_VARS.fd
 # AAVMF_VARS.fd
 
