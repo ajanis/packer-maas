@@ -81,67 +81,50 @@ variable "timeout" {
 }
 
 
-locals {
-  qemu_arch = {
-    "amd64" = "x86_64"
-    "arm64" = "aarch64"
-  }
-  uefi_imp = {
-    "amd64" = "OVMF"
-    "arm64" = "AAVMF"
-  }
-  qemu_machine = {
-    "amd64" = "accel=kvm"
-    "arm64" = "virt"
-  }
-  qemu_cpu = {
-    "amd64" = "host"
-    "arm64" = "cortex-a57"
-  }
-
-  proxy_env = [
-    "http_proxy=${var.http_proxy}",
-    "https_proxy=${var.https_proxy}",
-    "no_proxy=${var.https_proxy}",
-  ]
-}
-// Define Packer Source for QEMU
-
-# source "null" "dependencies" {
-#   communicator = "none"
-# }
 source "qemu" "cableos-installer" {
-  boot_wait      = "2s"
-  cpus           = 2
-  cpu_model      = "${lookup(local.qemu_cpu, var.architecture, "")}"
-  disk_image     = true
-  disk_size      = "5120M"
-  format         = "qcow2"
-  efi_boot 	 = false
-  headless       = var.headless
-  http_directory = var.http_directory
-  iso_checksum   = "md5:37f6ddeaf58b7dfa70bc3615047e4d09"
-  iso_url        = "${path.root}/boot-images/${var.live_img}.qcow2"
-  #skip_compaction = true
-  #disk_compression = false
-  memory                   = 5120
-  qemuargs                 = [["-serial", "stdio"]]
-  qemu_binary              = "qemu-system-${lookup(local.qemu_arch, var.architecture, "")}"
-  shutdown_command         = "echo 'packer' | shutdown -P now"
-  #ssh_handshake_attempts   = 50
-  ssh_password             = var.ssh_password
-  #ssh_timeout              = "300s"
-  ssh_username             = var.ssh_username
-  #ssh_wait_timeout         = "300s"
-  use_backing_file         = true
-  #ssh_file_transfer_method = "sftp"
-  #ssh_keep_alive_interval  = "30s"
-  #ssh_read_write_timeout   = "600s"
+  vm_name                = "cableos-installer"
+  type                   = "qemu"
+  qemu_binary            = "qemu-system-x86_64"
+  accelerator            = "kvm"
+  cpu_model              = "host"
+  cpus                   = 2
+  memory                 = 5120
+  disk_image             = true
+  disk_interface         = "virtio"
+  disk_size              = "5120M"
+  iso_url                = "${path.root}/boot-images/${var.live_img}.iso"
+  iso_checksum           = "none"
+  format                 = "raw"
+  use_backing_file       = true
+  skip_compaction        = true
+  disk_compression       = false
+  net_device             = "virtio-net"
+  http_content           =  {
+    "/apollo.iso"        = file("http/data/${var.apollo_iso}")
+    "/cableos.sh"        = file("http/cableos.sh")
+    "/startup.sh"        = file("http/startup.sh")
+    "/userdata"          = file("http/user-data-cableos")
+  }
+  cd_files               = ["${path.root}/http/data/${var.apollo_iso}", "${path.root}/http/cableos.sh"]
+  cd_label               = "data"
+  qemu_img_args {
+    create = ["-F", "raw"]
+  }
+
+  headless               = var.headless
+  efi_boot 	             = true
+  efi_drop_efivars       = true
+  boot_wait              = "10s"
+  shutdown_command       = "echo 'packer' | shutdown -P now"
+  ssh_handshake_attempts = 50
+  ssh_password           = var.ssh_password
+  ssh_timeout            = var.timeout
+  ssh_username           = var.ssh_username
+  ssh_wait_timeout       = var.timeout
 }
 
 
 // Define Build
-
 build {
   name = "cableos-installer"
   sources = [
@@ -150,42 +133,18 @@ build {
 
   // Provisioners for installation and file extraction
 
-
-  provisioner "shell" {
-    inline = [
-      "mkdir /data"
-    ]
-  }
-  #     "curl http://{{ .HTTPIP }}:{{ .HTTPPort }}/APOLLO_PLATFORM-release-3.21.3.0-7+auto15.iso --output /data/APOLLO_PLATFORM-release-3.21.3.0-7+auto15.iso",
-  #     "curl http://{{ .HTTPIP }}:{{ .HTTPPort }}/startup.sh --output /etc/init.d/startup.sh"
-
   provisioner "file" {
-    destination = "/data/"
-    source      = "${path.root}/buildfiles/${var.apollo_iso}"
+    destination = "/"
+    source      = "${path.root}/http/data"
     timeout     = "10m"
   }
 
   provisioner "file" {
-    destination = "/opt/"
-    source      = "${path.root}/buildfiles/cableos.sh"
+    destination = "/"
+    source      = "${path.root}/http/cableos.sh"
   }
 
-  // Post-processors to create new images and prepare for MAAS
-  // Create tar.gz file
-  #post-processor "shell-local" {
-  #  inline = [
-  #    "IMG_FMT=qcow2",
-  ##    "SOURCE=cableos-installer",
-  #    "ROOT_PARTITION=3",
-  #    "DETECT_BLS_BOOT=1",
-  #    "OUTPUT=${var.base_filename}.tar.gz",
-  #    "source ../scripts/fuse-nbd",
-  #    "source ../scripts/fuse-tar-root"
-  #  ]
-  #  inline_shebang = "/bin/bash -e"
-  #}
 
-  // Create manifest of packer objects
   post-processor "manifest" {
     output     = "${path.root}/manifest.json"
     strip_path = true

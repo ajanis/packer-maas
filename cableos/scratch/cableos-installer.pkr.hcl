@@ -94,6 +94,10 @@ locals {
     "amd64" = "accel=kvm"
     "arm64" = "virt"
   }
+  qemu_cpu = {
+    "amd64" = "host"
+    "arm64" = "cortex-a57"
+  }
 
   proxy_env = [
     "http_proxy=${var.http_proxy}",
@@ -101,69 +105,38 @@ locals {
     "no_proxy=${var.https_proxy}",
   ]
 }
-
 // Define Packer Source for QEMU
-source "null" "dependencies" {
-  communicator   = "none"
-}
 
+# source "null" "dependencies" {
+#   communicator = "none"
+# }
 source "qemu" "cableos-installer" {
   boot_wait      = "2s"
   cpus           = 2
+  cpu_model      = "${lookup(local.qemu_cpu, var.architecture, "")}"
   disk_image     = true
-  disk_size      = "4G"
+  disk_size      = "5120M"
   format         = "qcow2"
+  efi_boot 	 = false
   headless       = var.headless
   http_directory = var.http_directory
-  iso_checksum   = "none"
+  iso_checksum   = "md5:37f6ddeaf58b7dfa70bc3615047e4d09"
   iso_url        = "${path.root}/boot-images/${var.live_img}.qcow2"
-  memory         = 5120
-  qemu_binary    = "qemu-system-${lookup(local.qemu_arch, var.architecture, "")}"
-  qemu_img_args {
-    create = ["-F", "qcow2"]
-  }
-  qemuargs = [
-    ["-machine", "accel=kvm"
-    ["-cpu", host
-    ["-device", "virtio-gpu-pci"],
-    ["-drive", "if=pflash,format=raw,id=ovmf_code,readonly=on,file=/usr/share/${lookup(local.uefi_imp, var.architecture, "")}/${lookup(local.uefi_imp, var.architecture, "")}_CODE.fd"],
-    ["-drive", "if=pflash,format=raw,id=ovmf_vars,file=${lookup(local.uefi_imp, var.architecture, "")}_VARS.fd"],
-    ["-drive", "file=output-cloudimg/packer-cloudimg,format=qcow2"],
-    ["-drive", "file=seeds-cloudimg.iso,format=raw"]
-  ]
-  shutdown_command       = "sudo -S shutdown -P now"
-  ssh_handshake_attempts = 50
-  ssh_password           = var.ssh_password
-  ssh_timeout            = var.timeout
-  ssh_username           = var.ssh_username
-  ssh_wait_timeout       = var.timeout
-  use_backing_file       = true
-}
-source "qemu" "cableos-installer" {
-  vm_name                = "cableos-installer"
-  type                   = "qemu"
-  qemuargs               = [["-serial", "stdio"]]
-  qemu_binary            = "qemu-system-x86_64"
-  accelerator            = "kvm"
-  cpu_model              = "host"
-  cpus                   = 2
-  memory                 = 5120
-  disk_image             = true
-  disk_size              = "5120M"
-  iso_url                = "${path.root}/boot-images/${var.live_img}.qcow2"
-  iso_checksum           = "none"
-  format                 = "qcow2"
-  use_backing_file       = true
-  http_directory         = var.http_directory
-  headless               = var.headless
-  efi_boot 	             = false
-  boot_wait              = "10s"
-  shutdown_command       = "echo 'packer' | shutdown -P now"
-  ssh_handshake_attempts = 50
-  ssh_password           = var.ssh_password
-  ssh_timeout            = var.timeout
-  ssh_username           = var.ssh_username
-  ssh_wait_timeout       = var.timeout
+  #skip_compaction = true
+  #disk_compression = false
+  memory                   = 5120
+  qemuargs                 = [["-serial", "stdio"]]
+  qemu_binary              = "qemu-system-${lookup(local.qemu_arch, var.architecture, "")}"
+  shutdown_command         = "echo 'packer' | shutdown -P now"
+  #ssh_handshake_attempts   = 50
+  ssh_password             = var.ssh_password
+  #ssh_timeout              = "300s"
+  ssh_username             = var.ssh_username
+  #ssh_wait_timeout         = "300s"
+  use_backing_file         = true
+  #ssh_file_transfer_method = "sftp"
+  #ssh_keep_alive_interval  = "30s"
+  #ssh_read_write_timeout   = "600s"
 }
 
 
@@ -175,15 +148,16 @@ build {
     "source.qemu.cableos-installer"
   ]
 
-
-
   // Provisioners for installation and file extraction
+
 
   provisioner "shell" {
     inline = [
       "mkdir /data"
     ]
   }
+  #     "curl http://{{ .HTTPIP }}:{{ .HTTPPort }}/APOLLO_PLATFORM-release-3.21.3.0-7+auto15.iso --output /data/APOLLO_PLATFORM-release-3.21.3.0-7+auto15.iso",
+  #     "curl http://{{ .HTTPIP }}:{{ .HTTPPort }}/startup.sh --output /etc/init.d/startup.sh"
 
   provisioner "file" {
     destination = "/data/"
