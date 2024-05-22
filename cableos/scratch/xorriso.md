@@ -1,0 +1,5 @@
+# xorriso.md
+```
+sudo xorriso -indev "<image name>" -report_el_torito cmd
+sudo xorriso -indev "ubuntu-22.04.1-desktop-amd64.iso" -report_el_torito cmd
+sudo xorriso -outdev MyDistribution.iso -map extracted / -- -volid "MyDistribution 1.1 Ubuntu Remix amd64" -boot_image grub grub2_mbr=mbr.img -boot_image any partition_table=on -boot_image any partition_cyl_align=off -boot_image any partition_offset=16 -boot_image any mbr_force_bootable=on -append_partition 2 28732ac11ff8d211ba4b00a0c93ec93b EFI.img -boot_image any appended_part_as=gpt -boot_image any iso_mbr_part_type=a2a0d0ebe5b9334487c068b6b72699c7 -boot_image any cat_path='/boot.catalog' -boot_image grub bin_path='/boot/grub/i386-pc/eltorito.img' -boot_image any platform_id=0x00 -boot_image any emul_type=no_emulation -boot_image any load_size=2048 -boot_image any boot_info_table=on -boot_image grub grub2_boot_info=on -boot_image any next -boot_image any efi_path=--interval:appended_partition_2:all:: -boot_image any platform_id=0xef -boot_image any emul_type=no_emulation -boot_image any load_size=4349952
