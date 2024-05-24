@@ -39,9 +39,9 @@ sudo apt-get -y install "${!requiredPkgs[@]}"
 # Change directories to the newly created working directory
 
 mkdir "${WORKDIR}"
-mount -o loop "${USERDATA}/${DEBIRF_ISO}" /mnt
+sudo mount -o loop "${USERDATA}/${DEBIRF_ISO}" /mnt
 cp -r /mnt/* "${WORKDIR}/"
-umount /mnt
+sudo umount /mnt
 cd "${WORKDIR}"
 
 
@@ -113,7 +113,7 @@ done
 # If successful, print image and md5sum
 # If unsuccessful, print error notice and remove failed image
 
-( mkisofs -R -b boot/grub/bios.img -no-emul-boot -boot-load-size 4 -boot-info-table -c boot/grub/boot.cat -input-charset utf-8 -o "${USERDATA}/REPACK-${DEBIRF_ISO}" ) \
+( mkisofs -R -b boot/grub/bios.img -no-emul-boot -boot-load-size 4 -boot-info-table -c boot/grub/boot.cat -input-charset utf-8 -o "${USERDATA}/REPACK-${DEBIRF_ISO}" . ) \
 && ( echo -e "
 ISO Repack Completed Successfully.
 New Image: ${USERDATA}/REPACK-${DEBIRF_ISO}

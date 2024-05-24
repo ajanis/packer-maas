@@ -46,9 +46,9 @@ sudo apt-get -y install "${!requiredPkgs[@]}"
 ```shell
 mkdir "${WORKDIR}"
 tar -xzvf "${DEBIRF_MINIMAL}" -C "${WORKDIR}"
-mount -o loop "${USERDATA}/${DEBIRF_ISO}" /mnt
+sudo mount -o loop "${USERDATA}/${DEBIRF_ISO}" /mnt
 cp -r /mnt/* "${WORKDIR}/"
-umount /mnt
+sudo umount /mnt
 cd "${WORKDIR}"
 
 ```
@@ -106,8 +106,8 @@ For each file in the array :
 declare -A filePaths
 FILE1="${USERDATA}/${APOLLO_ISO}"
 FILE2="${USERDATA}/${INSTALL_SCRIPT}"
-filePaths[$FILE1]="${ROOTFS_DIR}/data"
-filePaths[$FILE2]="${ROOTFS_DIR}/root"
+filePaths["${FILE1}"]="${ROOTFS_DIR}/data"
+filePaths["${FILE2}"]="${ROOTFS_DIR}/root"
 
 for fileName in "${!filePaths[@]}"; do
 
@@ -150,7 +150,7 @@ done
 ```shell
 nsuccessful, print error notice and remove failed image
 
-( mkisofs -R -b boot/grub/bios.img -no-emul-boot -boot-load-size 4 -boot-info-table -c boot/grub/boot.cat -input-charset utf-8 -o "${USERDATA}/REPACK-${DEBIRF_ISO}" ) \
+( mkisofs -R -b boot/grub/bios.img -no-emul-boot -boot-load-size 4 -boot-info-table -c boot/grub/boot.cat -input-charset utf-8 -o "${USERDATA}/REPACK-${DEBIRF_ISO}" . ) \
 && ( echo -e "
 ISO Repack Completed Successfully.
 New Image: ${USERDATA}/REPACK-${DEBIRF_ISO}
