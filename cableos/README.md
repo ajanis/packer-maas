@@ -1,222 +1,261 @@
-# CableOS Image Build
-<!-- Author: Alan Janis -->
-<!-- Credit to: Oscar Bobadilla for original image build instructions -->
-<!-- ©Charter CS -->
+
+# Harmonic CableOS VCMTS Image Documentation
+- [Harmonic CableOS VCMTS Image Documentation](#harmonic-cableos-vcmts-image-documentation)
+  - [Customize the vendor-provided Debian In-Ram-Filesystem .iso](#customize-the-vendor-provided-debian-in-ram-filesystem-iso)
+    - [Variables and Defaults, Required package installation.](#variables-and-defaults-required-package-installation)
+    - [Step 1: Extract the ISO file](#step-1-extract-the-iso-file)
+    - [Step 2: Extract debirf-live.cgz](#step-2-extract-debirf-livecgz)
+    - [Step 3: Extract roots.cxz](#step-3-extract-rootscxz)
+    - [Step 4: Add custom files](#step-4-add-custom-files)
+    - [Step 5: Repack the root filesystem](#step-5-repack-the-root-filesystem)
+    - [Step 6: Repack debirf-live.cgz](#step-6-repack-debirf-livecgz)
+    - [Step 7: Recreate the ISO](#step-7-recreate-the-iso)
+  - [Complete Auto-Build Script](#complete-auto-build-script)
+  - [Packer Conversion HCL2](#packer-conversion-hcl2)
 
 
-## Try the deb live in a VM
--	Boot with the debirf-live image
--	Login with the default root:install account
--	Create the /data directory
--	Transfer the APOLLO_PLATFORM iso into /data
--	Run the ostree-production list-isos to identify the file
 
+## Customize the vendor-provided Debian In-Ram-Filesystem .iso
 
-```
-0 debirf-live:~# ostree-production list-isos
-I: List of ISO files under '/data' (product_code='' version=''):
-	> APOLLO_PLATFORM-release-3.21.3.0-7+auto15.iso
-I: Cleanup
-```
+### Variables and Defaults, Required package installation.
 
-- Apply the image to the disk
+```shell
+requiredPkgs=( "genisoimage" "mkisofs" "makefs" "mkinitramfs" "livecd-rootfs" "fakeroot" "live-build" )
+: "${USERDATA:=/opt/userdata}"
+: "${APOLLO_ISO:=APOLLO_PLATFORM-release-3.21.3.0-7+auto15.iso}"
+: "${INSTALL_SCRIPT:=cableos-installer.sh}"
+: "${ELTORITO:=stage2_eltorito}"
+: "${LIVEIMG_URL:=https://gemmei.ftp.acc.umu.se/debian-cd/current/amd64/iso-cd/debian-12.5.0-amd64-netinst.iso}"
+: "${LIVEIMG_ISO:=$(basename $LIVEIMG_URL)}"
+: "${DEBIRF_ISO:=debirf-live_bullseye_6.0.0-0.deb11.6-amd64.iso}"
+: "${WORKDIR:=${HOME}/cableos-live}"
+: "${LIVEFS_DIR:=${WORKDIR}/${DEBIRF_ISO%.*}}"
+: "${ROOTFS_DIR:=${LIVEFS_DIR}/rootfs}"
 
-```
-1 debirf-live:~# ostree-production -D /dev/sda from  /data/APOLLO_PLATFORM-release-3.21.3.0-7+auto15.iso
-I: ---------------------------------------------------------------------------
-I: Directly using '/data/APOLLO_PLATFORM-release-3.21.3.0-7+auto15.iso'
-I: ---------------------------------------------------------------------------
-I: Handling product_code=APOLLO_PLATFORM version=3.21.3.0-7+auto15
-Version: 3.21.3.0-7+auto15
-I: Unexposing /tmp/APOLLO_PLATFORM-nsg-upgrade/iso-mounts/APOLLO_PLATFORM-3.21.3.0-7+auto15
-I: Exposing ISO: 3.21.3.0-7+auto15 (from /data/APOLLO_PLATFORM-release-3.21.3.0-7+auto15.iso)
-I: Exposed  ISO: 3.21.3.0-7+auto15 (under /tmp/APOLLO_PLATFORM-nsg-upgrade/iso-mounts/APOLLO_PLATFORM-3.21.3.0-7+auto15)
-I: Production to device '/dev/sda'
-
-STEP-1 ============================================================= Unmounting previous /mnt/passive
-
-N: apollo-env(umount): skip -- already unmounted
-
-STEP-2 ============================================================= Partitioning disk and create file-systems
-
-I: --------------------------------------------------------- REMOVE_ALL
-I: --------------------------------------------------------- WIPE PREVIOUS FILESYSTEM
-I: --------------------------------------------------------- CREATE PARTITIONS (msdos)
-Information: You may need to update /etc/fstab.
-
-Information: You may need to update /etc/fstab.
-
-Information: You may need to update /etc/fstab.
-
-Information: You may need to update /etc/fstab.
-
-Information: You may need to update /etc/fstab.
-
-Information: You may need to update /etc/fstab.
-
-I: --------------------------------------------------------- CREATE_ALL (LVM)
-  Physical volume "/dev/sda3" successfully created.
-  Volume group "cos-slice-vg" successfully created
-  Logical volume "root1" created.
-  Logical volume "root2" created.
-  Logical volume "common" created.
-  Logical volume "confd" created.
-  Logical volume "docker" created.
-I: --------------------------------------------------------- CREATE_ALL (FILE-SYSTEMS)
-mkfs.fat 4.2 (2021-01-31)
-mke2fs 1.46.2 (28-Feb-2021)
-/dev/sda2 contains a ext3 file system labelled 'GRUBPC'
-	created on Tue Apr 23 20:31:14 2024
-Creating filesystem with 488448 1k blocks and 122400 inodes
-Filesystem UUID: e7c244c4-99c0-416c-9a20-cf90ab81281e
-Superblock backups stored on blocks:
-	8193, 24577, 40961, 57345, 73729, 204801, 221185, 401409
-
-Allocating group tables: done
-Writing inode tables: done
-Creating journal (8192 blocks): done
-Writing superblocks and filesystem accounting information: done
-
-mke2fs 1.46.2 (28-Feb-2021)
-Creating filesystem with 434176 4k blocks and 108640 inodes
-Filesystem UUID: d4114381-5bb2-4289-b947-8d96a9ddadce
-Superblock backups stored on blocks:
-	32768, 98304, 163840, 229376, 294912
-
-Allocating group tables: done
-Writing inode tables: done
-Creating journal (8192 blocks): done
-Writing superblocks and filesystem accounting information: done
-
-mke2fs 1.46.2 (28-Feb-2021)
-Creating filesystem with 434176 4k blocks and 108640 inodes
-Filesystem UUID: 1815dd30-6d1c-4633-b39d-6836a185263c
-Superblock backups stored on blocks:
-	32768, 98304, 163840, 229376, 294912
-
-Allocating group tables: done
-Writing inode tables: done
-Creating journal (8192 blocks): done
-Writing superblocks and filesystem accounting information: done
-
-mke2fs 1.46.2 (28-Feb-2021)
-Creating filesystem with 315392 1k blocks and 78936 inodes
-Filesystem UUID: d88c0936-5617-4eb5-b91f-cacbf818c2e8
-Superblock backups stored on blocks:
-	8193, 24577, 40961, 57345, 73729, 204801, 221185
-
-Allocating group tables: done
-Writing inode tables: done
-Creating journal (8192 blocks): done
-Writing superblocks and filesystem accounting information: done
-
-mke2fs 1.46.2 (28-Feb-2021)
-Creating filesystem with 2416640 4k blocks and 605024 inodes
-Filesystem UUID: fc81f783-53ef-4e41-b005-1d2c15999940
-Superblock backups stored on blocks:
-	32768, 98304, 163840, 229376, 294912, 819200, 884736, 1605632
-
-Allocating group tables: done
-Writing inode tables: done
-Creating journal (16384 blocks): done
-Writing superblocks and filesystem accounting information: done
-
-mke2fs 1.46.2 (28-Feb-2021)
-Creating filesystem with 585728 4k blocks and 146592 inodes
-Filesystem UUID: fc97fc34-af12-4a41-97ed-73234d8c34da
-Superblock backups stored on blocks:
-	32768, 98304, 163840, 229376, 294912
-
-Allocating group tables: done
-Writing inode tables: done
-Creating journal (16384 blocks): done
-Writing superblocks and filesystem accounting information: done
-
-I: --------------------------------------------------------- READY
-  LV     VG           Attr       LSize   Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
-  common cos-slice-vg -wi-a----- 308.00m
-  confd  cos-slice-vg -wi-a-----   2.23g
-  docker cos-slice-vg -wi-a-----  <9.22g
-  root1  cos-slice-vg -wi-a-----  <1.66g
-  root2  cos-slice-vg -wi-a-----  <1.66g
-
-STEP-3 ============================================================= ROOTFS1 -- Mounting
-
-I: Found disks:
-/dev/disk/by-id/ata-VMware_Virtual_IDE_CDROM_Drive_00000000000000000001
-/dev/disk/by-id/dm-name-cos--slice--vg-common
-/dev/disk/by-id/dm-name-cos--slice--vg-confd
-/dev/disk/by-id/dm-name-cos--slice--vg-docker
-/dev/disk/by-id/dm-name-cos--slice--vg-root1
-/dev/disk/by-id/dm-name-cos--slice--vg-root2
-/dev/disk/by-id/dm-uuid-LVM-bCUwiDLYkH0OVrcfQIJ1PJL0Bto46REC1ETLVkEz1XapkyV3VuYnWJpW2TWAd0nz
-/dev/disk/by-id/dm-uuid-LVM-bCUwiDLYkH0OVrcfQIJ1PJL0Bto46REC5lT9ZpQAj5GBy7aLPc6uFcoUXewEk9qc
-/dev/disk/by-id/dm-uuid-LVM-bCUwiDLYkH0OVrcfQIJ1PJL0Bto46RECNLILKPxBMPc0GVO3Ji2CwX4Hyi1rq5dp
-/dev/disk/by-id/dm-uuid-LVM-bCUwiDLYkH0OVrcfQIJ1PJL0Bto46RECQ0d4p6FBF6YLJe2icAX1LfuRf9MZNiPo
-/dev/disk/by-id/dm-uuid-LVM-bCUwiDLYkH0OVrcfQIJ1PJL0Bto46RECdg4bxGoOxoGmBVgeiK1NAzUKbtBTattn
-/dev/disk/by-id/lvm-pv-uuid-A83I6e-23Ps-ayZv-ivXO-GSgl-rLPv-AQzgOT
-E: No known /dev/disk/by-id
-
-STEP-4 ============================================================= ROOTFS1 -- Syncing ISO contents
-
-I: -------------------- Running pre upgrade scripts (/tmp/APOLLO_PLATFORM-nsg-upgrade/nsg-upgrade/root/usr/share/ostree-upgrade/run-scripts/pre.d)
-I: -------------------- Finished pre upgrade scripts
-
-I: -------------------- transfer begin --------------
-I: Fetching '/tmp/APOLLO_PLATFORM-nsg-upgrade/iso-mounts/APOLLO_PLATFORM-3.21.3.0-7+auto15/rootfs/usr/share/product-defs/product.conf'
-I: Project='APOLLO_PLATFORM'
+sudo apt-get -y install "${!requiredPkgs[@]}"
 ```
 
-## Unpack the debirf ISO
+### Step 1: Extract the ISO file
+- Create a working directory.
+- Unpack debirf minimal.tgz into working directory
+- Mount the .iso file at /mnt .
+- Copy the contents at /mnt/* to the newly created working directory.
+- Unmount the .iso from /mnt .
+- Change directories to the newly created working directory
 
-### Unpack the contents of the debirf live ISO
-- Mount the image
+```shell
+mkdir "${WORKDIR}"
+tar -xzvf "${DEBIRF_MINIMAL}" -C "${WORKDIR}"
+mount -o loop "${USERDATA}/${DEBIRF_ISO}" /mnt
+cp -r /mnt/* "${WORKDIR}/"
+umount /mnt
+cd "${WORKDIR}"
+
 ```
-sudo mount -o loop debirf-live_bullseye_amd64.iso /mnt/iso
+
+### Step 2: Extract debirf-live.cgz
+
+- Create the target folder for the live filesystem.
+- Change directories to the previously created livefs directory.
+- Extract the filesystem archive using zcat to read the contents of the .cgz file and pipe the output to cpio to extract them.
+- Remove the .cgz file
+
+```shell
+(mkdir "${LIVEFS_DIR}" && cd "${LIVEFS_DIR}" && zcat "${WORKDIR}/${DEBIRF_ISO%.*}.cgz" | cpio -idvm && rm -f "${WORKDIR}/${DEBIRF_ISO%.*}.cgz")
 ```
-- Create a destination for the compressed files
+
+### Step 3: Extract roots.cxz
+
+- Create a target folder for rootfs.
+- Change directories to the previously created rootfs folder.
+- Extract the rootfs using xzcat to read the contents of the .cxz file and pipe the output to cpio to extract them.
+- Remove the .cxz file
+
+```shell
+(mkdir "${ROOTFS_DIR}" && cd "${ROOTFS_DIR}/" && xzcat "${LIVEFS_DIR}/rootfs.cxz" | cpio -idvm && rm -f "${LIVEFS_DIR}/rootfs.cxz")
 ```
-mkdir ~/debirf
+
+### Step 4: Add custom files
+
+Here we are delaring an array of of files that will be copied into the rootfs directory with the following structure:
+
+  `key`: /path/to/source/file.ext
+
+  `value`: /path/to/rootfs/destination/dir/
+
+The script below performs the following checks and actions.
+
+For each file in the array :
+- Check that the destination directory is not present
+
+   **`AND`**
+
+  - Create the destination directory
+
+- Check that the source file exists
+
+  **`AND`**
+
+- (The destination file does not ) **`OR`** (The source and destination files are not identical)
+
+  **`AND`**
+
+  - Copy the source file to the destination directory
+
+```shell
+declare -A filePaths
+FILE1="${USERDATA}/${APOLLO_ISO}"
+FILE2="${USERDATA}/${INSTALL_SCRIPT}"
+filePaths[$FILE1]="${ROOTFS_DIR}/data"
+filePaths[$FILE2]="${ROOTFS_DIR}/root"
+
+for fileName in "${!filePaths[@]}"; do
+
+    [[ ! -d "${filePaths[${fileName}]}" ]] \
+    && echo -e "
+    ${filePaths[${fileName}]} does not exist.
+    mkdir -p ${filePaths[${fileName}]}
+    " \
+    && mkdir -p "${filePaths[${fileName}]}"
+
+    [[ -e ${fileName} ]] && ([[ ! -e "${filePaths[${fileName}]}/$(basename ${fileName})" ]] || ! ( diff -q "${fileName}" "${filePaths[${fileName}]}/$(basename ${fileName})" )) \
+    && echo -e "
+    cp ${fileName} ${filePaths[${fileName}]}/ \
+    " \
+    && cp "${fileName}" "${filePaths[${fileName}]}/"
+done
 ```
+
+### Step 5: Repack the root filesystem
+
+- Recreate the .cpio archive.
+- Compress it back to .cxz archive
+
+```shell
+( cd "${ROOTFS_DIR}" && find . | cpio -o -H newc | xz -z -T0 > "${LIVEFS_DIR}/rootfs.cxz" && rm -rf "${ROOTFS_DIR}" )
 ```
-Copy the initrd file to the new directory
+### Step 6: Repack debirf-live.cgz
+
+- Recreate the .cpio archive.
+- Compress it back to .cgz archive.
+
+```shell
+( cd "${LIVEFS_DIR}" && find . | cpio -o -H newc | gzip -6 > "${WORKDIR}/${DEBIRF_ISO%.*}.cgz" && rm -rf "${LIVEFS_DIR}" )
 ```
+
+### Step 7: Recreate the ISO
+- Rebuild the .iso image from the updated working directory contents
+- If successful, print image and md5sum
+- If unsuccessful, print error notice and remove failed image
+```shell
+nsuccessful, print error notice and remove failed image
+
+( mkisofs -R -b boot/grub/bios.img -no-emul-boot -boot-load-size 4 -boot-info-table -c boot/grub/boot.cat -input-charset utf-8 -o "${USERDATA}/REPACK-${DEBIRF_ISO}" ) \
+&& ( echo -e "
+ISO Repack Completed Successfully.
+New Image: ${USERDATA}/REPACK-${DEBIRF_ISO}
+" \
+&& md5sum ${USERDATA}/REPACK-${DEBIRF_ISO} | tee -a ${USERDATA}/REPACK-${DEBIRF_ISO}.md5sum ) \
+|| ( echo -e "
+ISO Repack Failed... Removing..
+" && rm -f ${USERDATA}/REPACK-${DEBIRF_ISO} )
 ```
-cp /mnt/iso/debirf-live_bullseye_6.0.0-0.deb11.6-amd64.cgz ~/debirf
-```
-```
-cd ~/debirf
-```
-### Change the extension of the file to be recognized by gzip
-```
-mv debirf-live_bullseye_6.0.0-0.deb11.6-amd64.cgz debirf-live_bullseye_6.0.0-0.deb11.6-amd64.gz
-```
-- Uncompress the file
-```
-gunzip debirf-live_bullseye_6.0.0-0.deb11.6-amd64.gz
-```
-- Unpack the cpio file
-```
-cpio -idv < debirf-live_bullseye_6.0.0-0.deb11.6-amd64
-```
-- Change the extension of rootfs to be recognized by unxz
-```
-mv rootfs.cxz rootfs.xz
-```
-###	Uncompress the rootfs file
-```
-unxz rootfs.xz
-```
-```
-Create a new directory to store the rootfs
-```
-```
-mkdir rootdir
-```
-```
-cd rootdir
-```
-###	Unpack the cpio file
-```
-cpio -idv < ../rootfs
+
+## Complete Auto-Build Script
+
+**[CableOS Auto-Build Script](cableos-debirf-rebuild.sh)**
+
+The complete script will perform all of the steps listed above to:
+- Create the directory structures
+- Mount the original .iso,
+- Copy the files into the proper locations and extrack theew                                                                                                                        op
+- Extract them to the proper locations
+- Add custom ISO and install script
+- Repack the archives
+- Recreate the ISO
+
+## Packer Conversion HCL2
+
+```shell
+// packer.pkr.hcl
+  packer {
+    required_plugins {
+      qemu = {
+        version = ">= 0.0.1"
+        source  = "github.com/hashicorp/qemu"
+} }
+  }
+  source "qemu" "debirf-live" {
+Feedback
+Help Settings
+1
+"type": "file",
+"source": "/initrd.img",
+"destination": "output-debirf-live/initrd.img"
+"type": "shell-local",
+"inline": [
+  "qemu-img convert -f qcow2 -O raw new.qcow new.img",
+  "maas admin boot-resources create name=custom/new name_title='New Image' architecture=amd64/generic content@=new.img"
+make build
+iso_url = var.iso_url
+iso_checksum = "none"
+disk_size = "4096"
+output_directory = var.output_directory
+vm_name
+format
+accelerator http_directory = "http" boot_command =[
+
+= var.iso_checksum
+= 10240
+= var.vm_name
+= "qcow2"
+= "kvm"
+"<enter><wait>",
+"linux /install/vmlinuz auto hostname=${var.vm_name} <wait>",
+"initrd /install/initrd.gz <wait>",
+"boot<enter>"
+]
+ssh_username
+ssh_password
+ssh_port
+ssh_wait_timeout = "10000s"
+headless        = false
+= var.ssh_username
+= var.ssh_password
+= 22
+build {
+  sources = [
+    "source.qemu.debirf-live"
+  ]
+  provisioner "shell" {
+    inline = [
+      "sudo ostree-production install --source=Apollo.iso --destination=/",
+      "sudo cp /boot/vmlinuz* /vmlinuz",
+      "sudo cp /boot/initrd.img* /initrd.img"
+    ]
+  }
+  provisioner "file" {
+    source      = "/vmlinuz"
+    destination = "${var.output_directory}/vmlinuz"
+}
+  provisioner "file" {
+    source      = "/initrd.img"
+    destination = "${var.output_directory}/initrd.img"
+  }
+  post-processor "qemu" {
+    only
+    output
+    format
+    disk_interface = "virtio"
+    = ["qemu"]
+    = var.new_qcow
+    = "qcow2"
+  }
+  post-processor "shell-local" {
+    inline = [
+      "qemu-img convert -f qcow2 -O raw ${var.new_qcow} ${var.new_img}",
+      "maas admin boot-resources create name=custom/new name_title='New Image' architecture=amd64/generic content@=${var.new_img}"
+    ]
+  }
+}
 ```
