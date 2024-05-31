@@ -4,7 +4,7 @@
 export APOLLO_ISONAME=APOLLO_PLATFORM-release-3.21.3.0-7+auto15.iso
 export MAAS_RESOURCE_URL=http://maas.spoc.charterlab.com:5248/images
 export PROXY_URL='http://proxy4.spoc.charterlab.com:8080'
-export PROXY_IGNORE='spoc.charterlab.com,nfv.charterlab.com,.svc,172.22.73.0/24,35.135.192.0/24,44.10.4.100/32,44.10.4.101/32,10.240.72.0/22,44.0.0.0/8,[2600:6ce6:4410:803/64],[2605:1c00:50f2:2800/64],[2605:1c00:50f3:70/64],proxy4.spoc.charterlab.com,44.10.4.101,44.10.4.100,localhost,127.0.0.1'
+export PROXY_IGNORE='spoc.charterlab.com,nfv.charterlab.com,.svc,172.22.73.0/24,35.135.192.0/24,44.10.4.100/32,44.10.4.200/32,10.240.72.0/22,44.0.0.0/8,[2600:6ce6:4410:803/64],[2605:1c00:50f2:2800/64],[2605:1c00:50f3:70/64],proxy4.spoc.charterlab.com,44.10.4.200,44.10.4.100,localhost,127.0.0.1'
 
 function proxySetup() {
 : "${http_proxy:=${PROXY_URL}}"
