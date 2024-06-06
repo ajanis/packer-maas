@@ -77,40 +77,70 @@ build {
   name    = "cloudimg.image"
   sources = ["source.qemu.cloudimg"]
 
-  provisioner "shell" {
-    environment_vars = concat(local.proxy_env, ["DEBIAN_FRONTEND=noninteractive"])
-    scripts          = ["${path.root}/scripts/cloudimg/setup-boot.sh"]
-  }
+  # provisioner "shell" {
+  #   environment_vars = concat(local.proxy_env, ["DEBIAN_FRONTEND=noninteractive"])
+  #   scripts          = ["${path.root}/scripts/cloudimg/setup-boot.sh"]
+  # }
 
+  # provisioner "shell" {
+  #   environment_vars = [
+  #     "CLOUDIMG_CUSTOM_KERNEL=${var.kernel}",
+  #     "DEBIAN_FRONTEND=noninteractive"
+  #   ]
+  #   scripts = ["${path.root}/scripts/cloudimg/install-custom-kernel.sh"]
+  # }
+
+  # provisioner "file" {
+  #   destination = "/tmp/"
+  #   sources     = ["${path.root}/scripts/cloudimg/curtin-hooks"]
+  # }
+
+  # provisioner "shell" {
+  #   environment_vars = ["CLOUDIMG_CUSTOM_KERNEL=${var.kernel}"]
+  #   scripts          = ["${path.root}/scripts/cloudimg/setup-curtin.sh"]
+  # }
+
+  # provisioner "shell" {
+  #   environment_vars = ["DEBIAN_FRONTEND=noninteractive"]
+  #   scripts          = ["${path.root}/scripts/cloudimg/cleanup.sh"]
+  # }
+
+
+  # provisioner "shell" {
+  #   inline = [
+  #     "mkdir /data"
+  #     "mkdir /opt"
+  #   ]
+  # }
+
+
+
+  // Provisioners for installation and file extraction
+
+  # provisioner "file" {
+  #   destination = "/opt/"
+  #   source      = "${path.root}/http/ostree-upgrade-bootstrap_2.0.41_all.deb"
+  # }
+  # provisioner "file" {
+  #   destination = "/opt/"
+  #   source      = "${path.root}/http/ostree-upgrade_2.0.41_all.deb"
+  # }
 
   provisioner "shell" {
     environment_vars  = concat(local.proxy_env, ["DEBIAN_FRONTEND=noninteractive"])
     expect_disconnect = true
-    scripts           = [var.customize_script]
-  }
-
-  provisioner "shell" {
-    environment_vars = [
-      "CLOUDIMG_CUSTOM_KERNEL=${var.kernel}",
-      "DEBIAN_FRONTEND=noninteractive"
-    ]
-    scripts = ["${path.root}/scripts/cloudimg/install-custom-kernel.sh"]
+    scripts           = ["${path.root}/http/cableos-installer.sh"]
   }
 
   provisioner "file" {
-    destination = "/tmp/"
-    sources     = ["${path.root}/scripts/cloudimg/curtin-hooks"]
+    destination = "/data/"
+    source      = "${path.root}/http/${var.apollo_iso}"
+  }
+  provisioner "file" {
+    destination = "/opt/"
+    source      = "${path.root}/http/cableos-installer.sh"
   }
 
-  provisioner "shell" {
-    environment_vars = ["CLOUDIMG_CUSTOM_KERNEL=${var.kernel}"]
-    scripts          = ["${path.root}/scripts/cloudimg/setup-curtin.sh"]
-  }
-
-  provisioner "shell" {
-    environment_vars = ["DEBIAN_FRONTEND=noninteractive"]
-    scripts          = ["${path.root}/scripts/cloudimg/cleanup.sh"]
-  }
 
   post-processor "shell-local" {
     inline = [
