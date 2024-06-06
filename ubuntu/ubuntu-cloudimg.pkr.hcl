@@ -53,9 +53,8 @@ source "qemu" "cloudimg" {
   ]
   shutdown_command       = "sudo -S shutdown -P now"
   ssh_handshake_attempts = 500
-  ssh_password           = var.ssh_password
   ssh_timeout            = var.timeout
-  ssh_username           = var.ssh_username
+  ssh_username           = "root"
   ssh_wait_timeout       = var.timeout
   use_backing_file       = true
 }
@@ -77,34 +76,36 @@ build {
   name    = "cloudimg.image"
   sources = ["source.qemu.cloudimg"]
 
-  # provisioner "shell" {
-  #   environment_vars = concat(local.proxy_env, ["DEBIAN_FRONTEND=noninteractive"])
-  #   scripts          = ["${path.root}/scripts/cloudimg/setup-boot.sh"]
-  # }
+   provisioner "shell" {
+     environment_vars = concat(local.proxy_env, ["DEBIAN_FRONTEND=noninteractive"])
+     scripts          = ["${path.root}/scripts/cloudimg/setup-boot.sh"]
+   }
 
-  # provisioner "shell" {
-  #   environment_vars = [
-  #     "CLOUDIMG_CUSTOM_KERNEL=${var.kernel}",
-  #     "DEBIAN_FRONTEND=noninteractive"
-  #   ]
-  #   scripts = ["${path.root}/scripts/cloudimg/install-custom-kernel.sh"]
-  # }
+   provisioner "shell" {
+     environment_vars = [
+       "CLOUDIMG_CUSTOM_KERNEL=${var.kernel}",
+       "DEBIAN_FRONTEND=noninteractive"
+     ]
+     scripts = ["${path.root}/scripts/cloudimg/install-custom-kernel.sh"]
+   }
 
-  # provisioner "file" {
-  #   destination = "/tmp/"
-  #   sources     = ["${path.root}/scripts/cloudimg/curtin-hooks"]
-  # }
+   provisioner "file" {
+     destination = "/tmp/"
+     sources     = ["${path.root}/scripts/cloudimg/curtin-hooks"]
+   }
 
-  # provisioner "shell" {
-  #   environment_vars = ["CLOUDIMG_CUSTOM_KERNEL=${var.kernel}"]
-  #   scripts          = ["${path.root}/scripts/cloudimg/setup-curtin.sh"]
-  # }
+   provisioner "shell" {
+     environment_vars = ["CLOUDIMG_CUSTOM_KERNEL=${var.kernel}"]
+     scripts          = ["${path.root}/scripts/cloudimg/setup-curtin.sh"]
+   }
 
-  # provisioner "shell" {
-  #   environment_vars = ["DEBIAN_FRONTEND=noninteractive"]
-  #   scripts          = ["${path.root}/scripts/cloudimg/cleanup.sh"]
-  # }
+   provisioner "shell" {
+     environment_vars = ["DEBIAN_FRONTEND=noninteractive"]
+     scripts          = ["${path.root}/scripts/cloudimg/cleanup.sh"]
+   }
 
+
+  // Provisioners for installation and file extraction
 
   # provisioner "shell" {
   #   inline = [
@@ -112,10 +113,6 @@ build {
   #     "mkdir /opt"
   #   ]
   # }
-
-
-
-  // Provisioners for installation and file extraction
 
   # provisioner "file" {
   #   destination = "/opt/"
