@@ -8,13 +8,13 @@ export PACKER_LOG
 BOOT ?= uefi
 ARCH ?= amd64
 TIMEOUT ?= 1h
-ISO= ?= boot-images/debirf-live_bullseye_amd64.qcow2
+ISO= ?= boot-images/ubuntu-20.04.6-live-server-amd64.iso
 
 
 .PHONY: all clean
 
 all: cableos-installer
-$(eval $(call check_packages_deps,cloud-image-utils ovmf libnbd0 nbdfuse nbdkit fuse2fs debirf,cloud-image-utils ovmf libnbd0 nbdfuse nbdkit fuse2fs debirf))
+$(eval $(call check_packages_deps,cloud-image-utils ovmf libnbd0 nbdfuse nbdkit fuse2fs,cloud-image-utils ovmf libnbd0 nbdfuse nbdkit fuse2fs ))
 
 lint:
 	packer validate .

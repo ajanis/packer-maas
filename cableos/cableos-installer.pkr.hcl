@@ -44,11 +44,26 @@ variable "apollo_iso" {
   type    = string
   default = "APOLLO_PLATFORM-release-3.21.3.0-7+auto15.iso"
 }
-variable "live_img" {
-  type    = string
-  default = "debirf-live_bullseye_amd64"
+variable "ubuntu_series" {
+  type        = string
+  default     = "jammy"
+  description = "The codename of the Ubuntu series to build."
 }
 
+variable "live_img" {
+  type    = string
+  default = "ubuntu-20.04.6-live-server-amd64"
+}
+
+variable "cloud_img" {
+  type    = string
+  default = "ubuntu-18.04-server-cloudimg-amd64"
+}
+variable "filename" {
+  type        = string
+  default     = "cableos-installer.tar.gz"
+  description = "The filename of the tarball to produce"
+}
 variable "base_filename" {
   type        = string
   default     = "cableos-installer"
@@ -66,14 +81,13 @@ variable "no_proxy" {
 
 variable "ssh_password" {
   type    = string
-  default = "install"
+  default = "ubuntu"
 }
 
 variable "ssh_username" {
   type    = string
-  default = "root"
+  default = "ubuntu"
 }
-
 variable "timeout" {
   type        = string
   default     = "1h"
@@ -91,31 +105,29 @@ source "qemu" "cableos-installer" {
   disk_image       = true
   disk_interface   = "virtio"
   disk_size        = "5120M"
-  iso_url          = "${path.root}/boot-images/${var.live_img}.qcow2"
+  iso_url          = "https://cloud-images.ubuntu.com/${var.ubuntu_series}/current/${var.ubuntu_series}-server-cloudimg-${var.architecture}.img"
+  #iso_url          = "${path.root}/boot-images/${var.live_img}.iso"
   iso_checksum     = "none"
   format           = "qcow2"
-  use_backing_file = false
-  skip_compaction  = true
-  disk_compression = false
+  use_backing_file = true
   net_device       = "virtio-net"
   http_directory   = var.http_directory
-  cd_files         = ["${path.root}/http/data/${var.apollo_iso}", "${path.root}/http/cableos.sh"]
-  cd_label         = "cidata"
   qemu_img_args {
     create = ["-F", "qcow2"]
   }
   headless               = var.headless
-  efi_boot               = true
-  efi_drop_efivars       = true
   boot_wait              = "10s"
   shutdown_command       = "echo 'packer' | shutdown -P now"
   ssh_handshake_attempts = 50
-  ssh_password           = var.ssh_password
+  ssh_password           = "install"
   ssh_timeout            = var.timeout
-  ssh_username           = var.ssh_username
+  ssh_username           = "root"
   ssh_wait_timeout       = var.timeout
+  qemuargs = [
+    ["-drive", "file=output-cableos-installer/packer-cableos-installer,format=qcow2"],
+    ["-drive", "file=user-data.img,format=raw"]
+  ]
 }
-
 
 // Define Build
 build {
@@ -125,23 +137,42 @@ build {
   ]
 
   // Provisioners for installation and file extraction
-  provisioner "shell" {
-    inline = [
-      "mkdir /data"
-    ]
-  }
+
+   provisioner "file" {
+     destination = "/opt/"
+     source      = "${path.root}/http/ostree-upgrade-bootstrap_2.0.41_all.deb"
+   }
+   provisioner "file" {
+     destination = "/opt/"
+     source      = "${path.root}/http/ostree-upgrade_2.0.41_all.deb"
+   }
 
   provisioner "file" {
     destination = "/data/"
-    source      = "${path.root}/http/data/${var.apollo_iso}"
+    source      = "${path.root}/http/${var.apollo_iso}"
+  }
+  provisioner "file" {
+    destination = "/opt/"
+    source      = "${path.root}/http/cableos-installer.sh"
   }
 
-  provisioner "shell" {
-    scripts          = ["${path.root}/http/cableos.sh"]
-  }
 
   post-processor "manifest" {
     output     = "${path.root}/manifest.json"
     strip_path = true
   }
+
+  post-processor "shell-local" {
+    inline = [
+      "IMG_FMT=qcow2",
+      "SOURCE=cableos-installer",
+      "ROOT_PARTITION=1",
+      "DETECT_BLS_BOOT=1",
+      "OUTPUT=${var.filename}",
+      "source ../scripts/fuse-nbd",
+      "source ../scripts/fuse-tar-root"
+    ]
+    inline_shebang = "/bin/bash -e"
+  }
 }
+
