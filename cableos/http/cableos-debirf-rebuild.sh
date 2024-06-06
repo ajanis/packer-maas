@@ -17,19 +17,19 @@
 
 # Variables and Defaults
 
-requiredPkgs=("genisoimage" "mkisofs" "makefs" "mkinitramfs" "livecd-rootfs" "fakeroot" "live-build")
+requiredPkgs="genisoimage live-clone makefs initramfs-tools-core livecd-rootfs fakeroot live-build"
 : "${USERDATA:=/opt/userdata}"
 : "${APOLLO_ISO:=APOLLO_PLATFORM-release-3.21.3.0-7+auto15.iso}"
 : "${INSTALL_SCRIPT:=cableos-installer.sh}"
 : "${ELTORITO:=stage2_eltorito}"
 : "${LIVEIMG_URL:=https://gemmei.ftp.acc.umu.se/debian-cd/current/amd64/iso-cd/debian-12.5.0-amd64-netinst.iso}"
-: "${LIVEIMG_ISO:=$(basename $LIVEIMG_URL)}"
+: "${LIVEIMG_ISO:=$(basename "${LIVEIMG_URL}")}"
 : "${DEBIRF_ISO:=debirf-live_bullseye_6.0.0-0.deb11.6-amd64.iso}"
 : "${WORKDIR:=${HOME}/cableos-live}"
 : "${LIVEFS_DIR:=${WORKDIR}/${DEBIRF_ISO%.*}}"
 : "${ROOTFS_DIR:=${LIVEFS_DIR}/rootfs}"
 
-sudo apt-get -y install "${!requiredPkgs[@]}"
+apt-get install -y $(echo "${requiredPkgs}")
 
 # Create a working directory.
 # Unpack debirf minimal.tgz into working directory
@@ -37,12 +37,13 @@ sudo apt-get -y install "${!requiredPkgs[@]}"
 # Copy the contents at /mnt/* to the newly created working directory.
 # Unmount the .iso from /mnt .
 # Change directories to the newly created working directory
+[[ -d ${WORKDIR} ]] && rm -rf "${WORKDIR}"
 
 mkdir "${WORKDIR}"
 sudo mount -o loop "${USERDATA}/${DEBIRF_ISO}" /mnt
 cp -r /mnt/* "${WORKDIR}/"
 sudo umount /mnt
-cd "${WORKDIR}"
+cd "${WORKDIR}" || exit
 
 
 # Subshell Process
@@ -80,8 +81,8 @@ declare -A filePaths
 FILE1="${USERDATA}/${APOLLO_ISO}"
 FILE2="${USERDATA}/${INSTALL_SCRIPT}"
 FILE3="${USERDATA}/${ELTORITO}"
-filePaths[$FILE1]="${ROOTFS_DIR}/data"
-filePaths[$FILE2]="${ROOTFS_DIR}/root"
+filePaths[${FILE1}]="${ROOTFS_DIR}/data"
+filePaths[${FILE2}]="${ROOTFS_DIR}/root"
 
 for fileName in "${!filePaths[@]}"; do
 
@@ -92,7 +93,7 @@ for fileName in "${!filePaths[@]}"; do
     " \
     && mkdir -p "${filePaths[${fileName}]}"
 
-    [[ -e ${fileName} ]] && ([[ ! -e "${filePaths[${fileName}]}/$(basename ${fileName})" ]] || ! ( diff -q "${fileName}" "${filePaths[${fileName}]}/$(basename ${fileName})" )) \
+    [[ -e ${fileName} ]] && ([[ ! -e "${filePaths[${fileName}]}/$(basename "${fileName}")" ]] || ! ( diff -q "${fileName}" "${filePaths[${fileName}]}/$(basename "${fileName}")" )) \
     && echo -e "
     cp ${fileName} ${filePaths[${fileName}]}/ \
     " \
@@ -118,7 +119,7 @@ done
 ISO Repack Completed Successfully.
 New Image: ${USERDATA}/REPACK-${DEBIRF_ISO}
 " \
-&& md5sum ${USERDATA}/REPACK-${DEBIRF_ISO} | tee -a ${USERDATA}/REPACK-${DEBIRF_ISO}.md5sum ) \
+&& md5sum "${USERDATA}"/REPACK-"${DEBIRF_ISO}" | tee -a "${USERDATA}"/REPACK-"${DEBIRF_ISO}".md5sum ) \
 || ( echo -e "
 ISO Repack Failed... Removing..
-" && rm -f ${USERDATA}/REPACK-${DEBIRF_ISO} )
+" && rm -f "${USERDATA}"/REPACK-"${DEBIRF_ISO}" )

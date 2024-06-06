@@ -1,0 +1,10 @@
+[Unit]
+Description=CableOS Installation Single-Use Startup Script
+ConditionFirstBoot=yes
+
+[Service]
+Type=oneshot
+ExecStart=/opt/cableos-installer.sh
+
+[Install]
+WantedBy=multi-user.target

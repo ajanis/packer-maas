@@ -2,7 +2,7 @@
 # Harmonic CableOS VCMTS Image Documentation
 - [Harmonic CableOS VCMTS Image Documentation](#harmonic-cableos-vcmts-image-documentation)
   - [Customize the vendor-provided Debian In-Ram-Filesystem .iso](#customize-the-vendor-provided-debian-in-ram-filesystem-iso)
-    - [Variables and Defaults, Required package installation.](#variables-and-defaults-required-package-installation)
+    - [Variables and Defaults, Required package installation](#variables-and-defaults-required-package-installation)
     - [Step 1: Extract the ISO file](#step-1-extract-the-iso-file)
     - [Step 2: Extract debirf-live.cgz](#step-2-extract-debirf-livecgz)
     - [Step 3: Extract roots.cxz](#step-3-extract-rootscxz)
@@ -17,10 +17,10 @@
 
 ## Customize the vendor-provided Debian In-Ram-Filesystem .iso
 
-### Variables and Defaults, Required package installation.
+### Variables and Defaults, Required package installation
 
 ```shell
-requiredPkgs=( "genisoimage" "mkisofs" "makefs" "mkinitramfs" "livecd-rootfs" "fakeroot" "live-build" )
+requiredPkgs="genisoimage live-clone makefs initramfs-tools-core livecd-rootfs fakeroot live-build"
 : "${USERDATA:=/opt/userdata}"
 : "${APOLLO_ISO:=APOLLO_PLATFORM-release-3.21.3.0-7+auto15.iso}"
 : "${INSTALL_SCRIPT:=cableos-installer.sh}"
@@ -32,7 +32,7 @@ requiredPkgs=( "genisoimage" "mkisofs" "makefs" "mkinitramfs" "livecd-rootfs" "f
 : "${LIVEFS_DIR:=${WORKDIR}/${DEBIRF_ISO%.*}}"
 : "${ROOTFS_DIR:=${LIVEFS_DIR}/rootfs}"
 
-sudo apt-get -y install "${!requiredPkgs[@]}"
+apt-get install -y $(echo $requiredPkgs)
 ```
 
 ### Step 1: Extract the ISO file
@@ -44,6 +44,7 @@ sudo apt-get -y install "${!requiredPkgs[@]}"
 - Change directories to the newly created working directory
 
 ```shell
+[[ -d ${WORKDIR} ]] && rm -rf ${WORKDIR}
 mkdir "${WORKDIR}"
 tar -xzvf "${DEBIRF_MINIMAL}" -C "${WORKDIR}"
 sudo mount -o loop "${USERDATA}/${DEBIRF_ISO}" /mnt
