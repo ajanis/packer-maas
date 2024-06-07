@@ -77,6 +77,15 @@ build {
   name    = "cloudimg.image"
   sources = ["source.qemu.cloudimg"]
 
+
+  provisioner "file" {
+    destination = "/opt/"
+    sources = [
+      "${path.root}/packages/ostree-upgrade-bootstrap_2.0.41_all.deb",
+      "${path.root}/packages/ostree-upgrade_2.0.41_all.deb"
+    ]
+  }
+
   provisioner "shell" {
     environment_vars = concat(local.proxy_env, ["DEBIAN_FRONTEND=noninteractive"])
     scripts          = ["${path.root}/scripts/cloudimg/setup-boot.sh"]

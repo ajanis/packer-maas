@@ -2,6 +2,10 @@
 # customize.sh
 # create service and script for vcmts installation on boot
 
+## Install cableos-wrapper packages
+dpkg -i /opt/ostree-upgrade-bootstrap_2.0.41_all.deb
+dpkg -i /opt/ostree-upgrade_2.0.41_all.deb
+
 ## Create systemd service to run on boot
 cat > /etc/systemd/systemd/cableos-install.service <<EOF
 [Unit]
