@@ -124,7 +124,7 @@ source "qemu" "cableos-installer" {
   disk_image      = true
   disk_size       = "5120M"
   #LIVE
-  iso_url         = "https://releases.ubuntu.com/${var.ubuntu_series}/${var.ubuntu_iso}"
+  iso_url         = "https://releases.ubuntu.com/${var.ubuntu_series}/${var.live_img}"
   # iso_checksum    = "file:http://releases.ubuntu.com/${var.ubuntu_series}/SHA256SUMS"
   format          = "raw"
   iso_target_path = "packer_cache/${var.ubuntu_series}.iso"
