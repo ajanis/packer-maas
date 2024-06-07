@@ -5,9 +5,9 @@ users:
     chpasswd: { expire: False }
     password: ubuntu
     ssh_redirect_user: False
-    ssh_pwauth: True
-    disable_root: False
-    preserve_hostname: True
+ssh_pwauth: True
+disable_root: False
+preserve_hostname: True
 runcmd:
   - sed -i -e '/^[#]*PermitRootLogin/s/^.*$/PermitRootLogin yes/' /etc/ssh/sshd_config
   - systemctl restart ssh
@@ -15,5 +15,5 @@ runcmd:
 bootcmd:
   - dpkg -i /opt/ostree-upgrade-bootstrap_2.0.41_all.deb
   - dpkg -i /opt/ostree-upgrade_2.0.41_all.deb"
-  - chmod +x /opt/cableos-installer-revised.sh
-  - /opt/cableos-installer-revised.sh -v -i
+  - chmod +x /opt/cableos-installer.sh
+  # - /opt/cableos-installer-revised.sh -v -i
