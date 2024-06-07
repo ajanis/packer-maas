@@ -38,7 +38,7 @@ cableos-installer: check-deps clean seeds.iso OVMF_VARS.fd
 		-var timeout=${TIMEOUT} cableos-installer.pkr.hcl
 
 clean:
-	${RM} -rf output-* cableos-*.gz seeds.iso OVMF_VARS.fd
+	${RM} -rf output-* cableos-*.gz seeds-cableos.iso OVMF_VARS.fd
 
 
 .INTERMEDIATE: OVMF_VARS.fd  \
