@@ -3,7 +3,7 @@
 include ../scripts/check.mk
 
 PACKER ?= packer
-PACKER_LOG ?= 1
+PACKER_LOG ?= 0
 export PACKER_LOG
 SERIES ?= jammy
 ARCH ?= amd64

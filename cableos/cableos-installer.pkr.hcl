@@ -133,6 +133,7 @@ source "qemu" "cableos" {
   disk_size      = "6G"
   format         = "qcow2"
   headless       = var.headless
+  vnc_bind_address = "0.0.0.0"
   http_directory = var.http_directory
   iso_checksum   = "file:https://cloud-images.ubuntu.com/${var.ubuntu_series}/current/SHA256SUMS"
   iso_url        = "https://cloud-images.ubuntu.com/${var.ubuntu_series}/current/${var.ubuntu_series}-server-cloudimg-${var.architecture}.img"
