@@ -209,7 +209,22 @@ build {
     destination = "/data/"
     source      = "${path.root}/http/${var.apollo_iso}"
   }
+  provisioner "file" {
+    destination = "/tmp/"
+    sources = [
+      "${path.root}/scripts/curtin-hooks",
+      "${path.root}/scripts/install-custom-packages",
+      "${path.root}/scripts/setup-bootloader",
+      "${path.root}/packages/custom-packages.tar.gz"
+    ]
+  }
 
+  provisioner "shell" {
+    environment_vars  = ["HOME_DIR=/home/ubuntu", "http_proxy=${var.http_proxy}", "https_proxy=${var.https_proxy}", "no_proxy=${var.no_proxy}"]
+    execute_command   = "echo 'ubuntu' | {{ .Vars }} sudo -S -E sh -eux '{{ .Path }}'"
+    expect_disconnect = true
+    scripts           = ["${path.root}/scripts/curtin.sh", "${path.root}/scripts/networking.sh", "${path.root}/scripts/cleanup.sh"]
+  }
   post-processor "manifest" {
     output     = "${path.root}/manifest.json"
     strip_path = true

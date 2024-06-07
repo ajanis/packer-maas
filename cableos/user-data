@@ -2,8 +2,8 @@
 users:
   - name: root
     lock_passwd: False
-    plain_text_passwd: "install"
-    password: install
+    plain_text_passwd: "ubuntu"
+    password: ubuntu
     ssh_redirect_user: False
     ssh_pwauth: True
     disable_root: False
