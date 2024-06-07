@@ -1,5 +1,5 @@
 #!/bin/bash -ex
-# /root/cableos.sh
+## /root/cableos-installer.sh
 
 export WS_HOST="172.22.31.150"
 export WS_PORT="8080"
@@ -17,7 +17,7 @@ unset http_proxy
 unset https_proxy
 
 showHelp() {
-cat << EOF
+cat << EOT
 Usage: $0 [-p|--proxy] [-v|--verbose] [-i|--install] [-h|--help]
 
 Image a physical server with Harmony CableOS
@@ -31,7 +31,7 @@ Image a physical server with Harmony CableOS
 
 -h|--help               Display help
 
-EOF
+EOT
 }
 
 proxySetup() {
@@ -64,31 +64,14 @@ proxyTeardown() {
 
 ostreeSetup() {
 
-  # Fetch and install ostree script dpkgs
-  for PACKAGE in ${OSTREE_PKGS}; do
-    curl "http://${WS_HOST}:${WS_PORT}/packages/${PACKAGE}" --output "/opt/${PACKAGE}" && dpkg -i "/opt/${PACKAGE}"
-  done
+  # # Fetch and install ostree script dpkgs
+  # for PACKAGE in ${OSTREE_PKGS}; do
+  #   curl "http://${WS_HOST}:${WS_PORT}/packages/${PACKAGE}" --output "/opt/${PACKAGE}" && dpkg -i "/opt/${PACKAGE}"
+  # done
 
   # Fetch VCMTS iso
   mkdir /data
   curl "http://${WS_HOST}:${WS_PORT}/apollo/latest" --output "/data/${APOLLO_ISO}"
-
-  ## Original command fetches apollo iso to root-rw and moves it to /data
-  #curl "http://172.22.31.150:8080/apollo/${APOLLO_ISO}" --output "/media/root-rw/${APOLLO_ISO}"
-  #mv "/media/root-rw/${APOLLO_ISO}" /data/
-
-  ## Original commands fetch tar.gz to root-rw, extract, install .deb packagers
-  #curl "http://172.22.31.150:8080/packages/${OSTREE_PKG}" --output "/media/root-rw/${OSTREE_PKG}"
-  #tar -zxvf "${OSTREE_PKG}"
-  #dpkg -i nsg-upgrade/ostree-upgrade-bootstrap_2.0.41_all.deb
-  #dpkg -i nsg-upgrade/ostree-upgrade_2.0.41_all.deb
-
-  ## Alternate commands fetch .deb packages to /opt and install them
-  #curl http://172.22.31.150:8080/packages/ostree-upgrade-bootstrap_2.0.41_all.deb --output /opt/ostree-upgrade-bootstrap_2.0.41_all.deb
-  #curl http://172.22.31.150:8080/packages/ostree-upgrade_2.0.41_all.deb --output /opt/ostree-upgrade_2.0.41_all.deb
-  #dpkg -i /opt/ostree-upgrade-bootstrap_2.0.41_all.deb
-  #dpkg -i /opt/ostree-upgrade_2.0.41_all.deb
-
 }
 
 ostreeInstall() {
@@ -128,8 +111,3 @@ case "$1" in
 esac
 shift
 done
-
-
-# For MAAS version <= 4.2 you can deploy ubuntu images “ephemerally” (i.e. loaded in memory) using the CLI with
-# maas $USER machine deploy $MACHINE_ID ephemeral_deploy=true
-# maas admin machine deploy bfxr33 ephemeral_deploy=true user_data='I2Nsb3VkLWNvbmZpZwp1c2VyczoKICAtIG5hbWU6IHJvb3QKICAgIGxvY2tfcGFzc3dkOiBGYWxzZQogICAgcGxhaW5fdGV4dF9wYXNzd2Q6ICJpbnN0YWxsIgogICAgcGFzc3dvcmQ6IGluc3RhbGwKICAgIHNzaF9yZWRpcmVjdF91c2VyOiBGYWxzZQogICAgc3NoX3B3YXV0aDogVHJ1ZQogICAgZGlzYWJsZV9yb290OiBGYWxzZQogICAgcHJlc2VydmVfaG9zdG5hbWU6IFRydWUKcnVuY21kOgogIC0gc2VkIC1pIC1lICcvXlsjXSpQZXJtaXRSb290TG9naW4vcy9eLiokL1Blcm1pdFJvb3RMb2dpbiB5ZXMvJyAvZXRjL3NzaC9zc2hkX2NvbmZpZwogIC0gc3lzdGVtY3RsIHJlc3RhcnQgc3NoCmJvb3RjbWQ6CiAgIy0gY3VybCBodHRwOi8vMTcyLjIyLjMxLjE1MDo4MDgwL2Fwb2xsby9BUE9MTE9fUExBVEZPUk0tcmVsZWFzZS0zLjIxLjMuMC03K2F1dG8xNS5pc28gLS1vdXRwdXQgL21lZGlhL3Jvb3QtcncvQVBPTExPX1BMQVRGT1JNLXJlbGVhc2UtMy4yMS4zLjAtNythdXRvMTUuaXNvCiAgIy0gY3VybCAgaHR0cDovLzE3Mi4yMi4zMS4xNTA6ODA4MC9wYWNrYWdlcy9vc3RyZWUtdXBncmFkZS50YXIuZ3ogLS1vdXRwdXQgL21lZGlhL3Jvb3Qtcncvb3N0cmVlLXVwZ3JhZGUudGFyLmd6CiAgLSBjdXJsIGh0dHA6Ly8xNzIuMjIuMzEuMTUwOjgwODAvc2NyaXB0cy9jYWJsZW9zLWluc3RhbGxlci5zaCAtLW91dHB1dCAvb3B0L2NhYmxlb3MtaW5zdGFsbGVyLnNoCiAgLSBjaG1vZCAreCAvb3B0L2NhYmxlb3MtaW5zdGFsbGVyLnNoCiAgLSAvb3B0L2NhYmxlb3MtaW5zdGFsbGVyLnNoIC12IC1pCg=='
