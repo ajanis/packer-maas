@@ -119,7 +119,7 @@ source "null" "dependencies" {
 
 source "qemu" "cableos-installer" {
   qemu_binary    = "qemu-system-${lookup(local.qemu_arch, var.architecture, "")}"
-  cpus            = 2
+  cpus            = 1
   memory          = 8120
   net_device        = "virtio-net"
   disk_interface    = "virtio"
