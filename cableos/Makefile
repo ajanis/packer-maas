@@ -5,11 +5,13 @@ include ../scripts/check.mk
 PACKER ?= packer
 PACKER_LOG ?= 1
 export PACKER_LOG
-BOOT ?= uefi
+SERIES ?= jammy
 ARCH ?= amd64
+URL ?= http://releases.ubuntu.com
+SUMS ?= SHA256SUMS
 TIMEOUT ?= 1h
-ISO= ?= boot-images/ubuntu-20.04.6-live-server-amd64.iso
 
+ISO=$(shell wget -O- -q ${URL}/${SERIES}/${SUMS} | grep live-server | cut -d'*' -f2)
 
 .PHONY: all clean
 
@@ -18,25 +20,26 @@ $(eval $(call check_packages_deps,cloud-image-utils ovmf libnbd0 nbdfuse nbdkit 
 
 lint:
 	packer validate .
-	packer fmt -check .
+	packer fmt -check -diff .
 
 format:
 	packer fmt .
 
-# OVMF_VARS.fd: /usr/share/OVMF/OVMF_VARS.fd
-# 	cp -v $< $@
+seeds.iso: user-data meta-data
+	cloud-localds $@ $^
+
+OVMF_VARS.fd: /usr/share/OVMF/OVMF_VARS.fd
+	cp -v $< $@
 
 cableos-installer: check-deps clean
 	${PACKER} init cableos-installer.pkr.hcl && ${PACKER} build \
 		-var architecture=${ARCH} \
-		-var boot_mode=${BOOT} \
+		-var ubuntu_series=${SERIES} \
 		-var timeout=${TIMEOUT} cableos-installer.pkr.hcl
 
-
-
 clean:
-	${RM} -rf output-cableos-builder output-cableos-installer cableos-installer-*.gz
-# OVMF_VARS.fd
-# AAVMF_VARS.fd
+	${RM} -rf output-* cableos-*.gz seeds-*.iso OVMF_VARS.fd
 
-# .INTERMEDIATE: OVMF_VARS.fd
+
+.INTERMEDIATE: OVMF_VARS.fd  \
+	seeds.iso

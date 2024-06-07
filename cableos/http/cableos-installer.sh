@@ -24,12 +24,12 @@ function proxySetup() {
 
 function proxyTeardown() {
 
-	if [[ ! -z ${http_proxy} ]]; then
+	if [[ -n ${http_proxy} ]]; then
 		  unset http_proxy
 		    echo "http_proxy unset"
 	fi
 
-	if [[ ! -z ${https_proxy} ]]; then
+	if [[ -n ${https_proxy} ]]; then
 		  unset https_proxy
 		    echo "https_proxy unset"
 	fi
@@ -39,7 +39,7 @@ function proxyTeardown() {
 function ostreeSetup() {
 
 	# Fetch and install ostree script dpkgs
-	for PACKAGE in "${OSTREE_PKGS}"; do
+	for PACKAGE in ${OSTREE_PKGS}; do
 		curl "http://${WS_HOST}:${WS_PORT}/packages/${PACKAGE}" --output "/opt/${PACKAGE}" && dpkg -i "/opt/${PACKAGE}"
 	done
 
@@ -62,12 +62,10 @@ function ostreeSetup() {
 function ostreeInstall() {
 #	mkdir /data
 #	mv /media/root-rw/* /data/
-	"ostree-production list-isos"
-	"ostree-production -D /dev/sda from "/data/${APOLLO_ISO}"
+	ostree-production list-isos
+	ostree-production -D /dev/sda from "/data/${APOLLO_ISO}"
 }
 
-proxyTeardown
-ostreeSetup
 ostreeInstall
 #shutdown -r now
 

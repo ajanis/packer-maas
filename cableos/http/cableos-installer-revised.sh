@@ -17,10 +17,10 @@ unset http_proxy
 unset https_proxy
 
 showHelp() {
-cat << EOF  
+cat << EOF
 Usage: $0 [-p|--proxy] [-v|--verbose] [-i|--install] [-h|--help]
 
-Image a physical server with Harmony CableOS 
+Image a physical server with Harmony CableOS
 
 -p|--proxy 	  	Enable the HTTP Proxy
 			Note: HTTP Proxy is disabled by default
@@ -50,12 +50,12 @@ proxySetup() {
 
 proxyTeardown() {
 
-  if [[ ! -z ${http_proxy} ]]; then
+  if [[ -n ${http_proxy} ]]; then
     unset http_proxy
     echo "http_proxy unset"
   fi
 
-  if [[ ! -z ${https_proxy} ]]; then
+  if [[ -n ${https_proxy} ]]; then
     unset https_proxy
     echo "https_proxy unset"
   fi
@@ -65,7 +65,7 @@ proxyTeardown() {
 ostreeSetup() {
 
   # Fetch and install ostree script dpkgs
-  for PACKAGE in "${OSTREE_PKGS}"; do
+  for PACKAGE in ${OSTREE_PKGS}; do
     curl "http://${WS_HOST}:${WS_PORT}/packages/${PACKAGE}" --output "/opt/${PACKAGE}" && dpkg -i "/opt/${PACKAGE}"
   done
 
@@ -83,7 +83,7 @@ ostreeSetup() {
   #dpkg -i nsg-upgrade/ostree-upgrade-bootstrap_2.0.41_all.deb
   #dpkg -i nsg-upgrade/ostree-upgrade_2.0.41_all.deb
 
-  ## Alternate commands fetch .deb packages to /opt and install them 
+  ## Alternate commands fetch .deb packages to /opt and install them
   #curl http://172.22.31.150:8080/packages/ostree-upgrade-bootstrap_2.0.41_all.deb --output /opt/ostree-upgrade-bootstrap_2.0.41_all.deb
   #curl http://172.22.31.150:8080/packages/ostree-upgrade_2.0.41_all.deb --output /opt/ostree-upgrade_2.0.41_all.deb
   #dpkg -i /opt/ostree-upgrade-bootstrap_2.0.41_all.deb
@@ -97,22 +97,22 @@ ostreeInstall() {
 }
 
 options=$(getopt -l "help,proxy,verbose,install" -o "hpvi")
-eval set -- "$options"
+eval set -- "${options}"
 while true
 do
 case "$1" in
--h|--help) 
+-h|--help)
     showHelp
     exit 0
     ;;
--p|--proxy) 
+-p|--proxy)
     export proxy=1
     ;;
 -v|--verbose)
     set -xv  # Set xtrace and verbose mode.
     ;;
 -i|--install)
-    if [ ${proxy} == 1 ]; then
+    if [[ ${proxy} == 1 ]]; then
       proxySetup
       else
       proxyTeardown
