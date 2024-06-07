@@ -4,7 +4,9 @@ ConditionFirstBoot=yes
 
 [Service]
 Type=oneshot
-ExecStart=/opt/cableos-installer.sh
+ExecStart=/usr/local/bin/cableos-installer.sh -v -i
+RemainAfterExit=true
+StandardOutput=journal
 
 [Install]
 WantedBy=multi-user.target

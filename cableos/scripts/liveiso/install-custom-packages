@@ -1,0 +1,30 @@
+#!/bin/bash -ex
+#
+# install-custom-packages - Install custom packages
+#
+export DEBIAN_FRONTEND=noninteractive
+
+PKG_TGZ="/curtin/custom-packages.tar.gz"
+
+if [[ ! -f "${PKG_TGZ}" ]]; then
+    exit 0
+fi
+
+WORKDIR=$(mktemp -d)
+
+cleanup() {
+    rm -rf "${WORKDIR}"
+}
+trap cleanup EXIT
+
+echo "remove existing kernels"
+dpkg -l 'linux-image-*' 'linux-headers-*' | awk '/^ii/{print $2}' | xargs apt-get -y purge
+
+echo "install new kernel"
+tar xzvf "${PKG_TGZ}" -C "${WORKDIR}"
+DEBS=$(find "${WORKDIR}" -name '*.deb')
+apt-get install -y --no-install-recommends "${DEBS}"
+apt-get install --fix-broken
+
+echo "purge unused packages"
+apt-get autoremove -y

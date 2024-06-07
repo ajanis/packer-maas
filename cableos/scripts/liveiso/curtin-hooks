@@ -2,22 +2,6 @@
 #
 # curtin-hooks - Curtin installation hooks for Ubuntu
 #
-# Author: Alexsander de Souza <alexsander.souza@canonical.com>
-#
-# Copyright (C) 2021 Canonical
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Affero General Public License as
-# published by the Free Software Foundation, either version 3 of the
-# License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Affero General Public License for more details.
-#
-# You should have received a copy of the GNU Affero General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
 import shutil
@@ -52,14 +36,14 @@ def curthook(cfg, target, state):
     osfamily = distro_info.family
     LOG.info('Configuring target system for distro: %s osfamily: %s',
              distro_info.variant, osfamily)
-    
+
     sources = cfg.get('sources', {})
     dd_image = len(util.get_dd_images(sources)) > 0
 
     curthooks.disable_overlayroot(cfg, target)
     curthooks.disable_update_initramfs(cfg, target, machine)
     curthooks.install_missing_packages(cfg, target, osfamily=osfamily)
-    
+
     if not dd_image:
         curthooks.configure_iscsi(cfg, state_etcd, target, osfamily=osfamily)
         curthooks.configure_mdadm(cfg, state_etcd, target, osfamily=osfamily)
@@ -79,7 +63,7 @@ def curthook(cfg, target, state):
         udev_rules_d = os.path.join(state['scratch'], "rules.d")
         if os.path.isdir(udev_rules_d):
             curthooks.copy_dname_rules(udev_rules_d, target)
-    
+
     apt_config.apply_debconf_selections(cfg, target)
 
     curthooks.apply_networking(target, state)
@@ -88,7 +72,7 @@ def curthook(cfg, target, state):
     # re-enable update_initramfs
     curthooks.enable_update_initramfs(cfg, target, machine)
     curthooks.update_initramfs(target, all_kernels=True)
-    
+
     run_hook_in_target(target, 'setup-bootloader')
 
 

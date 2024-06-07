@@ -1,31 +1,3 @@
-#!/bin/bash
-# customize.sh
-# create service and script for vcmts installation on boot
-
-## Install cableos-wrapper packages
-dpkg -i /opt/ostree-upgrade-bootstrap_2.0.41_all.deb
-dpkg -i /opt/ostree-upgrade_2.0.41_all.deb
-
-## Create systemd service to run on boot
-touch /etc/systemd/system/cableos-install.service
-cat > /etc/systemd/system/cableos-install.service <<EOF
-[Unit]
-Description=CableOS Installation Single-Use Startup Script
-ConditionFirstBoot=yes
-
-[Service]
-Type=oneshot
-ExecStart=/opt/cableos-installer.sh -v -i
-RemainAfterExit=true
-StandardOutput=journal
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-## Create script called by systemd service
-touch /opt/cableos-installer.sh
-cat > /opt/cableos-installer.sh <<EOF
 #!/bin/bash -ex
 ## /root/cableos-installer.sh
 
@@ -92,10 +64,11 @@ proxyTeardown() {
 
 ostreeSetup() {
 
+  command -v ostree-production ||
   # # Fetch and install ostree script dpkgs
-  # for PACKAGE in ${OSTREE_PKGS}; do
-  #   curl "http://${WS_HOST}:${WS_PORT}/packages/${PACKAGE}" --output "/opt/${PACKAGE}" && dpkg -i "/opt/${PACKAGE}"
-  # done
+  for PACKAGE in ${OSTREE_PKGS}; do
+    curl "http://${WS_HOST}:${WS_PORT}/packages/${PACKAGE}" --output "/opt/${PACKAGE}" && dpkg -i "/opt/${PACKAGE}"
+  done
 
   # Fetch VCMTS iso
   mkdir /data
@@ -139,7 +112,3 @@ case "$1" in
 esac
 shift
 done
-EOF
-
-## Fix script ownership
-chmod +x /opt/cableos-installer.sh

@@ -12,8 +12,8 @@ runcmd:
   - sed -i -e '/^[#]*PermitRootLogin/s/^.*$/PermitRootLogin yes/' /etc/ssh/sshd_config
   - systemctl restart ssh
 bootcmd:
-  #- curl http://172.22.31.150:8080/apollo/APOLLO_PLATFORM-release-3.21.3.0-7+auto15.iso --output /media/root-rw/APOLLO_PLATFORM-release-3.21.3.0-7+auto15.iso
-  #- curl  http://172.22.31.150:8080/packages/ostree-upgrade.tar.gz --output /media/root-rw/ostree-upgrade.tar.gz
+  - curl http://172.22.31.150:8080/apollo/APOLLO_PLATFORM-release-3.21.3.0-7+auto15.iso --output /media/root-rw/APOLLO_PLATFORM-release-3.21.3.0-7+auto15.iso
+  - curl  http://172.22.31.150:8080/packages/ostree-upgrade.tar.gz --output /media/root-rw/ostree-upgrade.tar.gz
   - curl http://172.22.31.150:8080/scripts/cableos-installer.sh --output /opt/cableos-installer.sh
   - chmod +x /opt/cableos-installer.sh
   - /opt/cableos-installer.sh -v -i

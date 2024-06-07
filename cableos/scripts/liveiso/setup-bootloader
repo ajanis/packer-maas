@@ -1,0 +1,22 @@
+#!/bin/bash -ex
+#
+# setup-bootloader - Install bootloader in the boot disk
+#
+
+export DEBIAN_FRONTEND=noninteractive
+
+# Clean up remnants from packer-maas vm install
+rm /var/cache/debconf/config.dat
+dpkg --configure -a
+
+# Ensure the existence of linux-image-generic for non-cloudimg images.
+apt-get -y install linux-image-generic
+
+grub-install \
+    --target=x86_64-efi \
+    --efi-directory=/boot/efi \
+    --bootloader-id=ubuntu \
+    --recheck
+
+update-initramfs -uk all
+update-grub

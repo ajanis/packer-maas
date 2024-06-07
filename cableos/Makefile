@@ -3,7 +3,7 @@
 include ../scripts/check.mk
 
 PACKER ?= packer
-PACKER_LOG ?= 0
+PACKER_LOG ?= 1
 export PACKER_LOG
 SERIES ?= jammy
 ARCH ?= amd64
@@ -25,21 +25,11 @@ lint:
 format:
 	packer fmt .
 
-seeds-cableos.iso: user-data meta-data
-	cloud-localds $@ $^
-
-OVMF_VARS.fd: /usr/share/OVMF/OVMF_VARS.fd
-	cp -v $< $@
-
-cableos-installer: check-deps clean seeds-cableos.iso OVMF_VARS.fd
-	${PACKER} init cableos-installer.pkr.hcl && ${PACKER} build \
+cableos-installer: check-deps clean
+	${PACKER} init . && ${PACKER} build \
 		-var architecture=${ARCH} \
 		-var ubuntu_series=${SERIES} \
 		-var timeout=${TIMEOUT} cableos-installer.pkr.hcl
 
 clean:
 	${RM} -rf output-* cableos-*.gz seeds-cableos.iso OVMF_VARS.fd
-
-
-.INTERMEDIATE: OVMF_VARS.fd  \
-	seeds.iso
