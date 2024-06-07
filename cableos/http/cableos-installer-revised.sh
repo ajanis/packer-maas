@@ -79,7 +79,7 @@ ostreeInstall() {
   ostree-production -D /dev/sda from "/data/${APOLLO_ISO}"
 }
 
-options=$(getopt -l "help,proxy,verbose,install" -o "hpvi")
+options=$(getopt -l "help,proxy,verbose,install" -o "hpvi" -- "$@")
 eval set -- "${options}"
 while true
 do
