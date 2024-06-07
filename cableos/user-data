@@ -3,7 +3,7 @@ users:
   - name: root
     lock_passwd: False
     chpasswd: { expire: False }
-    password: ubuntu
+    plain_text_passwd: ubuntu
     ssh_redirect_user: False
 ssh_pwauth: True
 disable_root: False
