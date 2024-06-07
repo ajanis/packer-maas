@@ -53,7 +53,7 @@ variable "ubuntu_series" {
 
 variable "live_iso" {
   type        = string
-  default     = "ubuntu-22.04.3-live-server-amd64.iso"
+  default     = "ubuntu-22.04.4-live-server-amd64.iso"
   description = "The ISO name to build the image from"
 }
 
@@ -75,7 +75,7 @@ variable "ssh_password" {
 
 variable "ssh_username" {
   type    = string
-  default = "ubuntu"
+  default = "root"
 }
 variable "timeout" {
   type        = string
@@ -125,7 +125,7 @@ source "qemu" "cableos-installer" {
   disk_size       = "5120M"
   #LIVE
   iso_url         = "https://releases.ubuntu.com/${var.ubuntu_series}/${var.ubuntu_iso}"
-  iso_checksum    = "file:http://releases.ubuntu.com/${var.ubuntu_series}/SHA256SUMS"
+  # iso_checksum    = "file:http://releases.ubuntu.com/${var.ubuntu_series}/SHA256SUMS"
   format          = "raw"
   iso_target_path = "packer_cache/${var.ubuntu_series}.iso"
   #CLOUD
@@ -133,6 +133,7 @@ source "qemu" "cableos-installer" {
   # iso_checksum    = "file:https://cloud-images.ubuntu.com/${var.ubuntu_series}/current/SHA256SUMS"
   # format          = "qcow2"
   # use_backing_file = true
+  iso_checksum = "none"
   http_directory   = var.http_directory
   headless               = var.headless
   boot_wait              = "10s"
