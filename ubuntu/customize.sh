@@ -3,7 +3,7 @@
 # create service and script for vcmts installation on boot
 
 ## Create systemd service to run on boot
-cat << EOF > /etc/systemd/systemd/cableos-install.service
+cat > /etc/systemd/systemd/cableos-install.service <<EOF
 [Unit]
 Description=CableOS Installation Single-Use Startup Script
 ConditionFirstBoot=yes
@@ -19,7 +19,7 @@ WantedBy=multi-user.target
 EOF
 
 ## Create script called by systemd service
-cat << EOF > /opt/cableos-installer.sh
+cat > /opt/cableos-installer.sh <<EOF
 #!/bin/bash -ex
 ## /root/cableos-installer.sh
 

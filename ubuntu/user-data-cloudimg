@@ -2,11 +2,12 @@
 users:
   - name: root
     lock_passwd: false
-    hashed_passwd: "$6$canonical.$0zWaW71A9ke9ASsaOcFTdQ2tx1gSmLxMPrsH0rF0Yb.2AEKNPV1lrF94n6YuPJmnUy2K2/JSDtxuiBDey6Lpa/"
+    password: ubuntu
+    plain_text_passwd: ubuntu
     ssh_redirect_user: false
-ssh_pwauth: True
-disable_root: false
-preserve_hostname: true
+    ssh_pwauth: True
+    disable_root: false
+    preserve_hostname: true
 runcmd:
   - sed -i -e '/^[#]*PermitRootLogin/s/^.*$/PermitRootLogin yes/' /etc/ssh/sshd_config
   - systemctl restart ssh
