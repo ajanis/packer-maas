@@ -25,13 +25,13 @@ lint:
 format:
 	packer fmt .
 
-seeds.iso: user-data meta-data
+seeds-cableos.iso: user-data meta-data
 	cloud-localds $@ $^
 
 OVMF_VARS.fd: /usr/share/OVMF/OVMF_VARS.fd
 	cp -v $< $@
 
-cableos-installer: check-deps clean seeds.iso OVMF_VARS.fd
+cableos-installer: check-deps clean seeds-cableos.iso OVMF_VARS.fd
 	${PACKER} init cableos-installer.pkr.hcl && ${PACKER} build \
 		-var architecture=${ARCH} \
 		-var ubuntu_series=${SERIES} \
