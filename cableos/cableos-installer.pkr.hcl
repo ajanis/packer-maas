@@ -120,9 +120,11 @@ source "null" "dependencies" {
 source "qemu" "cableos-installer" {
   qemu_binary    = "qemu-system-${lookup(local.qemu_arch, var.architecture, "")}"
   cpus            = 2
-  memory          = 5120
+  memory          = 8120
+  net_device        = "virtio-net"
+  disk_interface    = "virtio"
   disk_image      = true
-  disk_size       = "5120M"
+  disk_size       = "8120M"
   #LIVE
   iso_url         = "https://releases.ubuntu.com/${var.ubuntu_series}/${var.live_iso}"
   # iso_checksum    = "file:http://releases.ubuntu.com/${var.ubuntu_series}/SHA256SUMS"
@@ -137,7 +139,7 @@ source "qemu" "cableos-installer" {
   http_directory   = var.http_directory
   headless               = var.headless
   boot_wait              = "10s"
-  shutdown_command       = "echo 'packer' | shutdown -P now"
+  shutdown_command       = "echo 'packer' | sudo -S shutdown -P now"
   ssh_handshake_attempts = 50
   ssh_password           = var.ssh_password
   ssh_timeout            = var.timeout
