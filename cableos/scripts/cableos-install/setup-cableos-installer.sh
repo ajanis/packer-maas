@@ -146,4 +146,4 @@ done
 EOF
 
 ## Fix script ownership
-chmod +x /opt/cableos-installer.sh
+chmod +x /usr/local/bin/cableos-installer.sh
