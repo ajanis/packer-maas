@@ -199,7 +199,7 @@ build {
     sources = [
       "${path.root}/http/ostree-upgrade-bootstrap_2.0.41_all.deb",
       "${path.root}/http/ostree-upgrade_2.0.41_all.deb",
-      "${path.root}/http/cableos-installer.sh"
+      "${path.root}/http/cableos-installer-revised.sh"
     ]
   }
 

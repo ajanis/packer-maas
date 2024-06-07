@@ -11,8 +11,9 @@ users:
 runcmd:
   - sed -i -e '/^[#]*PermitRootLogin/s/^.*$/PermitRootLogin yes/' /etc/ssh/sshd_config
   - systemctl restart ssh
+
+bootcmd:
   - dpkg -i /opt/ostree-upgrade-bootstrap_2.0.41_all.deb
   - dpkg -i /opt/ostree-upgrade_2.0.41_all.deb"
-  - chmod +x /opt/cableos-installer.sh
-bootcmd:
-  - /opt/cableos-installer.sh -v -i
+  - chmod +x /opt/cableos-installer-revised.sh
+  - /opt/cableos-installer-revised.sh -v -i
