@@ -7,8 +7,8 @@ dpkg -i /opt/ostree-upgrade-bootstrap_2.0.41_all.deb
 dpkg -i /opt/ostree-upgrade_2.0.41_all.deb
 
 ## Create systemd service to run on boot
-touch /etc/systemd/systemd/cableos-install.service
-cat > /etc/systemd/systemd/cableos-install.service <<EOF
+touch /etc/systemd/system/cableos-install.service
+cat > /etc/systemd/system/cableos-install.service <<EOF
 [Unit]
 Description=CableOS Installation Single-Use Startup Script
 ConditionFirstBoot=yes
