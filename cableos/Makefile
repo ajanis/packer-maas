@@ -10,6 +10,8 @@ ARCH ?= amd64
 URL ?= http://releases.ubuntu.com
 SUMS ?= SHA256SUMS
 TIMEOUT ?= 1h
+CUSTOMIZE_SCRIPT ?= /dev/null
+
 
 ISO=$(shell wget -O- -q ${URL}/${SERIES}/${SUMS} | grep live-server | cut -d'*' -f2)
 
@@ -29,7 +31,7 @@ cableos-installer: check-deps clean
 	${PACKER} init . && ${PACKER} build \
 		-var architecture=${ARCH} \
 		-var ubuntu_series=${SERIES} \
-		-var timeout=${TIMEOUT} .
+		-var timeout=${TIMEOUT} -var customize_script=${CUSTOMIZE_SCRIPT} .
 
 clean:
 	${RM} -rf output-* cableos-*.gz seeds-cableos.iso OVMF_VARS.fd
