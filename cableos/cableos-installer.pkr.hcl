@@ -121,8 +121,8 @@ source "qemu" "cableos-installer" {
   qemu_binary    = "qemu-system-${lookup(local.qemu_arch, var.architecture, "")}"
   cpus            = 1
   memory          = 8120
-  net_device        = "virtio-net"
-  disk_interface    = "virtio"
+  # net_device        = "virtio-net"
+  # disk_interface    = "virtio"
   disk_image      = true
   disk_size       = "8120M"
   #LIVE
@@ -139,7 +139,7 @@ source "qemu" "cableos-installer" {
   boot_wait              = "10s"
   shutdown_command       = "echo 'packer' | sudo -S shutdown -P now"
   ssh_handshake_attempts = 50
-  ssh_password           = var.ssh_password
+  # ssh_password           = var.ssh_password
   ssh_timeout            = var.timeout
   ssh_username           = var.ssh_username
   ssh_wait_timeout       = var.timeout
