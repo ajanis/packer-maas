@@ -1,6 +1,6 @@
 variable "ubuntu_series" {
   type        = string
-  default     = "focal"
+  default     = "jammy"
   description = "The codename of the Ubuntu series to build."
 }
 
@@ -21,7 +21,7 @@ variable "kernel" {
 
 variable "customize_script" {
   type        = string
-  default     = "/dev/null"
+  default     = "customize.sh"
   description = "The filename of the script that will run in the VM to customize the image."
 }
 
