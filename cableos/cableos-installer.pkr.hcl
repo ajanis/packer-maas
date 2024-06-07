@@ -118,34 +118,26 @@ source "null" "dependencies" {
 }
 
 source "qemu" "cableos-installer" {
-  qemu_binary    = "qemu-system-${lookup(local.qemu_arch, var.architecture, "")}"
-  cpus            = 1
-  memory          = 8120
-  # net_device        = "virtio-net"
-  # disk_interface    = "virtio"
-  disk_image      = true
-  disk_size       = "8120M"
-  #LIVE
-  # iso_url         = "https://releases.ubuntu.com/${var.ubuntu_series}/${var.live_iso}"
-  # format          = "raw"
-  # iso_target_path = "packer_cache/${var.ubuntu_series}.iso"
-  #CLOUD
-  iso_url         = "https://cloud-images.ubuntu.com/${var.ubuntu_series}/current/${var.ubuntu_series}-server-cloudimg-${var.architecture}.img"
-  format          = "qcow2"
-  use_backing_file = true
-  iso_checksum = "none"
-  http_directory   = var.http_directory
-  headless               = var.headless
-  boot_wait              = "10s"
-  shutdown_command       = "echo 'packer' | sudo -S shutdown -P now"
-  ssh_handshake_attempts = 50
-  # ssh_password           = var.ssh_password
+  boot_wait      = "2s"
+  cpus           = 2
+  disk_image     = true
+  disk_size      = "6G"
+  format         = "qcow2"
+  headless       = var.headless
+  http_directory = var.http_directory
+  iso_checksum   = "file:https://cloud-images.ubuntu.com/${var.ubuntu_series}/current/SHA256SUMS"
+  iso_url        = "https://cloud-images.ubuntu.com/${var.ubuntu_series}/current/${var.ubuntu_series}-server-cloudimg-${var.architecture}.img"
+  memory         = 2048
+  shutdown_command       = "sudo -S shutdown -P now"
+  ssh_handshake_attempts = 500
   ssh_timeout            = var.timeout
-  ssh_username           = var.ssh_username
+  ssh_username           = "root"
   ssh_wait_timeout       = var.timeout
+  use_backing_file       = true
+  qemu_binary    = "qemu-system-${lookup(local.qemu_arch, var.architecture, "")}"
   qemu_img_args {
-      create = ["-F", "qcow2"]
-    }
+    create = ["-F", "qcow2"]
+  }
   qemuargs = [
     ["-machine", "${lookup(local.qemu_machine, var.architecture, "")}"],
     ["-cpu", "${lookup(local.qemu_cpu, var.architecture, "")}"],
