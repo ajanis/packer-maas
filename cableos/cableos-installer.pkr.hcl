@@ -8,15 +8,6 @@ packer {
   }
 }
 
-
-
-
-variable "customize_script" {
-  type        = string
-  default     = "/dev/null"
-  description = "The filename of the script that will run in the VM to customize the image."
-}
-
 variable "headless" {
   type        = bool
   default     = true
@@ -32,40 +23,15 @@ variable "http_proxy" {
   type    = string
   default = "${env("http_proxy")}"
 }
+
 variable "https_proxy" {
   type    = string
   default = "${env("https_proxy")}"
 }
+
 variable "no_proxy" {
   type    = string
   default = "${env("no_proxy")}"
-}
-
-variable "apollo_iso" {
-  type    = string
-  default = "APOLLO_PLATFORM-release-3.21.3.0-7+auto15.iso"
-}
-variable "ubuntu_series" {
-  type        = string
-  default     = "jammy"
-  description = "The codename of the Ubuntu series to build."
-}
-
-variable "live_iso" {
-  type        = string
-  default     = "ubuntu-22.04.4-live-server-amd64.iso"
-  description = "The ISO name to build the image from"
-}
-
-variable "cloud_img" {
-  type    = string
-  default = "ubuntu-18.04-server-cloudimg-amd64.img"
-}
-
-variable "filename" {
-  type        = string
-  default     = "cableos-installer"
-  description = "The filename of the tarball to produce"
 }
 
 variable "ssh_password" {
@@ -77,14 +43,57 @@ variable "ssh_username" {
   type    = string
   default = "root"
 }
+
+variable "ssh_ubuntu_password" {
+  type    = string
+  default = "ubuntu"
+}
+
 variable "timeout" {
   type        = string
   default     = "1h"
   description = "Timeout for building the image"
 }
+
+
+variable "filename" {
+  type        = string
+  default     = "cableos-installer.tar.gz"
+  description = "The filename of the tarball to produce"
+}
+
+variable "ubuntu_series" {
+  type        = string
+  default     = "jammy"
+  description = "The codename of the Ubuntu series to build."
+}
+
+variable "customize_script" {
+  type        = string
+  default     = "customize.sh"
+  description = "The filename of the script that will run in the VM to customize the image."
+}
+
 variable "architecture" {
+  type        = string
+  default     = "amd64"
+  description = "The architecture to build the image for (amd64 or arm64)"
+}
+
+variable "apollo_iso" {
   type    = string
-  default = "amd64"
+  default = "APOLLO_PLATFORM-release-3.21.3.0-7+auto15.iso"
+}
+
+variable "live_iso" {
+  type        = string
+  default     = "ubuntu-22.04.4-live-server-amd64.iso"
+  description = "The ISO name to build the image from"
+}
+
+variable "cloud_img" {
+  type    = string
+  default = "ubuntu-22.04-server-cloudimg-amd64.img"
 }
 
 
@@ -117,7 +126,7 @@ source "null" "dependencies" {
   communicator = "none"
 }
 
-source "qemu" "cableos-installer" {
+source "qemu" "cableos" {
   boot_wait      = "2s"
   cpus           = 2
   disk_image     = true
@@ -128,12 +137,6 @@ source "qemu" "cableos-installer" {
   iso_checksum   = "file:https://cloud-images.ubuntu.com/${var.ubuntu_series}/current/SHA256SUMS"
   iso_url        = "https://cloud-images.ubuntu.com/${var.ubuntu_series}/current/${var.ubuntu_series}-server-cloudimg-${var.architecture}.img"
   memory         = 2048
-  shutdown_command       = "sudo -S shutdown -P now"
-  ssh_handshake_attempts = 500
-  ssh_timeout            = var.timeout
-  ssh_username           = "root"
-  ssh_wait_timeout       = var.timeout
-  use_backing_file       = true
   qemu_binary    = "qemu-system-${lookup(local.qemu_arch, var.architecture, "")}"
   qemu_img_args {
     create = ["-F", "qcow2"]
@@ -144,71 +147,81 @@ source "qemu" "cableos-installer" {
     ["-device", "virtio-gpu-pci"],
     ["-drive", "if=pflash,format=raw,id=ovmf_code,readonly=on,file=/usr/share/${lookup(local.uefi_imp, var.architecture, "")}/${lookup(local.uefi_imp, var.architecture, "")}_CODE.fd"],
     ["-drive", "if=pflash,format=raw,id=ovmf_vars,file=${lookup(local.uefi_imp, var.architecture, "")}_VARS.fd"],
-    ["-drive", "file=output-cableos-installer/packer-cableos-installer,format=qcow2"],
-    ["-drive", "file=seeds.iso,format=raw"]
+    ["-drive", "file=output-cableos/packer-cableos,format=qcow2"],
+    ["-drive", "file=seeds-cableos.iso,format=raw"]
   ]
-  # qemuargs = [
-  #   ["-vga", "qxl"],
-  #   ["-device", "virtio-blk-pci,drive=drive0,bootindex=0"],
-  #   ["-device", "virtio-blk-pci,drive=cdrom0,bootindex=1"],
-  #   ["-device", "virtio-blk-pci,drive=drive1,bootindex=2"],
-  #   ["-drive", "if=pflash,format=raw,readonly=on,file=/usr/share/OVMF/OVMF_CODE.fd"],
-  #   ["-drive", "if=pflash,format=raw,file=OVMF_VARS.fd"],
-  #   ["-drive", "file=output-cableos-installer/packer-cableos-installer,if=none,id=drive0,cache=writeback,discard=ignore,format=raw"],
-  #   ["-drive", "file=seeds.iso,format=raw,cache=none,if=none,id=drive1,readonly=on"],
-  #   ["-drive", "file=packer_cache/${var.ubuntu_series}.iso,if=none,id=cdrom0,media=cdrom"]
-  # ]
-  # qemuargs = [
-  #   ["-drive", "file=output-cableos-installer/packer-cableos-installer,format=qcow2"],
-  #   ["-drive", "file=user-data.img,format=raw"]
-  # ]
+  shutdown_command       = "sudo -S shutdown -P now"
+  ssh_handshake_attempts = 500
+  ssh_password           = var.ssh_password
+  ssh_timeout            = var.timeout
+  ssh_username           = var.ssh_username
+  ssh_wait_timeout       = var.timeout
+  use_backing_file       = true
 }
+
 
 // Define Builds
 build {
-  name    = "cableos-installer.deps"
+  name    = "cableos.deps"
   sources = ["source.null.dependencies"]
 
   provisioner "shell-local" {
     inline = [
       "cp /usr/share/${lookup(local.uefi_imp, var.architecture, "")}/${lookup(local.uefi_imp, var.architecture, "")}_VARS.fd ${lookup(local.uefi_imp, var.architecture, "")}_VARS.fd",
-      "cloud-localds seeds.iso user-data meta-data"
+      "cloud-localds seeds-cableos.iso user-data meta-data"
     ]
     inline_shebang = "/bin/bash -e"
   }
 }
 
 build {
-  name = "cableos-installer"
-  sources = [
-    "source.qemu.cableos-installer"
-  ]
+  name    = "cableos.image"
+  sources = ["source.qemu.cableos"]
 
-  // Provisioners for installation and file extraction
-
+  # provisioner "shell" {
+  #   environment_vars = concat(local.proxy_env, ["DEBIAN_FRONTEND=noninteractive"])
+  #   scripts          = ["${path.root}/scripts/cloudimg/setup-boot.sh"]
+  # }
   provisioner "file" {
     destination = "/opt/"
     sources = [
       "${path.root}/http/ostree-upgrade-bootstrap_2.0.41_all.deb",
-      "${path.root}/http/ostree-upgrade_2.0.41_all.deb",
-      "${path.root}/http/cableos-installer-revised.sh"
+      "${path.root}/http/ostree-upgrade_2.0.41_all.deb"
     ]
   }
-
-  provisioner "file" {
-    destination = "/data/"
-    source      = "${path.root}/http/${var.apollo_iso}"
+  provisioner "shell" {
+    environment_vars  = concat(local.proxy_env, ["DEBIAN_FRONTEND=noninteractive"])
+    expect_disconnect = true
+    scripts           = [var.customize_script]
   }
 
-  post-processor "manifest" {
-    output     = "${path.root}/manifest.json"
-    strip_path = true
-  }
+  # provisioner "shell" {
+  #   environment_vars = [
+  #     "CLOUDIMG_CUSTOM_KERNEL=${var.kernel}",
+  #     "DEBIAN_FRONTEND=noninteractive"
+  #   ]
+  #   scripts = ["${path.root}/scripts/cloudimg/install-custom-kernel.sh"]
+  # }
+
+  # provisioner "file" {
+  #   destination = "/tmp/"
+  #   sources     = ["${path.root}/scripts/cloudimg/curtin-hooks"]
+  # }
+
+  # provisioner "shell" {
+  #   environment_vars = ["CLOUDIMG_CUSTOM_KERNEL=${var.kernel}"]
+  #   scripts          = ["${path.root}/scripts/cloudimg/setup-curtin.sh"]
+  # }
+
+  # provisioner "shell" {
+  #   environment_vars = ["DEBIAN_FRONTEND=noninteractive"]
+  #   scripts          = ["${path.root}/scripts/cloudimg/cleanup.sh"]
+  # }
 
   post-processor "shell-local" {
     inline = [
       "IMG_FMT=qcow2",
-      "SOURCE=cableos-installer",
+      "SOURCE=cableos",
       "ROOT_PARTITION=1",
       "DETECT_BLS_BOOT=1",
       "OUTPUT=${var.filename}",
@@ -217,16 +230,4 @@ build {
     ]
     inline_shebang = "/bin/bash -e"
   }
-  # post-processor "shell-local" {
-  #   inline = [
-  #     "SOURCE=cableos-installer",
-  #     "IMG_FMT=raw",
-  #     "ROOT_PARTITION=2",
-  #     "OUTPUT=${var.filename}",
-  #     "source ../scripts/fuse-nbd",
-  #     "source ../scripts/fuse-tar-root"
-  #   ]
-  #   inline_shebang = "/bin/bash -e"
-  # }
-
 }
