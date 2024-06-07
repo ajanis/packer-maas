@@ -126,15 +126,13 @@ source "qemu" "cableos-installer" {
   disk_image      = true
   disk_size       = "8120M"
   #LIVE
-  iso_url         = "https://releases.ubuntu.com/${var.ubuntu_series}/${var.live_iso}"
-  # iso_checksum    = "file:http://releases.ubuntu.com/${var.ubuntu_series}/SHA256SUMS"
-  format          = "raw"
-  iso_target_path = "packer_cache/${var.ubuntu_series}.iso"
+  # iso_url         = "https://releases.ubuntu.com/${var.ubuntu_series}/${var.live_iso}"
+  # format          = "raw"
+  # iso_target_path = "packer_cache/${var.ubuntu_series}.iso"
   #CLOUD
-  # iso_url         = "https://cloud-images.ubuntu.com/${var.ubuntu_series}/current/${var.ubuntu_series}-server-cloudimg-${var.architecture}.img"
-  # iso_checksum    = "file:https://cloud-images.ubuntu.com/${var.ubuntu_series}/current/SHA256SUMS"
-  # format          = "qcow2"
-  # use_backing_file = true
+  iso_url         = "https://cloud-images.ubuntu.com/${var.ubuntu_series}/current/${var.ubuntu_series}-server-cloudimg-${var.architecture}.img"
+  format          = "qcow2"
+  use_backing_file = true
   iso_checksum = "none"
   http_directory   = var.http_directory
   headless               = var.headless
@@ -145,29 +143,29 @@ source "qemu" "cableos-installer" {
   ssh_timeout            = var.timeout
   ssh_username           = var.ssh_username
   ssh_wait_timeout       = var.timeout
-  # qemu_img_args {
-  #     create = ["-F", "qcow2"]
-  #   }
-  # qemuargs = [
-  #   ["-machine", "${lookup(local.qemu_machine, var.architecture, "")}"],
-  #   ["-cpu", "${lookup(local.qemu_cpu, var.architecture, "")}"],
-  #   ["-device", "virtio-gpu-pci"],
-  #   ["-drive", "if=pflash,format=raw,id=ovmf_code,readonly=on,file=/usr/share/${lookup(local.uefi_imp, var.architecture, "")}/${lookup(local.uefi_imp, var.architecture, "")}_CODE.fd"],
-  #   ["-drive", "if=pflash,format=raw,id=ovmf_vars,file=${lookup(local.uefi_imp, var.architecture, "")}_VARS.fd"],
-  #   ["-drive", "file=output-cableos-installer/packer-cableos-installer,format=qcow2"],
-  #   ["-drive", "file=seeds.iso,format=raw"]
-  # ]
+  qemu_img_args {
+      create = ["-F", "qcow2"]
+    }
   qemuargs = [
-    ["-vga", "qxl"],
-    ["-device", "virtio-blk-pci,drive=drive0,bootindex=0"],
-    ["-device", "virtio-blk-pci,drive=cdrom0,bootindex=1"],
-    ["-device", "virtio-blk-pci,drive=drive1,bootindex=2"],
-    ["-drive", "if=pflash,format=raw,readonly=on,file=/usr/share/OVMF/OVMF_CODE.fd"],
-    ["-drive", "if=pflash,format=raw,file=OVMF_VARS.fd"],
-    ["-drive", "file=output-cableos-installer/packer-cableos-installer,if=none,id=drive0,cache=writeback,discard=ignore,format=raw"],
-    ["-drive", "file=seeds.iso,format=raw,cache=none,if=none,id=drive1,readonly=on"],
-    ["-drive", "file=packer_cache/${var.ubuntu_series}.iso,if=none,id=cdrom0,media=cdrom"]
+    ["-machine", "${lookup(local.qemu_machine, var.architecture, "")}"],
+    ["-cpu", "${lookup(local.qemu_cpu, var.architecture, "")}"],
+    ["-device", "virtio-gpu-pci"],
+    ["-drive", "if=pflash,format=raw,id=ovmf_code,readonly=on,file=/usr/share/${lookup(local.uefi_imp, var.architecture, "")}/${lookup(local.uefi_imp, var.architecture, "")}_CODE.fd"],
+    ["-drive", "if=pflash,format=raw,id=ovmf_vars,file=${lookup(local.uefi_imp, var.architecture, "")}_VARS.fd"],
+    ["-drive", "file=output-cableos-installer/packer-cableos-installer,format=qcow2"],
+    ["-drive", "file=seeds.iso,format=raw"]
   ]
+  # qemuargs = [
+  #   ["-vga", "qxl"],
+  #   ["-device", "virtio-blk-pci,drive=drive0,bootindex=0"],
+  #   ["-device", "virtio-blk-pci,drive=cdrom0,bootindex=1"],
+  #   ["-device", "virtio-blk-pci,drive=drive1,bootindex=2"],
+  #   ["-drive", "if=pflash,format=raw,readonly=on,file=/usr/share/OVMF/OVMF_CODE.fd"],
+  #   ["-drive", "if=pflash,format=raw,file=OVMF_VARS.fd"],
+  #   ["-drive", "file=output-cableos-installer/packer-cableos-installer,if=none,id=drive0,cache=writeback,discard=ignore,format=raw"],
+  #   ["-drive", "file=seeds.iso,format=raw,cache=none,if=none,id=drive1,readonly=on"],
+  #   ["-drive", "file=packer_cache/${var.ubuntu_series}.iso,if=none,id=cdrom0,media=cdrom"]
+  # ]
   # qemuargs = [
   #   ["-drive", "file=output-cableos-installer/packer-cableos-installer,format=qcow2"],
   #   ["-drive", "file=user-data.img,format=raw"]
@@ -175,18 +173,18 @@ source "qemu" "cableos-installer" {
 }
 
 // Define Builds
-# build {
-#   name    = "cableos-installer.deps"
-#   sources = ["source.null.dependencies"]
+build {
+  name    = "cableos-installer.deps"
+  sources = ["source.null.dependencies"]
 
-#   provisioner "shell-local" {
-#     inline = [
-#       "cp /usr/share/${lookup(local.uefi_imp, var.architecture, "")}/${lookup(local.uefi_imp, var.architecture, "")}_VARS.fd ${lookup(local.uefi_imp, var.architecture, "")}_VARS.fd",
-#       "cloud-localds seeds.iso user-data meta-data"
-#     ]
-#     inline_shebang = "/bin/bash -e"
-#   }
-# }
+  provisioner "shell-local" {
+    inline = [
+      "cp /usr/share/${lookup(local.uefi_imp, var.architecture, "")}/${lookup(local.uefi_imp, var.architecture, "")}_VARS.fd ${lookup(local.uefi_imp, var.architecture, "")}_VARS.fd",
+      "cloud-localds seeds.iso user-data meta-data"
+    ]
+    inline_shebang = "/bin/bash -e"
+  }
+}
 
 build {
   name = "cableos-installer"
@@ -209,49 +207,34 @@ build {
     destination = "/data/"
     source      = "${path.root}/http/${var.apollo_iso}"
   }
-  provisioner "file" {
-    destination = "/tmp/"
-    sources = [
-      "${path.root}/scripts/curtin-hooks",
-      "${path.root}/scripts/install-custom-packages",
-      "${path.root}/scripts/setup-bootloader",
-      "${path.root}/packages/custom-packages.tar.gz"
-    ]
-  }
 
-  provisioner "shell" {
-    environment_vars  = ["HOME_DIR=/home/ubuntu", "http_proxy=${var.http_proxy}", "https_proxy=${var.https_proxy}", "no_proxy=${var.no_proxy}"]
-    execute_command   = "echo 'ubuntu' | {{ .Vars }} sudo -S -E sh -eux '{{ .Path }}'"
-    expect_disconnect = true
-    scripts           = ["${path.root}/scripts/curtin.sh", "${path.root}/scripts/networking.sh", "${path.root}/scripts/cleanup.sh"]
-  }
   post-processor "manifest" {
     output     = "${path.root}/manifest.json"
     strip_path = true
   }
 
-  # post-processor "shell-local" {
-  #   inline = [
-  #     "IMG_FMT=qcow2",
-  #     "SOURCE=cableos-installer",
-  #     "ROOT_PARTITION=1",
-  #     "DETECT_BLS_BOOT=1",
-  #     "OUTPUT=${var.filename}",
-  #     "source ../scripts/fuse-nbd",
-  #     "source ../scripts/fuse-tar-root"
-  #   ]
-  #   inline_shebang = "/bin/bash -e"
-  # }
   post-processor "shell-local" {
     inline = [
+      "IMG_FMT=qcow2",
       "SOURCE=cableos-installer",
-      "IMG_FMT=raw",
-      "ROOT_PARTITION=2",
+      "ROOT_PARTITION=1",
+      "DETECT_BLS_BOOT=1",
       "OUTPUT=${var.filename}",
       "source ../scripts/fuse-nbd",
       "source ../scripts/fuse-tar-root"
     ]
     inline_shebang = "/bin/bash -e"
   }
+  # post-processor "shell-local" {
+  #   inline = [
+  #     "SOURCE=cableos-installer",
+  #     "IMG_FMT=raw",
+  #     "ROOT_PARTITION=2",
+  #     "OUTPUT=${var.filename}",
+  #     "source ../scripts/fuse-nbd",
+  #     "source ../scripts/fuse-tar-root"
+  #   ]
+  #   inline_shebang = "/bin/bash -e"
+  # }
 
 }
