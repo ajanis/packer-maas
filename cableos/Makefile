@@ -29,7 +29,7 @@ cableos-installer: check-deps clean
 	${PACKER} init . && ${PACKER} build \
 		-var architecture=${ARCH} \
 		-var ubuntu_series=${SERIES} \
-		-var timeout=${TIMEOUT} cableos-installer.pkr.hcl
+		-var timeout=${TIMEOUT} .
 
 clean:
 	${RM} -rf output-* cableos-*.gz seeds-cableos.iso OVMF_VARS.fd
