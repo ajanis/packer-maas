@@ -119,18 +119,7 @@ build {
   }
 
   post-processor "shell-local" {
-    inline = [
-      "echo -n '\nImport image to MAAS\n'",
-      "echo -e maas admin boot-resources create \
-        name="'"custom/harmonic"'" \
-        title="'"Harmonic cOS"'" \
-        architecture="'"amd64/generic"'" \
-        filetype="'"tgz"'" \
-        sha256="'"$(sha256sum harmonic-installer.tar.gz | cut -d ' ' -f1)"'" \
-        size="'"$(stat -c'%s' harmonic-installer.tar.gz)"'" \
-        content@="'"harmonic-installer.tar.gz"'"
-        "
-    ]
-    inline_shebang = "/bin/bash -e"
+    environment_vars = ["DEBIAN_FRONTEND=noninteractive"]
+    script         = ["${path.root}/scripts/harmonic-install/maas-import-command.sh"]
   }
 }
