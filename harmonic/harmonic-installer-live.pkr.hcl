@@ -61,9 +61,21 @@ build {
     ]
   }
 
-   post-processor "compress" {
-     output = "harmonic-installer-live.tar.gz"
-   }
+  #  post-processor "compress" {
+  #    output = "harmonic-installer-live.tar.gz"
+  #  }
+
+  post-processor "shell-local" {
+    inline = [
+      "SOURCE=flat",
+      "IMG_FMT=raw",
+      "ROOT_PARTITION=2",
+      "OUTPUT=${var.filename}",
+      "source ../scripts/fuse-nbd",
+      "source ../scripts/fuse-tar-root"
+    ]
+    inline_shebang = "/bin/bash -e"
+  }
 
   post-processor "manifest" {
     output = "manifest.json"
