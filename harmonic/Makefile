@@ -46,7 +46,7 @@ harmonic-installer-live: check-deps clean harmonic-seeds-live.iso OVMF_VARS.fd
 		.
 
 clean:
-	${RM} -rf output-* harmonic-*.gz harmonic-seeds.iso harmonic-seeds-live.iso OVMF_VARS.fd manifest.json
+	${RM} -rf output-* harmonic-*.gz packer-cache/* harmonic-seeds.iso harmonic-seeds-live.iso OVMF_VARS.fd manifest.json
 
 .INTERMEDIATE: OVMF_VARS.fd \
 	harmonic-seeds-live.iso harmonic-seeds.iso
