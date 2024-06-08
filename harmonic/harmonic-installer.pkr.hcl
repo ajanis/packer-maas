@@ -18,9 +18,6 @@ locals {
   ]
 }
 
-source "null" "dependencies" {
-  communicator = "none"
-}
 
 source "qemu" "harmonic" {
   boot_wait      = "2s"
@@ -58,27 +55,10 @@ source "qemu" "harmonic" {
 
 
 // Define Builds
-build {
-  name    = "harmonic.deps"
-  sources = ["source.null.dependencies"]
-
-  provisioner "shell-local" {
-    inline = [
-      "cp /usr/share/OVMF/OVMF_VARS.fd OVMF_VARS.fd",
-      "cloud-localds harmonic-seeds.iso user-data meta-data"
-    ]
-    inline_shebang = "/bin/bash -e"
-  }
-}
 
 build {
   name    = "harmonic.image"
   sources = ["source.qemu.harmonic"]
-
-  provisioner "shell" {
-    environment_vars = concat(local.proxy_env, ["DEBIAN_FRONTEND=noninteractive"])
-    scripts          = ["${path.root}/scripts/cloudimg/setup-boot.sh"]
-  }
 
   provisioner "file" {
     destination = "/opt/"
@@ -89,20 +69,12 @@ build {
   }
 
   provisioner "shell" {
-    environment_vars  = concat(local.proxy_env, ["DEBIAN_FRONTEND=noninteractive"])
-    expect_disconnect = true
-    scripts           = ["${path.root}/scripts/harmonic-install/setup-harmonic-installer.sh"]
-  }
-
-  provisioner "shell" {
-    environment_vars  = concat(local.proxy_env, ["DEBIAN_FRONTEND=noninteractive"])
-    expect_disconnect = true
-    scripts           = [var.customize_script]
-  }
-
-  provisioner "shell" {
-    environment_vars = ["DEBIAN_FRONTEND=noninteractive"]
-    scripts          = ["${path.root}/scripts/cloudimg/cleanup.sh"]
+    environment_vars = concat(local.proxy_env, ["DEBIAN_FRONTEND=noninteractive"])
+    scripts          = [
+      "${path.root}/scripts/cloudimg/setup-boot.sh",
+      "${path.root}/scripts/harmonic-install/setup-harmonic-installer.sh",
+      "${path.root}/scripts/cloudimg/cleanup.sh"
+    ]
   }
 
   post-processor "shell-local" {
