@@ -23,7 +23,7 @@ format:
 
 harmonic-installer: check-deps clean
 	${PACKER} init . \
-	&& ${PACKER} build -only='harmonic.*' \
+	&& ${PACKER} build \
 		-var ubuntu_series=${SERIES} \
 		-var timeout=${TIMEOUT} \
 		-var customize_script=${CUSTOMIZE_SCRIPT} \
