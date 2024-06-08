@@ -104,4 +104,4 @@ build {
     environment_vars  = ["DEBIAN_FRONTEND=noninteractive"]
     scripts           = ["${path.root}/scripts/harmonic-install/maas-import-command.sh"]
   }
-}s
+}
