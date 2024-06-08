@@ -11,7 +11,7 @@ source "qemu" "harmonic-live" {
   iso_checksum    = "file:http://releases.ubuntu.com/${var.ubuntu_series}/SHA256SUMS"
   memory          = 2048
   qemuargs = [
-    ["-machine", "ubuntu,accel=kvm"],
+    ["-machine", "ubuntu,accel=kvm"],                                                                                         2
     ["-cpu", "host"],
     ["-device", "virtio-gpu-pci"],
     ["-device", "virtio-blk-pci,drive=drive0,bootindex=0"],
@@ -60,21 +60,9 @@ build {
     ]
   }
 
-  post-processor "shell-local" {
-    inline = [
-      "IMG_FMT=raw",
-      "SOURCE=harmonic-live",
-      "ROOT_PARTITION=2",
-      "OUTPUT=harmonic-live.tar.gz",
-      "source ../scripts/fuse-nbd",
-      "source ../scripts/fuse-tar-root"
-    ]
-    inline_shebang = "/bin/bash -e"
-  }
-
-  #  post-processor "compress" {
-  #    output = "${var.filename}"
-  #  }
+   post-processor "compress" {
+     output = "harmonic-installer-live.tar.gz"
+   }
 
   post-processor "manifest" {
     output = "manifest.json"
