@@ -43,6 +43,7 @@ harmonic-installer-live: check-deps clean harmonic-seeds-live.iso OVMF_VARS.fd
 	${PACKER} init . \
 	&& ${PACKER} build -only=*harmonic-live* \
 		-var ubuntu_series=${SERIES} \
+		-var live_iso=${ISO} \
 		-var timeout=${TIMEOUT} \
 		.
 
