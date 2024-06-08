@@ -1,2 +1,3 @@
 **/manifest.json
 **/*.lock
+packer-cache/*
