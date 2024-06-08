@@ -1,0 +1,25 @@
+#cloud-configv
+autoinstall:
+  version: 1
+  identity:
+    hostname: harmonic-installer
+    username: root
+    password: ubuntu
+    plain_text_passwd: ubuntu
+  keyboard:
+    layout: us
+    variant: ""
+  ssh:
+    install-server: true
+  storage:
+    grub:
+      update_nvram: true
+    swap:
+      size: 0
+    layout:
+      name: direct
+  late-commands:
+    - sed -i -e '/^[#]*PermitRootLogin/s/^.*$/PermitRootLogin yes/' /etc/ssh/sshd_config
+    - systemctl restart ssh
+  package_update: true
+  package_upgrade: true
