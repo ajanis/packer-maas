@@ -1,23 +1,3 @@
-packer {
-  required_version = ">= 1.7.0"
-  required_plugins {
-    qemu = {
-      version = "~> 1.0"
-      source  = "github.com/hashicorp/qemu"
-    }
-  }
-}
-
-
-locals {
-
-  proxy_env = [
-    "http_proxy=${var.http_proxy}",
-    "https_proxy=${var.https_proxy}",
-    "no_proxy=${var.https_proxy}",
-  ]
-}
-
 source "qemu" "harmonic-live" {
   boot_command    = ["<wait>e<wait5>", "<down><wait><down><wait><down><wait2><end><wait5>", "<bs><bs><bs><bs><wait>autoinstall ---<wait><f10>"]
   boot_wait       = "2s"
