@@ -17,37 +17,37 @@ all: harmonic-installer
 $(eval $(call check_packages_deps,cloud-image-utils ovmf libnbd0 nbdfuse nbdkit fuse2fs,cloud-image-utils ovmf libnbd0 nbdfuse nbdkit fuse2fs ))
 
 harmonic-seeds.iso: user-data meta-data
-	    cloud-localds $@ $^
+  cloud-localds $@ $^
 
 harmonic-seeds-live.iso: user-data-live meta-data
-	    cloud-localds $@ $^
+  cloud-localds $@ $^
 
 OVMF_VARS.fd: /usr/share/OVMF/OVMF_VARS.fd
-	    cp -v $< $@
+  cp -v $< $@
 
 lint:
-	packer validate .
-	packer fmt -check -diff .
+  packer validate .
+  packer fmt -check -diff .
 
 format:
-	packer fmt .
+  packer fmt .
 
 harmonic-installer: check-deps clean harmonic-seeds.iso OVMF_VARS.fd
-	${PACKER} init . \
-	&& ${PACKER} build -only=qemu-harmonic \
-		-var ubuntu_series=${SERIES} \
-		-var timeout=${TIMEOUT} \
-		.
+  ${PACKER} init . \
+  && ${PACKER} build -only=qemu-harmonic \
+    -var ubuntu_series=${SERIES} \
+    -var timeout=${TIMEOUT} \
+    .
 
 harmonic-installer-live: check-deps clean harmonic-seeds-live.iso OVMF_VARS.fd
-	${PACKER} init . \
-	&& ${PACKER} build -only=qemu.harmonic-live \
-	    -var ubuntu_series=${SERIES} \
-	    -var live_iso=${ISO} \
-			-var timeout=${TIMEOUT} \
-			.
+  ${PACKER} init . \
+  && ${PACKER} build -only=qemu.harmonic-live \
+    -var ubuntu_series=${SERIES} \
+    -var live_iso=${ISO} \
+    -var timeout=${TIMEOUT} \
+    .
 
 clean:
-	${RM} -rf output-* harmonic-*.gz harmonic-seeds.iso harmonic-seeds-live.iso OVMF_VARS.fd manifest.json
+  ${RM} -rf output-* harmonic-*.gz harmonic-seeds.iso harmonic-seeds-live.iso OVMF_VARS.fd manifest.json
 
 .INTERMEDIATE: OVMF_VARS.fd harmonic-seeds-live.iso harmonic-seeds.iso
