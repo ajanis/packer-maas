@@ -7,14 +7,18 @@
 # with correct 'sha256sum' and 'byte size'
 # for the newly created image.
 #
+# shellcheck disable=SC2312
+#
 #################################################
 
-if [[ -e harmonic-installer.tar.gz || -e harmonic-installer-live.tar.gz ]]; then
+for image in harmonic-installer.tar.gz harmonic-installer-live.tar.gz; do
+if [[ -e ${image} ]]; then
   cat <<EOF
   MAAS IMPORT:
   Copy the image to the MAAS server then
   Import the image to MAAS with the following command:
 
-  maas admin boot-resources create name='custom/harmonic' title='Harmonic cOS' architecture='amd64/generic' filetype='tgz' sha256='$(sha256sum harmonic-installer.tar.gz | cut -d ' ' -f1)' size='$(stat -c'%s' harmonic-installer.tar.gz)' content@='harmonic-installer.tar.gz'
+  maas admin boot-resources create name='custom/harmonic' title='Harmonic cOS' architecture='amd64/generic' filetype='tgz' sha256='$(sha256sum "${image}" | cut -d ' ' -f1)' size='$(stat -c'%s' "s${image}")' content@='${image}'
 EOF
 fi
+done
