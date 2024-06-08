@@ -105,10 +105,6 @@ build {
     scripts          = ["${path.root}/scripts/cloudimg/cleanup.sh"]
   }
 
-  post-processor "manifest" {
-    output     = "manifest.json"
-  }
-
   post-processor "shell-local" {
     inline = [
       "IMG_FMT=qcow2",
@@ -120,6 +116,10 @@ build {
       "source ../scripts/fuse-tar-root"
     ]
     inline_shebang = "/bin/bash -e"
+  }
+
+  post-processor "manifest" {
+    output     = "manifest.json"
   }
 
   post-processor "shell-local" {
