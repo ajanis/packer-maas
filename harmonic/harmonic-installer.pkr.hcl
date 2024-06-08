@@ -105,7 +105,18 @@ build {
     scripts          = ["${path.root}/scripts/cloudimg/cleanup.sh"]
   }
 
+  post-processor "manifest" {
+    output     = "manifest.json"
+    strip_path = true
+  }
+
   post-processor "shell-local" {
+    inline = [
+        "jq '.builds[].files[].name' manifest.json"
+    ]
+  }
+  post-processor "shell-local" {
+    only = ["harmonic.image"]
     inline = [
       "IMG_FMT=qcow2",
       "SOURCE=harmonic",
@@ -119,7 +130,8 @@ build {
   }
 
   post-processor "shell-local" {
-    environment_vars = ["DEBIAN_FRONTEND=noninteractive"]
-    script         = ["${path.root}/scripts/harmonic-install/maas-import-command.sh"]
+    only              = ["harmonic.image"]
+    environment_vars  = ["DEBIAN_FRONTEND=noninteractive"]
+    scripts           = ["${path.root}/scripts/harmonic-install/maas-import-command.sh"]
   }
 }
