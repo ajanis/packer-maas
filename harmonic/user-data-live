@@ -1,25 +1,19 @@
-#cloud-configv
-autoinstall:
-  version: 1
-  identity:
-    hostname: harmonic-installer
-    username: root
-    password: ubuntu
+#cloud-config
+users:
+  - name: root
+    lock_passwd: false
     plain_text_passwd: ubuntu
-  keyboard:
-    layout: us
-    variant: ""
-  ssh:
-    install-server: true
-  storage:
-    grub:
-      update_nvram: true
-    swap:
-      size: 0
-    layout:
-      name: direct
-  late-commands:
-    - sed -i -e '/^[#]*PermitRootLogin/s/^.*$/PermitRootLogin yes/' /etc/ssh/sshd_config
-    - systemctl restart ssh
-  package_update: true
-  package_upgrade: true
+    ssh_redirect_user: false
+ssh_pwauth: True
+disable_root: false
+preserve_hostname: true
+runcmd:
+  - sed -i -e '/^[#]*PermitRootLogin/s/^.*$/PermitRootLogin yes/' /etc/ssh/sshd_config
+  - systemctl restart ssh
+bootcmd:
+  - mkdir /run/packer_backup
+  - mkdir /run/packer_backup/etc
+  - mkdir /run/packer_backup/etc/apt
+  - mkdir /run/packer_backup/etc/ssh
+  - cp --preserve /etc/apt/sources.list /run/packer_backup/etc/apt/
+  - cp --preserve /etc/ssh/sshd_config /run/packer_backup/etc/ssh/
