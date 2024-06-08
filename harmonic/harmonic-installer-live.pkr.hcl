@@ -24,11 +24,11 @@ source "qemu" "harmonic-live" {
     ["-drive", "file=harmonic-seeds-live.iso,format=raw,cache=none,if=none,id=drive1,readonly=on"],
     ["-drive", "file=${path.root}/packer-cache/${var.live_iso},if=none,id=cdrom0,media=cdrom"]
   ]
-  shutdown_command       = "shutdown -P now"
+  shutdown_command       = var.shutdown
   ssh_handshake_attempts = 500
   ssh_password           = var.ssh_password
   ssh_timeout            = var.timeout
-  ssh_username           = "root"
+  ssh_username           = var.ssh_username
 }
 
 build {

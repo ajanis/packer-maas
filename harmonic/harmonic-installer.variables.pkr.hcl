@@ -75,3 +75,9 @@ variable "cloud_img" {
   default     = "ubuntu-22.04-server-cloudimg-amd64.img"
   description = "Ubuntu Server cloud-image qcow2 build source"
 }
+
+variable "shutdown" {
+  type        = string
+  default     = "echo 'packer' | sudo -S shutdown -P now"
+  description = "Default shutdown command for qemu builds"
+}
