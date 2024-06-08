@@ -19,7 +19,7 @@ source "qemu" "harmonic-live" {
     ["-device", "virtio-blk-pci,drive=drive1,bootindex=2"],
     ["-drive", "if=pflash,format=raw,readonly=on,file=/usr/share/OVMF/OVMF_CODE.fd"],
     ["-drive", "if=pflash,format=raw,file=OVMF_VARS.fd"],
-    ["-drive", "file=output-harmonic/packer-harmonic-live,if=none,id=drive0,cache=writeback,discard=ignore,format=raw"],
+    ["-drive", "file=output-harmonic-live/packer-harmonic-live,if=none,id=drive0,cache=writeback,discard=ignore,format=raw"],
     ["-drive", "file=harmonic-seeds-live.iso,format=raw,cache=none,if=none,id=drive1,readonly=on"],
     ["-drive", "file=${path.root}/packer-cache/${var.live_iso},if=none,id=cdrom0,media=cdrom"]
   ]
@@ -63,9 +63,9 @@ build {
   post-processor "shell-local" {
     inline = [
       "IMG_FMT=raw",
-      "SOURCE=harmonic",
+      "SOURCE=harmonic-live",
       "ROOT_PARTITION=2",
-      "OUTPUT=${var.filename}-live",
+      "OUTPUT=harmonic-live.tar.gz",
       "source ../scripts/fuse-nbd",
       "source ../scripts/fuse-tar-root"
     ]
