@@ -11,7 +11,7 @@ source "qemu" "harmonic-live" {
   iso_checksum    = "file:http://releases.ubuntu.com/${var.ubuntu_series}/SHA256SUMS"
   memory          = 2048
   qemuargs = [
-    ["-machine", "ubuntu,accel=kvm"],                                                                                         2
+    ["-machine", "ubuntu,accel=kvm"],
     ["-cpu", "host"],
     ["-device", "virtio-gpu-pci"],
     ["-device", "virtio-blk-pci,drive=drive0,bootindex=0"],
