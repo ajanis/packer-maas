@@ -22,10 +22,12 @@ format:
 	packer fmt .
 
 harmonic-installer: check-deps clean
-	${PACKER} init . && ${PACKER} build \
-	  -only='harmonic.*'
+	${PACKER} init . \
+	&& ${PACKER} build -only='harmonic.*' \
 		-var ubuntu_series=${SERIES} \
-		-var timeout=${TIMEOUT} -var customize_script=${CUSTOMIZE_SCRIPT} .
+		-var timeout=${TIMEOUT} \
+		-var customize_script=${CUSTOMIZE_SCRIPT} \
+		.
 
 clean:
 	${RM} -rf output-* harmonic-*.gz harmonic-seeds.iso OVMF_VARS.fd manifest.json
