@@ -1,5 +1,13 @@
 #!/bin/bash -ex
-## /root/harmonic-installer.sh
+##############################################################################
+#
+#   /usr/local/bin/harmonic-installer.sh
+#
+#   This script is executed by 'harmonic-install.service' that fetches the
+#   Apollo (Harmonic cOS) .iso file and executes the 'ostree-production'
+#   commands that will to write the .iso to the system '/dev/sda' disk.
+#
+##############################################################################
 
 export WS_HOST="172.22.31.150"
 export WS_PORT="8080"

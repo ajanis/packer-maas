@@ -1,8 +1,20 @@
 #!/bin/bash -ex
-# customize.sh
-# install ostree wrapper packages
-# create service and script for vcmts installation on boot
+##############################################################################
 #
+#   /opt/setup-harmonic-installer.sh
+#
+# - Install debian packages containing Harmonic wrapper-scripts for OSTree
+#
+# - Create 'harmonic-install.service' :
+#   A single-use (oneshot) SystemD service file that will run on 1st boot.
+#
+# - Create 'harmonic-installer.sh' :
+#   The script executed by 'harmonic-install.service' that fetches the
+#   Apollo (Harmonic cOS) .iso file and executes the 'ostree-production'
+#   commands that will to write the .iso to the system '/dev/sda' disk.
+#
+##############################################################################
+
 
 ## Install OSTree wrapper-scripts packages
 dpkg -i /opt/ostree-upgrade-bootstrap_2.0.41_all.deb
@@ -30,7 +42,16 @@ EOF
 touch /usr/local/bin/harmonic-installer.sh
 cat > /usr/local/bin/harmonic-installer.sh <<EOF
 #!/bin/bash -ex
-## /root/harmonic-installer.sh
+##############################################################################
+#
+#   /usr/local/bin/harmonic-installer.sh
+#
+#   This script is executed by 'harmonic-install.service' that fetches the
+#   Apollo (Harmonic cOS) .iso file and executes the 'ostree-production'
+#   commands that will to write the .iso to the system '/dev/sda' disk.
+#
+##############################################################################
+
 
 export WS_HOST="172.22.31.150"
 export WS_PORT="8080"
