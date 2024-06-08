@@ -9,10 +9,7 @@ variable "filename" {
   default     = "custom-cloudimg.tar.gz"
   description = "The filename of the tarball to produce"
 }
-variable "apollo_iso" {
-  type    = string
-  default = "APOLLO_PLATFORM-release-3.21.3.0-7+auto15.iso"
-}
+
 variable "kernel" {
   type        = string
   default     = ""
