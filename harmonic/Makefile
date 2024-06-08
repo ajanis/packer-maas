@@ -23,7 +23,6 @@ format:
 
 harmonic-installer: check-deps clean
 	${PACKER} init . && ${PACKER} build \
-		-var architecture=${ARCH} \
 		-var ubuntu_series=${SERIES} \
 		-var timeout=${TIMEOUT} -var customize_script=${CUSTOMIZE_SCRIPT} .
 

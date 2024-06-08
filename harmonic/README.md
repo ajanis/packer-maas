@@ -21,15 +21,7 @@ Harmonic vCMTS products have been on the market as early as 2018, with Harmonicâ
       - [Makefile Parameters](#makefile-parameters)
     - [Default Credentials](#default-credentials)
   - [Importing `harmonic-installer.tar.gz` into MAAS](#importing-harmonic-installertargz-into-maas)
-  - [Variables and Defaults, Required package installation](#variables-and-defaults-required-package-installation)
-    - [Step 1: Extract the ISO file](#step-1-extract-the-iso-file)
-    - [Step 2: Extract debirf-live.cgz](#step-2-extract-debirf-livecgz)
-    - [Step 3: Extract roots.cxz](#step-3-extract-rootscxz)
-    - [Step 4: Add custom files](#step-4-add-custom-files)
-    - [Step 5: Repack the root filesystem](#step-5-repack-the-root-filesystem)
-    - [Step 6: Repack debirf-live.cgz](#step-6-repack-debirf-livecgz)
-    - [Step 7: Recreate the ISO](#step-7-recreate-the-iso)
-  - [Complete Auto-Build Script](#complete-auto-build-script)
+  - [Main configuration script `setup-harmonic-installer.sh`](#main-configuration-script-setup-harmonic-installersh)
 
 
 ## Image-Build Dependencies and Prerequisites
@@ -66,8 +58,15 @@ Upon initial boot, a single-use (*oneshot*) SystemD service that downloads the l
 
 The image can be built using the following packer commands, however the including Makefile simplifies the process:
 
-- ```packer init .```
-- ```packer build -var architecture=${ARCH:=amd64} -var ubuntu_series=${SERIES:=jammy} -var timeout=${TIMEOUT:=1h} -var customize_script=${CUSTOMIZE_SCRIPT:=/dev/null}```
+- ```shell
+  packer init .
+  ```
+- ```shell
+  packer build \
+    -var ubuntu_series=${SERIES:=jammy} \
+    -var timeout=${TIMEOUT:=1h} \
+    -var customize_script=${CUSTOMIZE_SCRIPT:=/dev/null}
+   ```
 
 To build the image using Make, simply run:
 ```shell
