@@ -9,7 +9,7 @@
 #
 #################################################
 # shellcheck disable=SC2312
-mapfile -t FILE_ARRAY < <( jq -r '.builds[].files[].name' manifest.json )
+mapfile -t FILE_ARRAY < <( jq '.builds[].files[].name' manifest.json )
 for FILE in "${FILE_ARRAY[@]}"; do
 	if [[ -e "${FILE}" && "${FILE}" == "harmonic-installer.tar.gz" ]]; then
 		  cat <<EOF
