@@ -1,4 +1,4 @@
-#!/usr/bin/make -f
+;!/usr/bin/make -f
 
 include ../scripts/check.mk
 
@@ -9,7 +9,6 @@ SERIES ?= jammy
 TIMEOUT ?= 1h
 CUSTOMIZE_SCRIPT ?= /dev/null
 URL ?= http://releases.ubuntu.com
-ISO=$(shell wget -O- -q ${URL}/${SERIES}/${SUMS} | grep live-server | cut -d'*' -f2)
 
 .PHONY: all clean
 
@@ -43,7 +42,6 @@ harmonic-installer-live: check-deps clean harmonic-seeds-live.iso OVMF_VARS.fd
 	${PACKER} init . \
 	&& ${PACKER} build -only=*harmonic-live* \
 		-var ubuntu_series=${SERIES} \
-		-var live_iso=${ISO} \
 		-var timeout=${TIMEOUT} \
 		.
 
