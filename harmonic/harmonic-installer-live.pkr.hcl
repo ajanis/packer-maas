@@ -5,6 +5,7 @@ source "qemu" "harmonic-live" {
   disk_size       = "8G"
   format          = "raw"
   headless        = var.headless
+  vnc_bind_address = "0.0.0.0"
   http_directory  = var.http_directory
   iso_target_path = "${path.root}/packer-cache/${var.live_iso}"
   iso_url         = "https://releases.ubuntu.com/${var.ubuntu_series}/${var.live_iso}"
