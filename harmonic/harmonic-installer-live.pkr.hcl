@@ -18,10 +18,6 @@ locals {
   ]
 }
 
-source "null" "dependencies" {
-  communicator = "none"
-}
-
 source "qemu" "harmonic-live" {
   boot_command    = ["<wait>e<wait5>", "<down><wait><down><wait><down><wait2><end><wait5>", "<bs><bs><bs><bs><wait>autoinstall ---<wait><f10>"]
   boot_wait       = "2s"
@@ -62,7 +58,7 @@ build {
     destination = "/tmp/"
     sources = [
       "${path.root}/scripts/liveiso/curtin-hooks",
-      "${path.root}/scripts/liveiso/setup-bootloader",
+      "${path.root}/scripts/liveiso/setup-bootloader"
     ]
   }
 
@@ -79,7 +75,7 @@ build {
     scripts           = [
       "${path.root}/scripts/liveiso/curtin.sh",
       "${path.root}/scripts/liveiso/networking.sh",
-      "${path.root}/scripts/harmonic-install/setup-harmonic-installer.sh"
+      "${path.root}/scripts/harmonic-install/setup-harmonic-installer.sh",
       "${path.root}/scripts/liveiso/cleanup.sh"
       ]
   }
