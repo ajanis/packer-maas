@@ -9,7 +9,7 @@
 #
 #################################################
 
-if [[ -e harmonic-installer.tar.gz ]]; then
+if [[ -e harmonic-installer.tar.gz || -e harmonic-installer-live.tar.gz ]]; then
   cat <<EOF
   MAAS IMPORT:
   Copy the image to the MAAS server then
