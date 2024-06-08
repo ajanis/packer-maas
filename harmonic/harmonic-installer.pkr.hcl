@@ -22,7 +22,7 @@ source "null" "dependencies" {
   communicator = "none"
 }
 
-source "qemu" "cableos" {
+source "qemu" "harmonic" {
   boot_wait      = "2s"
   cpus           = 2
   disk_image     = true
@@ -32,7 +32,7 @@ source "qemu" "cableos" {
   vnc_bind_address = "0.0.0.0"
   http_directory = var.http_directory
   iso_checksum   = "file:https://cloud-images.ubuntu.com/${var.ubuntu_series}/current/SHA256SUMS"
-  iso_url        = "https://cloud-images.ubuntu.com/${var.ubuntu_series}/current/${var.ubuntu_series}-server-cloudimg-${var.architecture}.img"
+  iso_url        = "https://cloud-images.ubuntu.com/${var.ubuntu_series}/current/${var.ubuntu_series}-server-cloudimg-amd64.img"
   memory         = 2048
   qemu_binary    = "qemu-system-x86_64"
   qemu_img_args {
@@ -44,8 +44,8 @@ source "qemu" "cableos" {
     ["-device", "virtio-gpu-pci"],
     ["-drive", "if=pflash,format=raw,id=ovmf_code,readonly=on,file=/usr/share/OVMF/OVMF_CODE.fd"],
     ["-drive", "if=pflash,format=raw,id=ovmf_vars,file=OVMF_VARS.fd"],
-    ["-drive", "file=output-cableos/packer-cableos,format=qcow2"],
-    ["-drive", "file=seeds-cableos.iso,format=raw"]
+    ["-drive", "file=output-harmonic/packer-harmonic,format=qcow2"],
+    ["-drive", "file=harmonic-seeds.iso,format=raw"]
   ]
   shutdown_command       = "sudo -S shutdown -P now"
   ssh_handshake_attempts = 500
@@ -59,21 +59,21 @@ source "qemu" "cableos" {
 
 // Define Builds
 build {
-  name    = "cableos.deps"
+  name    = "harmonic.deps"
   sources = ["source.null.dependencies"]
 
   provisioner "shell-local" {
     inline = [
       "cp /usr/share/OVMF/OVMF_VARS.fd OVMF_VARS.fd",
-      "cloud-localds seeds-cableos.iso user-data meta-data"
+      "cloud-localds harmonic-seeds.iso user-data meta-data"
     ]
     inline_shebang = "/bin/bash -e"
   }
 }
 
 build {
-  name    = "cableos.image"
-  sources = ["source.qemu.cableos"]
+  name    = "harmonic.image"
+  sources = ["source.qemu.harmonic"]
 
   provisioner "shell" {
     environment_vars = concat(local.proxy_env, ["DEBIAN_FRONTEND=noninteractive"])
@@ -91,7 +91,7 @@ build {
   provisioner "shell" {
     environment_vars  = concat(local.proxy_env, ["DEBIAN_FRONTEND=noninteractive"])
     expect_disconnect = true
-    scripts           = ["${path.root}/scripts/cableos-install/setup-cableos-installer.sh"]
+    scripts           = ["${path.root}/scripts/harmonic-install/setup-harmonic-installer.sh"]
   }
 
   provisioner "shell" {
@@ -108,7 +108,7 @@ build {
   post-processor "shell-local" {
     inline = [
       "IMG_FMT=qcow2",
-      "SOURCE=cableos",
+      "SOURCE=harmonic",
       "ROOT_PARTITION=1",
       "DETECT_BLS_BOOT=1",
       "OUTPUT=${var.filename}",

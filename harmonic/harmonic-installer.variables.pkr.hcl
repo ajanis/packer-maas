@@ -24,17 +24,12 @@ variable "no_proxy" {
   default = "${env("no_proxy")}"
 }
 
-variable "ssh_password" {
-  type    = string
-  default = "ubuntu"
-}
-
 variable "ssh_username" {
   type    = string
   default = "root"
 }
 
-variable "ssh_ubuntu_password" {
+variable "ssh_password" {
   type    = string
   default = "ubuntu"
 }
@@ -47,7 +42,7 @@ variable "timeout" {
 
 variable "filename" {
   type        = string
-  default     = "cableos-installer.tar.gz"
+  default     = "harmonic-installer.tar.gz"
   description = "The filename of the tarball to produce"
 }
 
@@ -63,24 +58,20 @@ variable "customize_script" {
   description = "The filename of the script that will run in the VM to customize the image."
 }
 
-variable "architecture" {
-  type        = string
-  default     = "amd64"
-  description = "The architecture to build the image for (amd64 or arm64)"
-}
-
 variable "apollo_iso" {
   type    = string
   default = "APOLLO_PLATFORM-release-3.21.3.0-7+auto15.iso"
+  description = "Harmonic cOS image file"
 }
 
 variable "live_iso" {
   type        = string
   default     = "ubuntu-22.04.4-live-server-amd64.iso"
-  description = "The ISO name to build the image from"
+  description = "Ubuntu Live-Server iso build source"
 }
 
 variable "cloud_img" {
   type    = string
   default = "ubuntu-22.04-server-cloudimg-amd64.img"
+  description = "Ubuntu Server cloud-image qcow2 build source"
 }

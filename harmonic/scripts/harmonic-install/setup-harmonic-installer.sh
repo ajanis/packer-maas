@@ -4,21 +4,21 @@
 # create service and script for vcmts installation on boot
 #
 
-## Install cableos-wrapper packages
+## Install OSTree wrapper-scripts packages
 dpkg -i /opt/ostree-upgrade-bootstrap_2.0.41_all.deb
 dpkg -i /opt/ostree-upgrade_2.0.41_all.deb
 rm -f /opt/*.deb
 
 ## Create systemd service to run on boot
-touch /etc/systemd/system/cableos-install.service
-cat > /etc/systemd/system/cableos-install.service <<EOF
+touch /etc/systemd/system/harmonic-install.service
+cat > /etc/systemd/system/harmonic-install.service <<EOF
 [Unit]
-Description=CableOS Installation Single-Use Startup Script
+Description=Harmonic cOS Installation Single-Use Startup Script
 ConditionFirstBoot=yes
 
 [Service]
 Type=oneshot
-ExecStart=/usr/local/bin/cableos-installer.sh -v -i
+ExecStart=/usr/local/bin/harmonic-installer.sh -v -i
 RemainAfterExit=true
 StandardOutput=journal
 
@@ -27,10 +27,10 @@ WantedBy=multi-user.target
 EOF
 
 ## Create script called by systemd service
-touch /usr/local/bin/cableos-installer.sh
-cat > /usr/local/bin/cableos-installer.sh <<EOF
+touch /usr/local/bin/harmonic-installer.sh
+cat > /usr/local/bin/harmonic-installer.sh <<EOF
 #!/bin/bash -ex
-## /root/cableos-installer.sh
+## /root/harmonic-installer.sh
 
 export WS_HOST="172.22.31.150"
 export WS_PORT="8080"
@@ -51,14 +51,14 @@ showHelp() {
 cat << EOT
 Usage: $0 [-p|--proxy] [-v|--verbose] [-i|--install] [-h|--help]
 
-Image a physical server with Harmony CableOS
+Image a physical server with Harmonic cOS
 
 -p|--proxy 	  	Enable the HTTP Proxy
 			Note: HTTP Proxy is disabled by default
 
 -v|--verbose 	  	Enable verbose and xtrace mode (set -xv)
 
--i|--install            Install Apollo iso located in /data using ostree scripts
+-i|--install            Install Apollo (Harmonic cOS) .iso located in /data using ostree scripts
 
 -h|--help               Display help
 
@@ -96,12 +96,12 @@ proxyTeardown() {
 ostreeSetup() {
 
   command -v ostree-production ||
-  # # Fetch and install ostree script dpkgs
+  # # Fetch and install OSTree wrapper-script dpkgs
   for PACKAGE in ${OSTREE_PKGS}; do
     curl "http://${WS_HOST}:${WS_PORT}/packages/${PACKAGE}" --output "/opt/${PACKAGE}" && dpkg -i "/opt/${PACKAGE}"
   done
 
-  # Fetch VCMTS iso
+  # Fetch Harmonic cOS iso
   mkdir /data
   curl "http://${WS_HOST}:${WS_PORT}/apollo/latest" --output "/data/${APOLLO_ISO}"
 }
@@ -146,4 +146,4 @@ done
 EOF
 
 ## Fix script ownership
-chmod +x /usr/local/bin/cableos-installer.sh
+chmod +x /usr/local/bin/harmonic-installer.sh

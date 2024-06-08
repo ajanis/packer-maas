@@ -1,5 +1,5 @@
 #!/bin/bash -ex
-## /root/cableos-installer.sh
+## /root/harmonic-installer.sh
 
 export WS_HOST="172.22.31.150"
 export WS_PORT="8080"
@@ -20,14 +20,14 @@ showHelp() {
 cat << EOT
 Usage: $0 [-p|--proxy] [-v|--verbose] [-i|--install] [-h|--help]
 
-Image a physical server with Harmony CableOS
+Image a physical server with Harmonic cOS
 
 -p|--proxy 	  	Enable the HTTP Proxy
 			Note: HTTP Proxy is disabled by default
 
 -v|--verbose 	  	Enable verbose and xtrace mode (set -xv)
 
--i|--install            Install Apollo iso located in /data using ostree scripts
+-i|--install            Install Apollo (Harmonic cOS) .iso located in /data using ostree scripts
 
 -h|--help               Display help
 
@@ -65,12 +65,12 @@ proxyTeardown() {
 ostreeSetup() {
 
   command -v ostree-production ||
-  # # Fetch and install ostree script dpkgs
+  # # Fetch and install OSTree wrapper-script dpkgs
   for PACKAGE in ${OSTREE_PKGS}; do
     curl "http://${WS_HOST}:${WS_PORT}/packages/${PACKAGE}" --output "/opt/${PACKAGE}" && dpkg -i "/opt/${PACKAGE}"
   done
 
-  # Fetch VCMTS iso
+  # Fetch Harmonic cOS iso
   mkdir /data
   curl "http://${WS_HOST}:${WS_PORT}/apollo/latest" --output "/data/${APOLLO_ISO}"
 }

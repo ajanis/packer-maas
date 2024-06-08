@@ -1,10 +1,10 @@
 [Unit]
-Description=CableOS Installation Single-Use Startup Script
+Description=Harmonic cOS Installation Single-Use Startup Script
 ConditionFirstBoot=yes
 
 [Service]
 Type=oneshot
-ExecStart=/usr/local/bin/cableos-installer.sh -v -i
+ExecStart=/usr/local/bin/harmonic-installer.sh -v -i
 RemainAfterExit=true
 StandardOutput=journal
 
