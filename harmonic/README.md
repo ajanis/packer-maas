@@ -127,11 +127,17 @@ The default username and password are set by the `user-data` file when the build
 
 ## Importing `harmonic-installer.tar.gz` into MAAS
 
-Copy the image file to the MAAS server (`44.10.4.101`)
+- Copy the image file to the MAAS server (`44.10.4.101`) and SSH into it.
+- Log into the MAAS API using the CLI
+  ```shell
+  maas login admin http://44.10.4.101:5240/MAAS
+  ```
+  (*The API Key can be found in the MAAS UI under User settings*)
 
-If MAAS has been deployed using **Snaps**, *the image file must be located in your user's home directory*
+- Run the command provided at the end of the Packer build process, whiuch will contain correct `sha256sum` and `byte size` values for the new image
+  (*If MAAS has been deployed using **Snaps**, then the image file **must** be located in your user's home directory*)
 
-
+Example (*With embedded commands to insert the correct `sha256sum` and `byte size` values*):
 ```shell
 maas admin boot-resources create \
   name="custom/harmonic" \
@@ -140,7 +146,7 @@ maas admin boot-resources create \
   filetype="tgz" \
   sha256="$(sha256sum harmonic-installer.tar.gz | cut -d ' ' -f1)" \
   size="$(stat -c'%s' harmonic-installer.tar.gz)" \
-  content@='harmonic-installer.tar.gz'
+  content@="harmonic-installer.tar.gz"
 ```
 
 ## Main configuration script `setup-harmonic-installer.sh`
