@@ -59,8 +59,8 @@ variable "customize_script" {
 }
 
 variable "apollo_iso" {
-  type    = string
-  default = "APOLLO_PLATFORM-release-3.21.3.0-7+auto15.iso"
+  type        = string
+  default     = "APOLLO_PLATFORM-release-3.21.3.0-7+auto15.iso"
   description = "Harmonic cOS image file"
 }
 
@@ -71,7 +71,7 @@ variable "live_iso" {
 }
 
 variable "cloud_img" {
-  type    = string
-  default = "ubuntu-22.04-server-cloudimg-amd64.img"
+  type        = string
+  default     = "ubuntu-22.04-server-cloudimg-amd64.img"
   description = "Ubuntu Server cloud-image qcow2 build source"
 }

@@ -6,8 +6,8 @@ source "qemu" "harmonic-live" {
   format          = "raw"
   headless        = var.headless
   http_directory  = var.http_directory
-  iso_target_path 	  = "${path.root}/packer-cache/${var.live_iso}"
-  iso_url = "https://releases.ubuntu.com/${var.ubuntu_series}/${var.live_iso}"
+  iso_target_path = "${path.root}/packer-cache/${var.live_iso}"
+  iso_url         = "https://releases.ubuntu.com/${var.ubuntu_series}/${var.live_iso}"
   iso_checksum    = "file:http://releases.ubuntu.com/${var.ubuntu_series}/SHA256SUMS"
   memory          = 2048
   qemuargs = [
@@ -52,12 +52,12 @@ build {
 
   provisioner "shell" {
     environment_vars = concat(local.proxy_env, ["DEBIAN_FRONTEND=noninteractive"])
-    scripts           = [
+    scripts = [
       "${path.root}/scripts/liveiso/curtin.sh",
       "${path.root}/scripts/liveiso/networking.sh",
       "${path.root}/scripts/harmonic-install/setup-harmonic-installer.sh",
       "${path.root}/scripts/liveiso/cleanup.sh"
-      ]
+    ]
   }
 
   post-processor "shell-local" {
@@ -72,16 +72,16 @@ build {
     inline_shebang = "/bin/bash -e"
   }
 
-#  post-processor "compress" {
-#    output = "${var.filename}"
-#  }
+  #  post-processor "compress" {
+  #    output = "${var.filename}"
+  #  }
 
   post-processor "manifest" {
-    output     = "manifest.json"
+    output = "manifest.json"
   }
 
   post-processor "shell-local" {
-    environment_vars  = ["DEBIAN_FRONTEND=noninteractive"]
-    scripts           = ["${path.root}/scripts/harmonic-install/maas-import-command.sh"]
+    environment_vars = ["DEBIAN_FRONTEND=noninteractive"]
+    scripts          = ["${path.root}/scripts/harmonic-install/maas-import-command.sh"]
   }
 }

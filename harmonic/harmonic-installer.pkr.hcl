@@ -20,18 +20,18 @@ locals {
 
 
 source "qemu" "harmonic" {
-  boot_wait      = "2s"
-  cpus           = 2
-  disk_image     = true
-  disk_size      = "6G"
-  format         = "qcow2"
-  headless       = var.headless
+  boot_wait        = "2s"
+  cpus             = 2
+  disk_image       = true
+  disk_size        = "6G"
+  format           = "qcow2"
+  headless         = var.headless
   vnc_bind_address = "0.0.0.0"
-  http_directory = var.http_directory
-  iso_checksum   = "file:https://cloud-images.ubuntu.com/${var.ubuntu_series}/current/SHA256SUMS"
-  iso_url        = "https://cloud-images.ubuntu.com/${var.ubuntu_series}/current/${var.ubuntu_series}-server-cloudimg-amd64.img"
-  memory         = 2048
-  qemu_binary    = "qemu-system-x86_64"
+  http_directory   = var.http_directory
+  iso_checksum     = "file:https://cloud-images.ubuntu.com/${var.ubuntu_series}/current/SHA256SUMS"
+  iso_url          = "https://cloud-images.ubuntu.com/${var.ubuntu_series}/current/${var.ubuntu_series}-server-cloudimg-amd64.img"
+  memory           = 2048
+  qemu_binary      = "qemu-system-x86_64"
   qemu_img_args {
     create = ["-F", "qcow2"]
   }
@@ -70,7 +70,7 @@ build {
 
   provisioner "shell" {
     environment_vars = concat(local.proxy_env, ["DEBIAN_FRONTEND=noninteractive"])
-    scripts          = [
+    scripts = [
       "${path.root}/scripts/cloudimg/setup-boot.sh",
       "${path.root}/scripts/harmonic-install/setup-harmonic-installer.sh",
       "${path.root}/scripts/cloudimg/cleanup.sh"
@@ -91,11 +91,11 @@ build {
   }
 
   post-processor "manifest" {
-    output     = "manifest.json"
+    output = "manifest.json"
   }
 
   post-processor "shell-local" {
-    environment_vars  = ["DEBIAN_FRONTEND=noninteractive"]
-    scripts           = ["${path.root}/scripts/harmonic-install/maas-import-command.sh"]
+    environment_vars = ["DEBIAN_FRONTEND=noninteractive"]
+    scripts          = ["${path.root}/scripts/harmonic-install/maas-import-command.sh"]
   }
 }
