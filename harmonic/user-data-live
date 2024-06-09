@@ -38,10 +38,7 @@ autoinstall:
   package_upgrade: true
   user-data:
     preserve_hostname: true
-    disablee_root: false
-    package_update: true
-    package_upgrade: true
-    ssh_pwauth: true
+    ssh_pwauth: True
     disable_root: false
     users:
       - name: root
