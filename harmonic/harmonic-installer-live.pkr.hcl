@@ -18,6 +18,10 @@ source "qemu" "harmonic-live" {
   iso_target_path  = "${path.root}/packer-cache/${var.live_iso}"
   iso_url          = "https://releases.ubuntu.com/${var.ubuntu_series}/${var.live_iso}"
   iso_checksum     = "file:http://releases.ubuntu.com/${var.ubuntu_series}/SHA256SUMS"
+  output_directory = "output-{var.vm_name}-live/${var.vm_name}-live"
+  efi_firmware_code = "/usr/share/OVMF/OVMF_CODE.fd"
+  efi_firmware_vars = "${path.root}/OVMF_VARS.fd"
+  efi_boot          = true
   qemuargs = [
     ["-machine", "ubuntu,accel=kvm"],
     ["-cpu", "host"],
