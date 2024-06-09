@@ -1,8 +1,21 @@
+locals {
+    vm_name = "harmonic-live"
+    output_dir = "output/${local.vm_name}"
+    }
 source "qemu" "harmonic-live" {
-  # boot_command    = ["<wait>e<wait5>", "<down><wait><down><wait><down><wait2><end><wait5>", "<bs><bs><bs><bs><wait>autoinstall ---<wait><f10>"]
-  boot_wait       = "2s"
+  vm_name       = "${local.vm_name}"
+  boot_command = [
+      "<spacebar><wait><spacebar><wait><spacebar><wait><spacebar><wait><spacebar><wait>",
+      "e<wait>",
+      "<down><down><down><end>",
+      " autoinstall",
+      "<f10>"
+    ]
+  boot_wait       = "5s"
   cpus            = 2
-  disk_size       = "8G"
+  memory          = 2048
+  disk_size       = "30G"
+  disk_compression = true
   format          = "raw"
   headless        = var.headless
   vnc_bind_address = "0.0.0.0"
@@ -10,7 +23,7 @@ source "qemu" "harmonic-live" {
   iso_target_path = "${path.root}/packer-cache/${var.live_iso}"
   iso_url         = "https://releases.ubuntu.com/${var.ubuntu_series}/${var.live_iso}"
   iso_checksum    = "file:http://releases.ubuntu.com/${var.ubuntu_series}/SHA256SUMS"
-  memory          = 2048
+  efi_boot          = true
   qemuargs = [
     ["-machine", "ubuntu,accel=kvm"],
     ["-cpu", "host"],
@@ -20,7 +33,7 @@ source "qemu" "harmonic-live" {
     ["-device", "virtio-blk-pci,drive=drive1,bootindex=2"],
     ["-drive", "if=pflash,format=raw,readonly=on,file=/usr/share/OVMF/OVMF_CODE.fd"],
     ["-drive", "if=pflash,format=raw,file=OVMF_VARS.fd"],
-    ["-drive", "file=output-harmonic-live/packer-harmonic-live,if=none,id=drive0,cache=writeback,discard=ignore,format=raw"],
+    ["-drive", "file=${local.output_dir}/packer-${local.vm_name},if=none,id=drive0,cache=writeback,discard=ignore,format=raw"],
     ["-drive", "file=harmonic-seeds-live.iso,format=raw,cache=none,if=none,id=drive1,readonly=on"],
     ["-drive", "file=${path.root}/packer-cache/${var.live_iso},if=none,id=cdrom0,media=cdrom"]
   ]
@@ -61,13 +74,13 @@ build {
     ]
   }
 
-  #  post-processor "compress" {
-  #    output = "harmonic-installer-live.tar.gz"
-  #  }
+   post-processor "compress" {
+     output = "harmonic-installer-live.tar.gz"
+   }
 
   post-processor "shell-local" {
     inline = [
-      "SOURCE=flat",
+      "SOURCE=harmonic-live",
       "IMG_FMT=raw",
       "ROOT_PARTITION=2",
       "OUTPUT=${var.filename}",
