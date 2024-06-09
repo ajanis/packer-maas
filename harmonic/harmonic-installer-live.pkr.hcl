@@ -6,20 +6,18 @@ source "qemu" "harmonic-live" {
     "<down><down><down><end>",
     " autoinstall",
     "<f10>"
-  ]
-  boot_wait        = "5s"
+  ]f
+  boot_wait        = "2s"
   cpus             = 2
   memory           = 2048
-  disk_size        = "30G"
-  disk_compression = true
   format           = "raw"
+  disk_size        = "8G"
   headless         = var.headless
   vnc_bind_address = "0.0.0.0"
   http_directory   = var.http_directory
   iso_target_path  = "${path.root}/packer-cache/${var.live_iso}"
   iso_url          = "https://releases.ubuntu.com/${var.ubuntu_series}/${var.live_iso}"
   iso_checksum     = "file:http://releases.ubuntu.com/${var.ubuntu_series}/SHA256SUMS"
-  efi_boot         = true
   qemuargs = [
     ["-machine", "ubuntu,accel=kvm"],
     ["-cpu", "host"],
