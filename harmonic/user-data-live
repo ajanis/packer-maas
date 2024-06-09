@@ -4,7 +4,7 @@ autoinstall:
   identity:
     hostname: harmonic-live
     username: ubuntu
-    password: "$6$canonical.$0zWaW71A9ke9ASsaOcFTdQ2tx1gSmLxMPrsH0rF0Yb.2AEKNPV1lrF94n6YuPJmnUy2K2/JSDtxuiBDey6Lpa/"
+    password: $6$canonical.$0zWaW71A9ke9ASsaOcFTdQ2tx1gSmLxMPrsH0rF0Yb.2AEKNPV1lrF94n6YuPJmnUy2K2/JSDtxuiBDey6Lpa/
   keyboard:
     layout: us
     variant: ""
@@ -20,6 +20,7 @@ autoinstall:
   ssh:
     install-server: true
     allow-pw: true
+    authorized-keys: []
   storage:
     grub:
       update_nvram: true
@@ -31,22 +32,19 @@ autoinstall:
   package_upgrade: true
   late-commands:
     - echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' > /target/etc/sudoers.d/ubuntu
+    - sed -i -e '/^[#]*PermitRootLogin/s/^.*$/PermitRootLogin yes/' /target/etc/ssh/sshd_config
+    - sed -i -e '/^[#]*PasswordAuthentication/s/^.*$/PasswordAuthentication yes/' /target/etc/ssh/sshd_config
+    - systemctl restart ssh
   user-data:
-    #cloud-config
-    hostname: harmonic-live
-    users:
-      - name: "root"
-        lock_passwd: "false"
-        password: "$6$canonical.$0zWaW71A9ke9ASsaOcFTdQ2tx1gSmLxMPrsH0rF0Yb.2AEKNPV1lrF94n6YuPJmnUy2K2/JSDtxuiBDey6Lpa/"
-        ssh_redirect_user: "false"
-      - name: "ubuntu"
-        lock_passwd: "false"
-        password: "$6$canonical.$0zWaW71A9ke9ASsaOcFTdQ2tx1gSmLxMPrsH0rF0Yb.2AEKNPV1lrF94n6YuPJmnUy2K2/JSDtxuiBDey6Lpa/"
-        ssh_redirect_user: "false"
-        sudo: ["ALL=(ALL) NOPASSWD:ALL"]
-    ssh_pwauth: "true"
-    disable_root: "false"
-    preserve_hostname: "true"
-    runcmd:
-      - sed -i -e '/^[#]*PermitRootLogin/s/^.*$/PermitRootLogin yes/' /etc/ssh/sshd_config
-      - systemctl restart ssh
+  #cloud-config
+  hostname: harmonic-live
+  users:
+    - name: root
+      password: $6$canonical.$0zWaW71A9ke9ASsaOcFTdQ2tx1gSmLxMPrsH0rF0Yb.2AEKNPV1lrF94n6YuPJmnUy2K2/JSDtxuiBDey6Lpa/
+      lock_passwd: false
+    - name: ubuntu
+      password: $6$canonical.$0zWaW71A9ke9ASsaOcFTdQ2tx1gSmLxMPrsH0rF0Yb.2AEKNPV1lrF94n6YuPJmnUy2K2/JSDtxuiBDey6Lpa/
+      lock_passwd: false
+      shell: /bin/bash
+      groups: [adm, sudo]
+      sudo: ["ALL=(ALL) NOPASSWD:ALL"]
