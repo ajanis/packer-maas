@@ -1,6 +1,6 @@
 variable "headless" {
   type        = bool
-  default     = false
+  default     = true
   description = "Whether VNC viewer should not be launched."
 }
 

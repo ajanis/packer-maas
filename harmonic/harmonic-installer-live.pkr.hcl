@@ -1,6 +1,6 @@
 locals {
     vm_name = "harmonic-live"
-    output_dir = "output/${local.vm_name}"
+    output_dir = "output-${local.vm_name}"
     }
 source "qemu" "harmonic-live" {
   vm_name       = "${local.vm_name}"
