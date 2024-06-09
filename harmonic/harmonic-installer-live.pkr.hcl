@@ -1,9 +1,5 @@
-locals {
-    vm_name = "harmonic-live"
-    output_dir = "output-${local.vm_name}"
-    }
 source "qemu" "harmonic-live" {
-  vm_name       = "${local.vm_name}"
+  vm_name       = "${var.vm_name}-live"
   boot_command = [
       "<spacebar><wait><spacebar><wait><spacebar><wait><spacebar><wait><spacebar><wait>",
       "e<wait>",
@@ -33,7 +29,7 @@ source "qemu" "harmonic-live" {
     ["-device", "virtio-blk-pci,drive=drive1,bootindex=2"],
     ["-drive", "if=pflash,format=raw,readonly=on,file=/usr/share/OVMF/OVMF_CODE.fd"],
     ["-drive", "if=pflash,format=raw,file=OVMF_VARS.fd"],
-    ["-drive", "file=${local.output_dir}/packer-${local.vm_name},if=none,id=drive0,cache=writeback,discard=ignore,format=raw"],
+    ["-drive", "file=${var.output_dir}-live/packer-${var.vm_name}-live,if=none,id=drive0,cache=writeback,discard=ignore,format=raw"],
     ["-drive", "file=harmonic-seeds-live.iso,format=raw,cache=none,if=none,id=drive1,readonly=on"],
     ["-drive", "file=${path.root}/packer-cache/${var.live_iso},if=none,id=cdrom0,media=cdrom"]
   ]

@@ -81,3 +81,15 @@ variable "shutdown" {
   default     = "echo 'packer' | sudo -S shutdown -P now"
   description = "Default shutdown command for qemu builds"
 }
+
+variable "vm_name" {
+  type        = string
+  default     = "harmonic"
+  description = "Base vm hostname"
+}
+
+variable "output_dir" {
+  type        = string
+  default     = "output-harmonic"
+  description = "Base output directory path"
+}
