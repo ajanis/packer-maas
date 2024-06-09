@@ -87,9 +87,3 @@ variable "vm_name" {
   default     = "harmonic"
   description = "Base vm hostname"
 }
-
-variable "output_dir" {
-  type        = string
-  default     = "output-${var.vm_name}"
-  description = "Base output directory path"
-}
