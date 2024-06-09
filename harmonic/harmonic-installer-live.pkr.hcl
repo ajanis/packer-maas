@@ -39,7 +39,7 @@ source "qemu" "harmonic-live" {
   ssh_handshake_attempts = 500
   ssh_password           = var.ssh_password
   ssh_timeout            = var.timeout
-  ssh_username           = var.ssh_username
+  ssh_username           = "ubuntu"
 }
 
 build {
