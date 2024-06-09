@@ -68,9 +68,9 @@ build {
     ]
   }
 
-  post-processor "compress" {
-    output = "harmonic-installer-live.tar.gz"
-  }
+  # post-processor "compress" {
+  #   output = "harmonic-installer-live.tar.gz"
+  # }
 
   post-processor "shell-local" {
     inline = [
