@@ -1,10 +1,10 @@
 #cloud-config
 autoinstall:
   version: 1
-  identity:
-    hostname: harmonic-live
-    username: ubuntu
-    password: $6$canonical.$0zWaW71A9ke9ASsaOcFTdQ2tx1gSmLxMPrsH0rF0Yb.2AEKNPV1lrF94n6YuPJmnUy2K2/JSDtxuiBDey6Lpa/
+  # identity:
+  #   hostname: harmonic-live
+  #   username: ubuntu
+  #   password: $6$canonical.$0zWaW71A9ke9ASsaOcFTdQ2tx1gSmLxMPrsH0rF0Yb.2AEKNPV1lrF94n6YuPJmnUy2K2/JSDtxuiBDey6Lpa/
   keyboard:
     layout: us
     variant: ""
