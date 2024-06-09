@@ -65,7 +65,8 @@ build {
   provisioner "shell" {
     environment_vars  = ["HOME_DIR=/home/ubuntu", "http_proxy=${var.http_proxy}", "https_proxy=${var.https_proxy}", "no_proxy=${var.no_proxy}"]
     execute_command   = "echo 'ubuntu' | {{ .Vars }} sudo -S -E sh -eux '{{ .Path }}'"
-    expect_disconnect = true    scripts = [
+    expect_disconnect = true
+    scripts = [
       "${path.root}/scripts/liveiso/curtin.sh",
       "${path.root}/scripts/liveiso/networking.sh",
       "${path.root}/scripts/harmonic-install/setup-harmonic-installer.sh",
