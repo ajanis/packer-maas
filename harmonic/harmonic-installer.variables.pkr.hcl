@@ -78,7 +78,7 @@ variable "cloud_img" {
 
 variable "shutdown" {
   type        = string
-  default     = "echo 'packer' | sudo -S shutdown -P now"
+  default     = "sudo -S shutdown -P now"
   description = "Default shutdown command for qemu builds"
 }
 
