@@ -55,7 +55,7 @@ build {
   }
 
   provisioner "file" {
-    destination = "/opt/"
+    destination = "/tmp/"
     sources = [
       "${path.root}/packages/ostree-upgrade-bootstrap_2.0.41_all.deb",
       "${path.root}/packages/ostree-upgrade_2.0.41_all.deb"

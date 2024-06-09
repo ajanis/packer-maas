@@ -17,9 +17,9 @@
 
 
 ## Install OSTree wrapper-scripts packages
-dpkg -i /opt/ostree-upgrade-bootstrap_2.0.41_all.deb
-dpkg -i /opt/ostree-upgrade_2.0.41_all.deb
-rm -f /opt/*.deb
+dpkg -i /tmp/ostree-upgrade-bootstrap_2.0.41_all.deb
+dpkg -i /tmp/ostree-upgrade_2.0.41_all.deb
+rm -f /tmp/*.deb
 
 ## Create systemd service to run on boot
 touch /etc/systemd/system/harmonic-install.service
