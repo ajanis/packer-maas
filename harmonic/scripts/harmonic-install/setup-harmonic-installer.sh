@@ -23,7 +23,7 @@ rm -f /tmp/*.deb
 
 ## Create systemd service to run on boot
 touch /etc/systemd/system/harmonic-install.service
-cat > /etc/systemd/system/harmonic-install.service <<EOF
+cat << 'EOF' > /etc/systemd/system/harmonic-install.service
 [Unit]
 Description=Harmonic cOS Installation Single-Use Startup Script
 ConditionFirstBoot=yes
@@ -40,7 +40,7 @@ EOF
 
 ## Create script called by systemd service
 touch /usr/local/bin/harmonic-installer.sh
-cat > /usr/local/bin/harmonic-installer.sh <<EOF
+cat << 'EOF' > /usr/local/bin/harmonic-installer.sh
 #!/bin/bash -ex
 ##############################################################################
 #
@@ -55,7 +55,6 @@ cat > /usr/local/bin/harmonic-installer.sh <<EOF
 
 export WS_HOST="172.22.31.150"
 export WS_PORT="8080"
-export APOLLO_RELEASE="release-3.21.3.0-7+auto15"
 export APOLLO_ISO="APOLLO_PLATFORM-${APOLLO_RELEASE}.iso"
 export OSTREE_PKG=ostree-upgrade.tar.gz
 export OSTREE_PKGS="ostree-upgrade-bootstrap_2.0.41_all.deb ostree-upgrade_2.0.41_all.deb"
