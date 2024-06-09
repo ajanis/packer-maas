@@ -3,18 +3,17 @@ autoinstall:
   version: 1
   identity:
     hostname: harmonic-live
-    username: root
+    username: ubuntu
     password: "$6$canonical.$0zWaW71A9ke9ASsaOcFTdQ2tx1gSmLxMPrsH0rF0Yb.2AEKNPV1lrF94n6YuPJmnUy2K2/JSDtxuiBDey6Lpa/"
   keyboard:
     layout: us
     variant: ""
   proxy: http://44.10.4.101:8000
   apt:
-    # even set to no/false, geoip lookup still happens
-    geoip: false
+    geoip: true
     primary:
       - arches: [default]
-        uri: "http://mirrors.aliyun.com/ubuntu/"
+        uri: http://us.archive.ubuntu.com/ubuntu/
   refresh-installer:
     channel: edge
     update: yes
@@ -28,22 +27,20 @@ autoinstall:
       size: 0
     layout:
       name: direct
-  late-commands:
-    - |
-      if [ -d /sys/firmware/efi ]; then
-        apt-get install -y efibootmgr
-        efibootmgr -o $(efibootmgr | perl -n -e '/Boot(.+)\* ubuntu/ && print $1')
-      fi
   package_update: true
   package_upgrade: true
+  late-commands:
+    - echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' > /target/etc/sudoers.d/ubuntu
   user-data:
+    #cloud-config
     users:
-      - name: root
+      - name: ubuntu
+        lock_passwd: false
         password: "$6$canonical.$0zWaW71A9ke9ASsaOcFTdQ2tx1gSmLxMPrsH0rF0Yb.2AEKNPV1lrF94n6YuPJmnUy2K2/JSDtxuiBDey6Lpa/"
-        ssh_redirect_user: False
-    preserve_hostname: True
-    ssh_pwauth: True
-    disable_root: False
+        ssh_redirect_user: false
+    ssh_pwauth: true
+    disable_root: false
+    preserve_hostname: true
     runcmd:
       - sed -i -e '/^[#]*PermitRootLogin/s/^.*$/PermitRootLogin yes/' /etc/ssh/sshd_config
       - systemctl restart ssh
