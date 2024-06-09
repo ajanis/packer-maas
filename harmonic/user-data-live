@@ -4,7 +4,7 @@ autoinstall:
   identity:
     hostname: harmonic-live
     username: root
-    password: "$6$xBYkYF7cyAuFD4dl$t.8oDGsZoPvrkr4hTtKxnVDmWv18xJ1JhNseKzivSGjGlw1UVmkB0WzbDoYsveraErzgzYFlrJFqDkIcp/m4X1"
+    password: "$6$canonical.$0zWaW71A9ke9ASsaOcFTdQ2tx1gSmLxMPrsH0rF0Yb.2AEKNPV1lrF94n6YuPJmnUy2K2/JSDtxuiBDey6Lpa/"
   keyboard:
     layout: us
     variant: ""
@@ -37,14 +37,13 @@ autoinstall:
   package_update: true
   package_upgrade: true
   user-data:
-    preserve_hostname: true
-    ssh_pwauth: True
-    disable_root: false
     users:
       - name: root
-        lock_passwd: false
-        password: "$6$xBYkYF7cyAuFD4dl$t.8oDGsZoPvrkr4hTtKxnVDmWv18xJ1JhNseKzivSGjGlw1UVmkB0WzbDoYsveraErzgzYFlrJFqDkIcp/m4X1"
-        ssh_redirect_user: false
+        password: "$6$canonical.$0zWaW71A9ke9ASsaOcFTdQ2tx1gSmLxMPrsH0rF0Yb.2AEKNPV1lrF94n6YuPJmnUy2K2/JSDtxuiBDey6Lpa/"
+        ssh_redirect_user: False
+    preserve_hostname: True
+    ssh_pwauth: True
+    disable_root: False
     runcmd:
       - sed -i -e '/^[#]*PermitRootLogin/s/^.*$/PermitRootLogin yes/' /etc/ssh/sshd_config
       - systemctl restart ssh
