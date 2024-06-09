@@ -6,7 +6,7 @@ source "qemu" "harmonic-live" {
     "<down><down><down><end>",
     " autoinstall",
     "<f10>"
-  ]f
+  ]
   boot_wait        = "2s"
   cpus             = 2
   memory           = 2048
