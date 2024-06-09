@@ -36,15 +36,15 @@ autoinstall:
     - sed -i -e '/^[#]*PasswordAuthentication/s/^.*$/PasswordAuthentication yes/' /target/etc/ssh/sshd_config
     - systemctl restart ssh
   user-data:
-  #cloud-config
-  hostname: harmonic-live
-  users:
-    - name: root
-      password: $6$canonical.$0zWaW71A9ke9ASsaOcFTdQ2tx1gSmLxMPrsH0rF0Yb.2AEKNPV1lrF94n6YuPJmnUy2K2/JSDtxuiBDey6Lpa/
-      lock_passwd: false
-    - name: ubuntu
-      password: $6$canonical.$0zWaW71A9ke9ASsaOcFTdQ2tx1gSmLxMPrsH0rF0Yb.2AEKNPV1lrF94n6YuPJmnUy2K2/JSDtxuiBDey6Lpa/
-      lock_passwd: false
-      shell: /bin/bash
-      groups: [adm, sudo]
-      sudo: ["ALL=(ALL) NOPASSWD:ALL"]
+    #cloud-config
+    hostname: harmonic-live
+    users:
+      - name: root
+        password: $6$canonical.$0zWaW71A9ke9ASsaOcFTdQ2tx1gSmLxMPrsH0rF0Yb.2AEKNPV1lrF94n6YuPJmnUy2K2/JSDtxuiBDey6Lpa/
+        lock_passwd: false
+      - name: ubuntu
+        password: $6$canonical.$0zWaW71A9ke9ASsaOcFTdQ2tx1gSmLxMPrsH0rF0Yb.2AEKNPV1lrF94n6YuPJmnUy2K2/JSDtxuiBDey6Lpa/
+        lock_passwd: false
+        shell: /bin/bash
+        groups: [adm, sudo]
+        sudo: ["ALL=(ALL) NOPASSWD:ALL"]
