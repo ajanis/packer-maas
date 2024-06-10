@@ -74,7 +74,7 @@ build {
   }
 
   # post-processor "compress" {
-  #   output = "harmonic-installer-live.tar.gz"
+  #   output = "harmonic-live.tar.gz"
   # }
 
   post-processor "shell-local" {
@@ -82,7 +82,7 @@ build {
       "SOURCE=harmonic-live",
       "IMG_FMT=raw",
       "ROOT_PARTITION=2",
-      "OUTPUT=${path.root}/harmonic-live.tar.gz",
+      "OUTPUT=${path.root}/${var.vm_name}-live.tar.gz",
       "source ../scripts/fuse-nbd",
       "source ../scripts/fuse-tar-root"
     ]

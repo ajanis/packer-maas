@@ -42,7 +42,7 @@ variable "timeout" {
 
 variable "filename" {
   type        = string
-  default     = "harmonic-installer.tar.gz"
+  default     = "harmonic.tar.gz"
   description = "The filename of the tarball to produce"
 }
 
