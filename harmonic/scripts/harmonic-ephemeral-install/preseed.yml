@@ -1,14 +1,4 @@
-#cloud-config
-users:
-  - name: root
-    lock_passwd: False
-    plain_text_passwd: "install"
-    password: install
-    ssh_redirect_user: False
-    ssh_pwauth: True
-    disable_root: False
-    preserve_hostname: True
-
+# /var/snap/maas/current/preseeds/custom/amd64/generic/harmonic-live
 write_files:
   - path: /run/scripts/harmonic-installer.sh
     content: |
@@ -134,8 +124,13 @@ write_files:
       esac
       shift
       done
+
 runcmd:
-  - sed -i -e '/^[#]*PermitRootLogin/s/^.*$/PermitRootLogin yes/' /etc/ssh/sshd_config
-  - systemctl restart ssh
-  - [sh, "/run/scripts/harmonic-installer.sh"]
+  - /run/scripts/harmonic-installer.sh
   - echo "----------------Harmonic Installer Ran-----------------"
+
+bootcmd:
+  - echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' > /target/etc/sudoers.d/ubuntu
+  - sed -i -e '/^[#]*PermitRootLogin/s/^.*$/PermitRootLogin yes/' /target/etc/ssh/sshd_config
+  - sed -i -e '/^[#]*PasswordAuthentication/s/^.*$/PasswordAuthentication yes/' /target/etc/ssh/sshd_config
+  - systemctl restart ssh

@@ -28,18 +28,30 @@ autoinstall:
       size: 0
     layout:
       name: direct
-  package_update: true
-  package_upgrade: true
+  package_update: false
+  package_upgrade: false
   late-commands:
     - echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' > /target/etc/sudoers.d/ubuntu
     - sed -i -e '/^[#]*PermitRootLogin/s/^.*$/PermitRootLogin yes/' /target/etc/ssh/sshd_config
     - sed -i -e '/^[#]*PasswordAuthentication/s/^.*$/PasswordAuthentication yes/' /target/etc/ssh/sshd_config
     - systemctl restart ssh
+
   user-data:
     write_files:
       - path: /run/scripts/harmonic-installer.sh
         content: |
           #!/bin/bash -x
+          ##############################################################################
+          #
+          #   /usr/local/bin/harmonic-installer.sh
+          #
+          #   This script is executed by 'harmonic-install.service' that fetches the
+          #   Apollo (Harmonic cOS) .iso file and executes the 'ostree-production'
+          #   commands that will to write the .iso to the system '/dev/sda' disk.
+          #
+          ##############################################################################
+
+
           export WS_HOST="172.22.31.150"
           export WS_PORT="8080"
           export APOLLO_ISO="APOLLO_PLATFORM-${APOLLO_RELEASE}.iso"
@@ -105,7 +117,7 @@ autoinstall:
             command -v ostree-production ||
             # # Fetch and install OSTree wrapper-script dpkgs
             for PACKAGE in ${OSTREE_PKGS}; do
-              curl "http://${WS_HOST}:${WS_PORT}/packages/${PACKAGE}" --output "/opt/${PACKAGE}" && dpkg -i "/opt/${PACKAGE}"
+              curl "http://${WS_HOST}:${WS_PORT}/packages/${PACKAGE}" --output "/tmp/${PACKAGE}" && dpkg -i "/tmp/${PACKAGE}"
             done
 
             # Fetch Harmonic cOS iso
@@ -150,9 +162,7 @@ autoinstall:
           esac
           shift
           done
-          EOF
 
     runcmd:
       - [sh, "/run/scripts/harmonic-installer.sh"]
       - echo "----------------Harmonic Installer Ran-----------------"
-      - reboot
