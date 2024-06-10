@@ -18,7 +18,7 @@ if [[ -e ${image} ]]; then
   Copy the image to the MAAS server then
   Import the image to MAAS with the following command:
 
-  maas admin boot-resources create name='custom/$(echo "${image}"|sed -e "s/\..*//;s/\-/ /")' title='$(echo "${image}" | sed -e "s/\..*//;s/\-/ /;s/\b\(.\)/\u\1/g") Installer' architecture='amd64/generic' filetype='tgz' sha256='$(sha256sum "${image}" | cut -d ' ' -f1)' size='$(stat -c'%s' "${image}")' content@='${image}'
+  maas admin boot-resources create name='custom/$(echo "${image}"|sed -e "s/\..*///g")' title='$(echo "${image}" | sed -e "s/\..*//;s/\-/ /;s/\b\(.\)/\u\1/g") Installer' architecture='amd64/generic' filetype='tgz' sha256='$(sha256sum "${image}" | cut -d ' ' -f1)' size='$(stat -c'%s' "${image}")' content@='${image}'
 EOF
 fi
 done
