@@ -23,9 +23,9 @@ write_files:
       #
       ##############################################################################
 
-
       export WS_HOST="172.22.31.150"
       export WS_PORT="8080"
+      export APOLLO_RELEASE="release-3.21.3.0-7+auto15"
       export APOLLO_ISO="APOLLO_PLATFORM-${APOLLO_RELEASE}.iso"
       export OSTREE_PKG=ostree-upgrade.tar.gz
       export OSTREE_PKGS="ostree-upgrade-bootstrap_2.0.41_all.deb ostree-upgrade_2.0.41_all.deb"

@@ -41,7 +41,7 @@ EOF
 ## Create script called by systemd service
 touch /usr/local/bin/harmonic-installer.sh
 cat << 'EOF' > /usr/local/bin/harmonic-installer.sh
-#!/bin/bash -ex
+#!/bin/bash -x
 ##############################################################################
 #
 #   /usr/local/bin/harmonic-installer.sh
@@ -52,9 +52,9 @@ cat << 'EOF' > /usr/local/bin/harmonic-installer.sh
 #
 ##############################################################################
 
-
 export WS_HOST="172.22.31.150"
 export WS_PORT="8080"
+export APOLLO_RELEASE="release-3.21.3.0-7+auto15"
 export APOLLO_ISO="APOLLO_PLATFORM-${APOLLO_RELEASE}.iso"
 export OSTREE_PKG=ostree-upgrade.tar.gz
 export OSTREE_PKGS="ostree-upgrade-bootstrap_2.0.41_all.deb ostree-upgrade_2.0.41_all.deb"
@@ -118,7 +118,7 @@ ostreeSetup() {
   command -v ostree-production ||
   # # Fetch and install OSTree wrapper-script dpkgs
   for PACKAGE in ${OSTREE_PKGS}; do
-    curl "http://${WS_HOST}:${WS_PORT}/packages/${PACKAGE}" --output "/opt/${PACKAGE}" && dpkg -i "/opt/${PACKAGE}"
+    curl "http://${WS_HOST}:${WS_PORT}/packages/${PACKAGE}" --output "/tmp/${PACKAGE}" && dpkg -i "/tmp/${PACKAGE}"
   done
 
   # Fetch Harmonic cOS iso

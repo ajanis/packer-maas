@@ -1,4 +1,4 @@
-#!/bin/bash -ex
+#!/bin/bash -x
 ##############################################################################
 #
 #   /usr/local/bin/harmonic-installer.sh
@@ -75,7 +75,7 @@ ostreeSetup() {
   command -v ostree-production ||
   # # Fetch and install OSTree wrapper-script dpkgs
   for PACKAGE in ${OSTREE_PKGS}; do
-    curl "http://${WS_HOST}:${WS_PORT}/packages/${PACKAGE}" --output "/opt/${PACKAGE}" && dpkg -i "/opt/${PACKAGE}"
+    curl "http://${WS_HOST}:${WS_PORT}/packages/${PACKAGE}" --output "/tmp/${PACKAGE}" && dpkg -i "/tmp/${PACKAGE}"
   done
 
   # Fetch Harmonic cOS iso
