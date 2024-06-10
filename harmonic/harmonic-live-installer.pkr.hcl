@@ -53,13 +53,13 @@ build {
     ]
   }
 
-  provisioner "file" {
-    destination = "/run/harmonic"
-    sources = [
-      "${path.root}/packages/ostree-upgrade-bootstrap_2.0.41_all.deb",
-      "${path.root}/packages/ostree-upgrade_2.0.41_all.deb"
-    ]
-  }
+  # provisioner "file" {
+  #   destination = "/run/harmonic"
+  #   sources = [
+  #     "${path.root}/packages/ostree-upgrade-bootstrap_2.0.41_all.deb",
+  #     "${path.root}/packages/ostree-upgrade_2.0.41_all.deb"
+  #   ]
+  # }
 
   provisioner "shell" {
     environment_vars  = ["HOME_DIR=/home/ubuntu", "http_proxy=${var.http_proxy}", "https_proxy=${var.https_proxy}", "no_proxy=${var.no_proxy}"]
@@ -68,8 +68,8 @@ build {
     scripts = [
       "${path.root}/scripts/liveiso/curtin.sh",
       "${path.root}/scripts/liveiso/networking.sh",
-      "${path.root}/scripts/harmonic-install/setup-harmonic-installer.sh",
       "${path.root}/scripts/liveiso/cleanup.sh"
+      # "${path.root}/scripts/harmonic-install/setup-harmonic-installer.sh",
     ]
   }
 
