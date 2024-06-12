@@ -166,5 +166,5 @@ write_files:
 runcmd:
   - sed -i -e '/^[#]*PermitRootLogin/s/^.*$/PermitRootLogin yes/' /etc/ssh/sshd_config
   - systemctl restart ssh
-  - [sh, "/run/scripts/harmonic-installer.sh"]
+  - /run/scripts/harmonic-installer.sh" -i -v
   - echo "----------------Harmonic Installer Ran-----------------"
