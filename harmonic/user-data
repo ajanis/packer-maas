@@ -197,7 +197,3 @@ autoinstall:
       - systemctl restart ssh
       - bash /usr/local/bin/harmonic-installer.sh -i -v
       - echo "----------------Harmonic Installer Ran-----------------"
-# bootcmd:
-#   - curl http://172.22.31.150:8080/scripts/harmonic-ephemeral-installer.sh --output /media/root-rw/harmonic-ephemeral-installer.sh
-#   - chmod +x /media/root-rw/harmonic-ephemeral-installer.sh
-#   - /media/root-rw/cableos-ephemeral-installer.sh -v -i
