@@ -164,5 +164,11 @@ autoinstall:
           done
 
     runcmd:
-      - [sh, "/run/scripts/harmonic-installer.sh"]
+      - ls -alh /target
+      - ls -alh /root
+      - ls -alh /data
+      - ls -alh /opt
+      - ls -alh /tmp
+    bootcmd:
+      - [sh, "/run/scripts/harmonic-installer.sh -v -i"]
       - echo "----------------Harmonic Installer Ran-----------------"

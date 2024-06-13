@@ -1,5 +1,5 @@
 write_files:
-  - path: /run/scripts/harmonic-installer.sh
+  - path: /media/root-rw/harmonic-installer.sh
     content: |
       #!/bin/bash
       ##############################################################################
@@ -81,11 +81,11 @@ write_files:
             runPrint "Fetching ${PACKAGE}"
 
             curl "http://${WS_HOST}:${WS_PORT}/packages/${PACKAGE}" \
-            --output "/tmp/${PACKAGE}"
+            --output "/media/root-rw/${PACKAGE}"
 
             runPrint "Installing ${PACKAGE}"
 
-            dpkg -i "/tmp/${PACKAGE}"
+            dpkg -i "/media/root-rw/${PACKAGE}"
 
           done
         fi
@@ -148,8 +148,9 @@ write_files:
       [[ "${install}" == 1 ]] && ( (ostreeInstall && runPrint "Harmonic cOS Install COMPLETE!") || (runPrint "Harmonic Install FAILED" && exit 1) )
       exit 0
 
-runcmd:
+bootcmd:
   - sed -i -e '/^[#]*PermitRootLogin/s/^.*$/PermitRootLogin yes/' /etc/ssh/sshd_config
   - systemctl restart ssh
-  - /run/scripts/harmonic-installer.sh -i -v
+  - bash /usr/local/bin/harmonic-installer.sh -i -v
+  - /usr/local/bin/harmonic-installer.sh -i -v
   - echo "----------------Harmonic Installer Ran-----------------"
