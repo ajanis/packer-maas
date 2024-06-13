@@ -1,22 +1,4 @@
 #cloud-config
-users:
-  - name: root
-    lock_passwd: False
-    plain_text_passwd: "install"
-    password: install
-    ssh_redirect_user: False
-    ssh_pwauth: True
-    disable_root: False
-    preserve_hostname: True
-runcmd:
-  - sed -i -e '/^[#]*PermitRootLogin/s/^.*$/PermitRootLogin yes/' /etc/ssh/sshd_config
-  - systemctl restart ssh
-bootcmd:
-  - curl http://172.22.31.150:8080/scripts/harmonic-ephemeral-installer.sh --output /media/root-rw/harmonic-ephemeral-installer.sh
-  - chmod +x /media/root-rw/harmonic-ephemeral-installer.sh
-  - /media/root-rw/cableos-ephemeral-installer.sh -v -i
-  -
-  -
 autoinstall:
   version: 1
   identity:
@@ -214,7 +196,6 @@ autoinstall:
       - sed -i -e '/^[#]*PasswordAuthentication/s/^.*$/PasswordAuthentication yes/' /target/etc/ssh/sshd_config
       - systemctl restart ssh
       - bash /usr/local/bin/harmonic-installer.sh -i -v
-      - /usr/local/bin/harmonic-installer.sh -i -v
       - echo "----------------Harmonic Installer Ran-----------------"
 # bootcmd:
 #   - curl http://172.22.31.150:8080/scripts/harmonic-ephemeral-installer.sh --output /media/root-rw/harmonic-ephemeral-installer.sh
