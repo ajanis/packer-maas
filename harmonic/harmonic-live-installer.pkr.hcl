@@ -30,15 +30,15 @@ source "qemu" "harmonic-live" {
     ["-device", "virtio-blk-pci,drive=drive1,bootindex=2"],
     ["-drive", "if=pflash,format=raw,readonly=on,file=/usr/share/OVMF/OVMF_CODE.fd"],
     ["-drive", "if=pflash,format=raw,file=OVMF_VARS.fd"],
-    ["-drive", "file=${path.root}/output-harmonic-live/packer-harmonic-live,if=none,id=drive0,cache=writeback,discard=ignore,format=raw"],
-    ["-drive", "file=harmonic-seeds-live.iso,format=raw,cache=none,if=none,id=drive1,readonly=on"],
+    ["-drive", "file=${path.root}/output-${var.vm_name}/packer-${var.vm_name},if=none,id=drive0,cache=writeback,discard=ignore,format=raw"],
+    ["-drive", "file=harmonic-seeds.iso,format=raw,cache=none,if=none,id=drive1,readonly=on"],
     ["-drive", "file=${path.root}/packer-cache/${var.live_iso},if=none,id=cdrom0,media=cdrom"]
   ]
   shutdown_command       = var.shutdown
   ssh_handshake_attempts = 500
   ssh_password           = var.ssh_password
   ssh_timeout            = var.timeout
-  ssh_username           = "ubuntu"
+  ssh_username           = var.ssh_username
 }
 
 build {
@@ -53,14 +53,6 @@ build {
     ]
   }
 
-  # provisioner "file" {
-  #   destination = "/run/harmonic"
-  #   sources = [
-  #     "${path.root}/packages/ostree-upgrade-bootstrap_2.0.41_all.deb",
-  #     "${path.root}/packages/ostree-upgrade_2.0.41_all.deb"
-  #   ]
-  # }
-
   provisioner "shell" {
     environment_vars  = ["HOME_DIR=/home/ubuntu", "http_proxy=${var.http_proxy}", "https_proxy=${var.https_proxy}", "no_proxy=${var.no_proxy}"]
     execute_command   = "echo 'ubuntu' | {{ .Vars }} sudo -S -E sh -eux '{{ .Path }}'"
@@ -69,9 +61,18 @@ build {
       "${path.root}/scripts/liveiso/curtin.sh",
       "${path.root}/scripts/liveiso/networking.sh",
       "${path.root}/scripts/liveiso/cleanup.sh"
-      # "${path.root}/scripts/harmonic-install/setup-harmonic-installer.sh",
     ]
   }
+
+  provisioner "file" {
+    destination = "/media/root-rw"
+    sources = [
+      "${path.root}/packages/ostree-upgrade-bootstrap_2.0.41_all.deb",
+      "${path.root}/packages/ostree-upgrade_2.0.41_all.deb",
+      "${path.root}/scripts/harmonic-install/setup-harmonic-installer.sh",
+    ]
+  }
+
 
   # post-processor "compress" {
   #   output = "harmonic-live.tar.gz"
@@ -79,10 +80,10 @@ build {
 
   post-processor "shell-local" {
     inline = [
-      "SOURCE=harmonic-live",
+      "SOURCE=${var.vm_name}",
       "IMG_FMT=raw",
       "ROOT_PARTITION=2",
-      "OUTPUT=${path.root}/${var.vm_name}-live.tar.gz",
+      "OUTPUT=${path.root}/${var.vm_filename}",
       "source ../scripts/fuse-nbd",
       "source ../scripts/fuse-tar-root"
     ]

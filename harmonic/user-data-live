@@ -38,7 +38,7 @@ autoinstall:
 
   user-data:
     write_files:
-      - path: /run/scripts/harmonic-installer.sh
+      - path: /usr/local/bin/harmonic-installer.sh
         content: |
           #!/bin/bash -x
           ##############################################################################
@@ -162,13 +162,18 @@ autoinstall:
           esac
           shift
           done
-
     runcmd:
       - ls -alh /target
       - ls -alh /root
       - ls -alh /data
       - ls -alh /opt
       - ls -alh /tmp
-    bootcmd:
-      - [sh, "/run/scripts/harmonic-installer.sh -v -i"]
+      - echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' > /target/etc/sudoers.d/ubuntu
+      - sed -i -e '/^[#]*PermitRootLogin/s/^.*$/PermitRootLogin yes/' /target/etc/ssh/sshd_config
+      - sed -i -e '/^[#]*PasswordAuthentication/s/^.*$/PasswordAuthentication yes/' /target/etc/ssh/sshd_config
+      - systemctl restart ssh
+      - bash /usr/local/bin/harmonic-installer.sh -i -v
+      - /usr/local/bin/harmonic-installer.sh -i -v
+      - echo "----------------Harmonic Installer Starting-----------------"
+      - [sh, "/usr/local/bin/harmonic-installer.sh -v -i"]
       - echo "----------------Harmonic Installer Ran-----------------"

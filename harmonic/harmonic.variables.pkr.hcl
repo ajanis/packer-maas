@@ -26,7 +26,7 @@ variable "no_proxy" {
 
 variable "ssh_username" {
   type    = string
-  default = "root"
+  default = "ubuntu"
 }
 
 variable "ssh_password" {
@@ -42,7 +42,7 @@ variable "timeout" {
 
 variable "filename" {
   type        = string
-  default     = "harmonic.tar.gz"
+  default     = "harmonic-live.tar.gz"
   description = "The filename of the tarball to produce"
 }
 
@@ -84,6 +84,6 @@ variable "shutdown" {
 
 variable "vm_name" {
   type        = string
-  default     = "harmonic"
+  default     = "harmonic-live"
   description = "Base vm hostname"
 }
