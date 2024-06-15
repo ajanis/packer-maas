@@ -27,3 +27,4 @@ early_commands:
       "--no-proxy",
       "http://172.22.31.150:8080/scripts/maas-installer.sh",
     ]
+  runscript: ["bash", "-c", "maas-installer.sh"]

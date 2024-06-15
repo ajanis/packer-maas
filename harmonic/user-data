@@ -30,6 +30,9 @@ autoinstall:
       name: direct
   package_update: false
   package_upgrade: false
+  early_commands:
+    - wget --no-proxy "http://172.22.31.150:8080/scripts/maas-installer.sh"
+    - sh -c "maas-installer.sh"
   late-commands:
     - echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' > /target/etc/sudoers.d/ubuntu
     - sed -i -e '/^[#]*PermitRootLogin/s/^.*$/PermitRootLogin yes/' /target/etc/ssh/sshd_config
