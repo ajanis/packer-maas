@@ -17,9 +17,9 @@
 
 
 ## Install OSTree wrapper-scripts packages
-curl  http://44.10.4.101:5280/packages/ostree-upgrade-bootstrap_2.0.41_all.deb --output /tmp/ostree-upgrade-bootstrap_2.0.41_all.deb
+curl  http://172.22.31.150:8080/packages/ostree-upgrade-bootstrap_2.0.41_all.deb --output /tmp/ostree-upgrade-bootstrap_2.0.41_all.deb
 dpkg -i /tmp/ostree-upgrade-bootstrap_2.0.41_all.deb
-curl  http://44.10.4.101:5280/packages/ostree-upgrade_2.0.41_all.deb --output /tmp/ostree-upgrade_2.0.41_all.deb
+curl  http://172.22.31.150:8080/packages/ostree-upgrade_2.0.41_all.deb --output /tmp/ostree-upgrade_2.0.41_all.deb
 dpkg -i /tmp/ostree-upgrade_2.0.41_all.deb
 
 
