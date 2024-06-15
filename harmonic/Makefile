@@ -38,6 +38,6 @@ harmonic-installer: check-deps clean seeds.iso OVMF_VARS.fd
 		.
 
 clean:
-	${RM} -rf output-* harmonic-installer*.gz packer-cache/* .iso OVMF_VARS.fd manifest.json
+	${RM} -rf output-* harmonic-installer*.gz packer-cache/* seeds.iso OVMF_VARS.fd manifest.json
 
 .INTERMEDIATE: OVMF_VARS.fd seeds.iso
