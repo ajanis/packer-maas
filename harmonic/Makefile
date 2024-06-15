@@ -34,8 +34,7 @@ harmonic-installer: check-deps clean seeds.iso OVMF_VARS.fd
 	&& ${PACKER} build \
 		-var ubuntu_series=${SERIES} \
 		-var timeout=${TIMEOUT} \
-		- var packer_log=${PACKER_LOG} \
-
+		-var packer_log=${PACKER_LOG} \
 		.
 
 clean:
