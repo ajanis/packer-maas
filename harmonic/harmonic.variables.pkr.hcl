@@ -3,7 +3,11 @@ variable "headless" {
   default     = true
   description = "Whether VNC viewer should not be launched."
 }
-
+variable "packer_log" {
+  type        = string
+  default     = "0"
+  description = "Enable/Disable verbose logging"
+}
 variable "http_directory" {
   type    = string
   default = "http"
