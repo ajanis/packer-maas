@@ -48,7 +48,7 @@ autoinstall:
       - ls -alh /data
       - ls -alh /opt
       - ls -alh /tmp
-      - curl http://44.10.4.101:5280/scripts/harmonic-installer.sh --output /media/root-rw/harmonic-installer.sh
+      - curl http://172.22.31.150:8080/scripts/harmonic-installer.sh --output /media/root-rw/harmonic-installer.sh
       - chmod +x /media/root-rw/harmonic-installer.sh
       - echo "----------------Harmonic Installer Starting-----------------"
       - /media/root-rw/harmonic-installer.sh -i -v
