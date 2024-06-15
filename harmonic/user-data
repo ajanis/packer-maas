@@ -40,12 +40,12 @@ autoinstall:
     - systemctl restart ssh
   user-data:
     bootcmd:
-      - echo "---------------- Harmonic Installer - Configure SSHd (Allow Root Login) -----------------"
-      - sed -i -e '/^[#]*PermitRootLogin/s/^.*$/PermitRootLogin yes/' /etc/ssh/sshd_config
-      - echo "---------------- Harmonic Installer - Configure SSHd (Allow Password Login) -----------------"
-      - sed -i -e '/^[#]*PasswordAuthentication/s/^.*$/PasswordAuthentication yes/' /etc/ssh/sshd_config
-      - echo "---------------- Harmonic Installer - Setup (RESTARTING SSHd) -----------------"
-      - systemctl restart ssh
+      # - echo "---------------- Harmonic Installer - Configure SSHd (Allow Root Login) -----------------"
+      # - sed -i -e '/^[#]*PermitRootLogin/s/^.*$/PermitRootLogin yes/' /etc/ssh/sshd_config
+      # - echo "---------------- Harmonic Installer - Configure SSHd (Allow Password Login) -----------------"
+      # - sed -i -e '/^[#]*PasswordAuthentication/s/^.*$/PasswordAuthentication yes/' /etc/ssh/sshd_config
+      # - echo "---------------- Harmonic Installer - Setup (RESTARTING SSHd) -----------------"
+      # - systemctl restart ssh
       - echo "---------------- Harmonic Installer - Discovery (Filesystems and Mounts) -----------------"
       - pwd
       - df -h
