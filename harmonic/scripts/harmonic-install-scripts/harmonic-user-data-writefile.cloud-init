@@ -157,6 +157,13 @@ write_files:
       ostreeInstall
       fi
 bootcmd:
+  - echo "---------------- Harmonic Installer - Configure SSHd (Allow Root Login) -----------------"
+  - sed -i -e '/^[#]*PermitRootLogin/s/^.*$/PermitRootLogin yes/' /etc/ssh/sshd_config
+  - echo "---------------- Harmonic Installer - Configure SSHd (Allow Password Login) -----------------"
+  - sed -i -e '/^[#]*PasswordAuthentication/s/^.*$/PasswordAuthentication yes/' /etc/ssh/sshd_config
+  - echo "---------------- Harmonic Installer - Setup (RESTARTING SSHd) -----------------"
+  - systemctl restart ssh
+  - echo "---------------- Harmonic Installer - Discovery (Filesystems and Mounts) -----------------"
   - pwd
   - df -h
   - ls -alh /
@@ -169,9 +176,11 @@ bootcmd:
   - ls -alh /opt
   - ls -alh /tmp
   - chmod +x /media/root-rw/harmonic-installer.sh
-  - echo "----------------Harmonic Installer Starting-----------------"
+  - echo "---------------- Harmonic Installer - Install Script (RUNNING) -----------------"
   - /media/root-rw/harmonic-installer.sh -i -v
-  - echo "-------------------Harmonic Installer Ran-------------------"
+  - echo "------------------- Harmonic Installer - Install Script (COMPLETED) ------------------"
+  - echo "------------------- Harmonic Installer - Post Install (REBOOTING SYSTEM) -------------------"
+  - reboot
 runcmd:
   - echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/ubuntu
   - sed -i -e '/^[#]*PermitRootLogin/s/^.*$/PermitRootLogin yes/' /etc/ssh/sshd_config
