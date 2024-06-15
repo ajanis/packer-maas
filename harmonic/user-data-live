@@ -40,140 +40,170 @@ autoinstall:
     write_files:
       - path: /usr/local/bin/harmonic-installer.sh
         content: |
-          #!/bin/bash -x
+          #!/bin/bash
           ##############################################################################
           #
-          #   /usr/local/bin/harmonic-installer.sh
+          #   harmonic-installer.sh
           #
-          #   This script is executed by 'harmonic-install.service' that fetches the
-          #   Apollo (Harmonic cOS) .iso file and executes the 'ostree-production'
-          #   commands that will to write the .iso to the system '/dev/sda' disk.
+          #   This script is executed either by 'harmonic-install.service' or by a
+          #   user-provided 'cloud-init' configuration.
+          #
+          #   The harmonic-installer.sh script will then perform the following steps:
+          #
+          #   1. Download and install the ostree-production .deb packages from the
+          #   MAAS webserver.
+          #   2. Download the latest Apollo (Harmony cOS) .iso from the MAAS webserver.
+          #   3. Create a /data directory and move the Apollo .iso into it.
+          #   4. Run the 'ostree-production' commands to display and write the .iso
+          #   to the system's physical disk (/dev/sda)
+          #   5. Reboot the system to /dev/sda
+          #
+          #   The system will reboot into Harmony cOS
           #
           ##############################################################################
 
+          # shellcheck disable=SC2312
 
-          export WS_HOST="172.22.31.150"
-          export WS_PORT="8080"
-          export APOLLO_ISO="APOLLO_PLATFORM-${APOLLO_RELEASE}.iso"
-          export OSTREE_PKG=ostree-upgrade.tar.gz
-          export OSTREE_PKGS="ostree-upgrade-bootstrap_2.0.41_all.deb ostree-upgrade_2.0.41_all.deb"
-          export MAAS_RESOURCE_URL=http://maas.spoc.charterlab.com:5248/images
-          export PROXY_URL='http://proxy4.spoc.charterlab.com:8080'
-          export PROXY_IGNORE='spoc.charterlab.com,nfv.charterlab.com,.svc,172.22.73.0/24,35.135.192.0/24,10.240.72.0/22,44.0.0.0/8,[2600:6ce6:4410:803/64],[2605:1c00:50f2:2800/64],[2605:1c00:50f3:70/64],proxy4.spoc.charterlab.com,localhost,127.0.0.1,44.10.4.0/24,44.10.4.101:5240/MAAS,44.10.4.200:5240/MAAS'
 
-          export proxy=0
-          export verbose=0
+          webserverHost="172.22.31.150"
+          webserverPort="8080"
+          apolloRelease="release-3.21.3.0-7+auto15"
+          apolloISO="APOLLO_PLATFORM-${apolloRelease}.iso"
+          ostreePackages="ostree-upgrade-bootstrap_2.0.41_all.deb ostree-upgrade_2.0.41_all.deb"
+          # maasURI="http://maas.spoc.charterlab.com:5248/images"
+          proxyURI="http://proxy4.spoc.charterlab.com:8080"
+          proxyIgnore="localhost,127.0.0.1,127.0.0.53,spoc.charterlab.com,nfv.charterlab.com,proxy4.spoc.charterlab.com,44.10.4.101/32,44.10.4.200/32,172.22.0.0/16"
+          localAssets="/media/root-rw"
+          localData="/data"
+          physicalDisk="/dev/sda"
+
+          proxy=0
+          download=0
+          install=0
           unset http_proxy
           unset https_proxy
+          unset no_proxy
+
+          runPrint() {
+          cat <<EOF
+          ===========================================================
+            $@
+          ===========================================================
+          EOF
+          }
 
           showHelp() {
           cat << EOT
-          Usage: $0 [-p|--proxy] [-v|--verbose] [-i|--install] [-h|--help]
+          Usage: $0 [-p -v] [-i] [-h]
 
           Image a physical server with Harmonic cOS
 
-          -p|--proxy 	  	Enable the HTTP Proxy
-                Note: HTTP Proxy is disabled by default
+          -p|	  	(OPTIONAL) Enable the HTTP Proxy
+                  Note: HTTP Proxy is disabled by default
 
-          -v|--verbose 	  	Enable verbose and xtrace mode (set -xv)
+          -v|	  	(OPTIONAL) Enable verbose and xtrace mode (set -xv)
 
-          -i|--install            Install Apollo (Harmonic cOS) .iso located in /data using ostree scripts
+          -i|     (REQUIRED FOR INSTALL) Install Apollo (Harmonic cOS) .iso located in "${localData}" using ostree scripts
 
-          -h|--help               Display help
+          -h|     Display help
 
           EOT
           }
 
           proxySetup() {
-            : "${http_proxy:=${PROXY_URL}}"
-            : "${https_proxy:=${PROXY_URL}}"
-            : "${no_proxy:=${PROXY_IGNORE}}"
+            if [[ ${proxy} == 1 ]]; then
 
-            echo -n "
-            http_proxy is set: ${http_proxy}
-            https_proxy is set: ${https_proxy}
 
-            no_proxy value is set: ${no_proxy}
+              : "${http_proxy:=${proxyURI}}"  && export http_proxy="${http_proxy}"
+              : "${https_proxy:=${proxyURI}}" && export https_proxy="${https_proxy}"
+              : "${no_proxy:=${proxyIgnore}}" && export no_proxy="${no_proxy}"
 
-            "
-          }
-
-          proxyTeardown() {
-
-            if [[ -n ${http_proxy} ]]; then
-              unset http_proxy
-              echo "http_proxy unset"
+              echo "Using http_proxy:: ${http_proxy}"
+              echo "Using https_proxy:: ${https_proxy}"
             fi
-
-            if [[ -n ${https_proxy} ]]; then
-              unset https_proxy
-              echo "https_proxy unset"
-            fi
-
+            return
           }
 
           ostreeSetup() {
 
-            command -v ostree-production ||
-            # # Fetch and install OSTree wrapper-script dpkgs
-            for PACKAGE in ${OSTREE_PKGS}; do
-              curl "http://${WS_HOST}:${WS_PORT}/packages/${PACKAGE}" --output "/tmp/${PACKAGE}" && dpkg -i "/tmp/${PACKAGE}"
-            done
+            runPrint "Checking  to see if ostree-helper scripts are already present..."
 
-            # Fetch Harmonic cOS iso
-            mkdir /data
-            curl "http://${WS_HOST}:${WS_PORT}/apollo/latest" --output "/data/${APOLLO_ISO}"
+            if [[ -z $(command -v ostree-production) ]]; then
+              for thisPackage in ${ostreePackages}; do
+                curl "http://${webserverHost}:${webserverPort}/packages/${thisPackage}" --output "${localAssets}/${thisPackage}" 2>&1
+                dpkg -i "${localAssets}/${thisPackage}" 2>&1
+
+              done
+            fi
+
+              mkdir "${localData}" \
+              && curl "http://${webserverHost}:${webserverPort}/apollo/latest" --output "${localData}/${apolloISO}" 2>&1
+
+            return
           }
 
           ostreeInstall() {
-            ostree-production list-isos
-            ostree-production -D /dev/sda from "/data/${APOLLO_ISO}"
+
+            ostree-production list-isos 2>&1
+            ostree-production -D "${physicalDisk}" from "${localData}"/"${apolloISO}" 2>&1
+
+            return
           }
 
-          options=$(getopt -l "help,proxy,verbose,install" -o "hpvi" -- "$@")
-          eval set -- "${options}"
-          while true
-          do
-          case "$1" in
-          -h|--help)
-              showHelp
-              exit 0
-              ;;
-          -p|--proxy)
-              export proxy=1
-              ;;
-          -v|--verbose)
-              set -xv  # Set xtrace and verbose mode.
-              ;;
-          -i|--install)
-              if [[ ${proxy} == 1 ]]; then
-                proxySetup
-                else
-                proxyTeardown
-                fi
-              ostreeSetup
-              ostreeInstall
-              #shutdown -r now
-              ;;
-          *)
-              showHelp
-              exit 1
-              ;;
-          esac
-          shift
+          while getopts "hvpi" o; do
+              case "${o}" in
+                  h)
+                      showHelp
+                      exit 0
+                      ;;
+                  v)
+                      set -xv
+                      ;;
+                  p)
+                      proxy=1
+                      ;;
+                  i)
+                      download=1
+                      install=1
+                      ;;
+                  *)
+                      showHelp
+                      exit 1
+                      ;;
+              esac
           done
-    runcmd:
-      - ls -alh /target
+          shift $((OPTIND-1))
+
+
+          if [[ ${proxy} == 1 ]]; then
+          proxySetup
+          fi
+
+          if [[ "${download}" == 1 ]]; then
+          ostreeSetup
+          fi
+
+          if [[ "${install}" == 1 ]]; then
+          ostreeInstall
+          fi
+    bootcmd:
+      - pwd
+      - df -h
+      - ls -alh /
       - ls -alh /root
+      - ls -alh /target
+      - ls -alh /media
+      - ls -alh /usr/local/bin
+      - ls -alh /etc/systemd/system
       - ls -alh /data
       - ls -alh /opt
       - ls -alh /tmp
-      - echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' > /target/etc/sudoers.d/ubuntu
-      - sed -i -e '/^[#]*PermitRootLogin/s/^.*$/PermitRootLogin yes/' /target/etc/ssh/sshd_config
-      - sed -i -e '/^[#]*PasswordAuthentication/s/^.*$/PasswordAuthentication yes/' /target/etc/ssh/sshd_config
-      - systemctl restart ssh
-      - bash /usr/local/bin/harmonic-installer.sh -i -v
-      - /usr/local/bin/harmonic-installer.sh -i -v
+      - chmod +x /usr/local/bin/harmonic-installer.sh
       - echo "----------------Harmonic Installer Starting-----------------"
-      - [sh, "/usr/local/bin/harmonic-installer.sh -v -i"]
-      - echo "----------------Harmonic Installer Ran-----------------"
+      - /usr/local/bin/harmonic-installer.sh -i -v
+      - echo "-------------------Harmonic Installer Ran-------------------"
+    runcmd:
+      - echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/ubuntu
+      - sed -i -e '/^[#]*PermitRootLogin/s/^.*$/PermitRootLogin yes/' /etc/ssh/sshd_config
+      - sed -i -e '/^[#]*PasswordAuthentication/s/^.*$/PasswordAuthentication yes/' /etc/ssh/sshd_config
+      - systemctl restart ssh
