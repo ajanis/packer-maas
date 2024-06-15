@@ -11,7 +11,7 @@
 #
 #################################################
 
-for image in harmonic.tar.gz harmonic-live.tar.gz; do
+for image in harmonic-installer.tar.gz; do
 if [[ -e ${image} ]]; then
   cat <<EOF
   MAAS IMPORT:
