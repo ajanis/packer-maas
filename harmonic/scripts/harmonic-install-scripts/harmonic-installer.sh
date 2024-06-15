@@ -23,8 +23,8 @@
 # shellcheck disable=SC2312
 
 
-webserverHost="44.10.4.101"
-webserverPort="5280"
+webserverHost="172.22.31.150"
+webserverPort="8080"
 apolloRelease="release-3.21.3.0-7+auto15"
 apolloISO="APOLLO_PLATFORM-${apolloRelease}.iso"
 ostreePackages="ostree-upgrade-bootstrap_2.0.41_all.deb ostree-upgrade_2.0.41_all.deb"
