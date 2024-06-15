@@ -55,24 +55,24 @@ build {
   name    = "harmonic-installer.image"
   sources = ["source.qemu.harmonic-installer"]
 
-  # provisioner "file" {
-  #   destination = "/tmp/"
-  #   sources = [
-  #     "${path.root}/scripts/liveiso/curtin-hooks",
-  #     "${path.root}/scripts/liveiso/setup-bootloader"
-  #   ]
-  # }
+  provisioner "file" {
+    destination = "/tmp/"
+    sources = [
+      "${path.root}/scripts/liveiso/curtin-hooks",
+      "${path.root}/scripts/liveiso/setup-bootloader"
+    ]
+  }
 
-  # provisioner "shell" {
-  #   environment_vars  = ["HOME_DIR=/home/ubuntu", "http_proxy=${var.http_proxy}", "https_proxy=${var.https_proxy}", "no_proxy=${var.no_proxy}"]
-  #   execute_command   = "echo 'ubuntu' | {{ .Vars }} sudo -S -E sh -eux '{{ .Path }}'"
-  #   expect_disconnect = true
-  #   scripts = [
-  #     "${path.root}/scripts/liveiso/curtin.sh",
-  #     "${path.root}/scripts/liveiso/networking.sh",
-  #     "${path.root}/scripts/liveiso/cleanup.sh"
-  #   ]
-  # }
+  provisioner "shell" {
+    environment_vars  = ["HOME_DIR=/home/ubuntu", "http_proxy=${var.http_proxy}", "https_proxy=${var.https_proxy}", "no_proxy=${var.no_proxy}"]
+    execute_command   = "echo 'ubuntu' | {{ .Vars }} sudo -S -E sh -eux '{{ .Path }}'"
+    expect_disconnect = true
+    scripts = [
+      "${path.root}/scripts/liveiso/curtin.sh",
+      "${path.root}/scripts/liveiso/networking.sh",
+      "${path.root}/scripts/liveiso/cleanup.sh"
+    ]
+  }
 
   # provisioner "file" {
   #   destination = "/media/root-rw/"
@@ -81,14 +81,14 @@ build {
   #     "${path.root}/packages/ostree-upgrade_2.0.41_all.deb",
   #   ]
   # }
-  # provisioner "shell" {
-  #   environment_vars  = ["HOME_DIR=/home/ubuntu", "http_proxy=${var.http_proxy}", "https_proxy=${var.https_proxy}", "no_proxy=${var.no_proxy}"]
-  #   execute_command   = "echo 'ubuntu' | {{ .Vars }} sudo -S -E sh -eux '{{ .Path }}'"
-  #   expect_disconnect = true
-  #   scripts = [
-  #     "${path.root}/scripts/harmonic-install-scripts/systemd-install-setup.sh",
-  #   ]
-  # }
+  provisioner "shell" {
+    environment_vars  = ["HOME_DIR=/home/ubuntu", "http_proxy=${var.http_proxy}", "https_proxy=${var.https_proxy}", "no_proxy=${var.no_proxy}"]
+    execute_command   = "echo 'ubuntu' | {{ .Vars }} sudo -S -E sh -eux '{{ .Path }}'"
+    expect_disconnect = true
+    scripts = [
+      "${path.root}/scripts/harmonic-install-scripts/systemd-install-setup.sh",
+    ]
+  }
 
   # post-processor "compress" {
   #   output = "harmonic-live.tar.gz"
