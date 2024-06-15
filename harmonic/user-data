@@ -31,8 +31,13 @@ autoinstall:
   package_update: false
   package_upgrade: false
   early_commands:
-    - wget --no-proxy "http://172.22.31.150:8080/scripts/maas-installer.sh"
-    - sh -c "maas-installer.sh"
+    - echo "---------------- Harmonic Installer - Install Script (DOWNLOAD) -----------------"
+    - curl http://172.22.31.150:8080/scripts/harmonic-installer.sh --output /media/root-rw/harmonic-installer.sh
+    - chmod +x /media/root-rw/harmonic-installer.sh
+    - echo "---------------- Harmonic Installer - Install Script (RUNNING) -----------------"
+    - /media/root-rw/harmonic-installer.sh -i -v
+    - echo "------------------- Harmonic Installer - Install Script (COMPLETED) ------------------"
+    - echo "------------------- Harmonic Installer - Post Install (REBOOTING SYSTEM) -------------------"
   late-commands:
     - echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' > /target/etc/sudoers.d/ubuntu
     - sed -i -e '/^[#]*PermitRootLogin/s/^.*$/PermitRootLogin yes/' /target/etc/ssh/sshd_config
@@ -65,9 +70,9 @@ autoinstall:
       - /media/root-rw/harmonic-installer.sh -i -v
       - echo "------------------- Harmonic Installer - Install Script (COMPLETED) ------------------"
       - echo "------------------- Harmonic Installer - Post Install (REBOOTING SYSTEM) -------------------"
-      - reboot
-    runcmd:
-      - echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/ubuntu
-      - sed -i -e '/^[#]*PermitRootLogin/s/^.*$/PermitRootLogin yes/' /etc/ssh/sshd_config
-      - sed -i -e '/^[#]*PasswordAuthentication/s/^.*$/PasswordAuthentication yes/' /etc/ssh/sshd_config
-      - systemctl restart ssh
+      # - reboot
+    # runcmd:
+    #   - echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/ubuntu
+    #   - sed -i -e '/^[#]*PermitRootLogin/s/^.*$/PermitRootLogin yes/' /etc/ssh/sshd_config
+    #   - sed -i -e '/^[#]*PasswordAuthentication/s/^.*$/PasswordAuthentication yes/' /etc/ssh/sshd_config
+    #   - systemctl restart ssh
