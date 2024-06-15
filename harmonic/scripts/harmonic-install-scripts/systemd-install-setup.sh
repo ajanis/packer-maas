@@ -43,7 +43,7 @@ EOS
 
 ## Create script called by systemd service
 touch /usr/local/bin/harmonic-installer.sh
-cat << 'EOI' > /local/usr/local/bin/harmonic-installer.sh
+cat << 'EOI' > /usr/local/bin/harmonic-installer.sh
 #!/bin/bash
 ##############################################################################
 #
