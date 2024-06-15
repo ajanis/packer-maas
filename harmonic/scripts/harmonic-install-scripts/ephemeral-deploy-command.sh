@@ -61,7 +61,7 @@ if [[ -n $2 ]]; then
   fi
 
 [[ -f "${userDataFile}" ]] || (echo "File not found" && exit 1)
-d
+
 userDataFileB64=$(base64 "${userDataFile}" | tr -d '\n')
 
 maas admin machines read > /tmp/maasHostList
