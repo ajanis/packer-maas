@@ -42,7 +42,7 @@ variable "timeout" {
 
 variable "filename" {
   type        = string
-  default     = "harmonic-live.tar.gz"
+  default     = "harmonic-installer.tar.gz"
   description = "The filename of the tarball to produce"
 }
 
@@ -70,12 +70,6 @@ variable "live_iso" {
   description = "Ubuntu Live-Server iso build source"
 }
 
-variable "cloud_img" {
-  type        = string
-  default     = "ubuntu-22.04-server-cloudimg-amd64.img"
-  description = "Ubuntu Server cloud-image qcow2 build source"
-}
-
 variable "shutdown" {
   type        = string
   default     = "sudo -S shutdown -P now"
@@ -84,6 +78,6 @@ variable "shutdown" {
 
 variable "vm_name" {
   type        = string
-  default     = "harmonic-live"
+  default     = "harmonic-installer"
   description = "Base vm hostname"
 }

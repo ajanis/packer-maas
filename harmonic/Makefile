@@ -15,7 +15,7 @@ URL ?= http://releases.ubuntu.com
 all: harmonic-installer
 $(eval $(call check_packages_deps,cloud-image-utils ovmf libnbd0 nbdfuse nbdkit fuse2fs,cloud-image-utils ovmf libnbd0 nbdfuse nbdkit fuse2fs ))
 
-harmonic-seeds.iso: user-data meta-data
+seeds.iso: user-data meta-data
 	cloud-localds $@ $^
 
 OVMF_VARS.fd: /usr/share/OVMF/OVMF_VARS.fd
@@ -39,6 +39,6 @@ harmonic-installer: check-deps clean seeds.iso OVMF_VARS.fd
 		.
 
 clean:
-	${RM} -rf output-* harmonic-*.gz packer-cache/* seeds.iso OVMF_VARS.fd manifest.json
+	${RM} -rf output-* harmonic-installer*.gz packer-cache/* .iso OVMF_VARS.fd manifest.json
 
 .INTERMEDIATE: OVMF_VARS.fd seeds.iso

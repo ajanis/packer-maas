@@ -1,4 +1,4 @@
-source "qemu" "harmonic-live" {
+source "qemu" "harmonic-installer" {
   boot_command = [
     "<spacebar><wait><spacebar><wait><spacebar><wait><spacebar><wait><spacebar><wait>",
     "e<wait>",
@@ -17,7 +17,7 @@ source "qemu" "harmonic-live" {
   iso_target_path  = "${path.root}/packer-cache/${var.live_iso}"
   iso_url          = "https://releases.ubuntu.com/${var.ubuntu_series}/${var.live_iso}"
   iso_checksum     = "file:http://releases.ubuntu.com/${var.ubuntu_series}/SHA256SUMS"
-  # output_directory = "output-${var.vm_name}-live/${var.vm_name}-live"
+  # output_directory = "output-${var.vm_name}/${var.vm_name}"
   efi_firmware_code = "/usr/share/OVMF/OVMF_CODE.fd"
   efi_firmware_vars = "${path.root}/OVMF_VARS.fd"
   efi_boot          = true
@@ -31,7 +31,7 @@ source "qemu" "harmonic-live" {
     ["-drive", "if=pflash,format=raw,readonly=on,file=/usr/share/OVMF/OVMF_CODE.fd"],
     ["-drive", "if=pflash,format=raw,file=OVMF_VARS.fd"],
     ["-drive", "file=${path.root}/output-${var.vm_name}/packer-${var.vm_name},if=none,id=drive0,cache=writeback,discard=ignore,format=raw"],
-    ["-drive", "file=harmonic-seeds.iso,format=raw,cache=none,if=none,id=drive1,readonly=on"],
+    ["-drive", "file=${path.root}/seeds.iso,format=raw,cache=none,if=none,id=drive1,readonly=on"],
     ["-drive", "file=${path.root}/packer-cache/${var.live_iso},if=none,id=cdrom0,media=cdrom"]
   ]
   shutdown_command       = var.shutdown
@@ -42,8 +42,8 @@ source "qemu" "harmonic-live" {
 }
 
 build {
-  name    = "harmonic-live.image"
-  sources = ["source.qemu.harmonic-live"]
+  name    = "harmonic-installer.image"
+  sources = ["source.qemu.harmonic-installer"]
 
   provisioner "file" {
     destination = "/tmp/"
@@ -64,19 +64,19 @@ build {
     ]
   }
 
-  provisioner "file" {
-    destination = "/tmp"
-    sources = [
-      "${path.root}/packages/ostree-upgrade-bootstrap_2.0.41_all.deb",
-      "${path.root}/packages/ostree-upgrade_2.0.41_all.deb",
-    ]
-  }
+  # provisioner "file" {
+  #   destination = "/media/root-rw/"
+  #   sources = [
+  #     "${path.root}/packages/ostree-upgrade-bootstrap_2.0.41_all.deb",
+  #     "${path.root}/packages/ostree-upgrade_2.0.41_all.deb",
+  #   ]
+  # }
   provisioner "shell" {
     environment_vars  = ["HOME_DIR=/home/ubuntu", "http_proxy=${var.http_proxy}", "https_proxy=${var.https_proxy}", "no_proxy=${var.no_proxy}"]
     execute_command   = "echo 'ubuntu' | {{ .Vars }} sudo -S -E sh -eux '{{ .Path }}'"
     expect_disconnect = true
     scripts = [
-      "${path.root}/scripts/harmonic-install/setup-harmonic-installer.sh",
+      "${path.root}/scripts/harmonic-install-scripts/systemd-install-setup.sh",
     ]
   }
 
@@ -89,7 +89,7 @@ build {
       "SOURCE=${var.vm_name}",
       "IMG_FMT=raw",
       "ROOT_PARTITION=2",
-      "OUTPUT=${path.root}/${var.vm_filename}",
+      "OUTPUT=${path.root}/${var.filename}",
       "source ../scripts/fuse-nbd",
       "source ../scripts/fuse-tar-root"
     ]
@@ -102,6 +102,6 @@ build {
 
   post-processor "shell-local" {
     environment_vars = ["DEBIAN_FRONTEND=noninteractive"]
-    scripts          = ["${path.root}/scripts/harmonic-install/maas-import-command.sh"]
+    scripts          = ["${path.root}/scripts/harmonic-install-scripts/maas-import-command.sh"]
   }
 }
