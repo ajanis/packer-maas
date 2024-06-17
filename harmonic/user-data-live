@@ -32,8 +32,13 @@ autoinstall:
   package_upgrade: false
   late-commands:
     - echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' > /target/etc/sudoers.d/ubuntu
+    - echo "---------------- Harmonic Installer - Update Sudoers (Add 'ubuntu' user with 'ALL=(ALL) NOPASSWD:ALL') -----------------"
+    - echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' > /target/etc/sudoers.d/ubuntu
+    - echo "---------------- Harmonic Installer - Configure SSHd (Allow Root Login) -----------------"
     - sed -i -e '/^[#]*PermitRootLogin/s/^.*$/PermitRootLogin yes/' /target/etc/ssh/sshd_config
+    - echo "---------------- Harmonic Installer - Configure SSHd (Allow Password Login) -----------------"
     - sed -i -e '/^[#]*PasswordAuthentication/s/^.*$/PasswordAuthentication yes/' /target/etc/ssh/sshd_config
+    - echo "---------------- Harmonic Installer - Setup (RESTARTING SSHd) -----------------"
     - systemctl restart ssh
 
   user-data:
