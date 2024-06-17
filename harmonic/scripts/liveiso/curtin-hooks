@@ -7,12 +7,12 @@ import os
 import shutil
 import platform
 
-from curtin import distro, util
-from curtin.config import load_command_config
-from curtin.log import LOG
-from curtin.paths import target_path
-from curtin.util import load_command_environment, ChrootableTarget
-from curtin.commands import curthooks, apt_config
+from curtin import distro, util # type: ignore
+from curtin.config import load_command_config # type: ignore
+from curtin.log import LOG # type: ignore
+from curtin.paths import target_path # type: ignore
+from curtin.util import load_command_environment, ChrootableTarget # type: ignore
+from curtin.commands import curthooks, apt_config # type: ignore
 
 def run_hook_in_target(target, hook):
     """Look for "hook" in "target" and run in a chroot"""

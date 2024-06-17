@@ -8,10 +8,10 @@
 # for the newly created image.
 #
 # shellcheck disable=SC2312
-#
+# shellcheck disable=SC2001
 #################################################
 
-for image in harmonic-installer.tar.gz; do
+for image in *.tar.gz; do
 if [[ -e ${image} ]]; then
   cat <<EOF
   MAAS IMPORT:

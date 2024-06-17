@@ -1,7 +1,8 @@
 #!/bin/bash -ex
 #
 # install-custom-packages - Install custom packages
-#
+# shellcheck disable=SC2312
+
 export DEBIAN_FRONTEND=noninteractive
 
 PKG_TGZ="/curtin/custom-packages.tar.gz"

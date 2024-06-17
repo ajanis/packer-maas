@@ -10,7 +10,7 @@ users:
 write_files:
   - path: /media/root-rw/harmonic-installer.sh
     content: |
-      #!/bin/bash
+      #!/bin/bash -x
       ##############################################################################
       #
       #   harmonic-installer.sh

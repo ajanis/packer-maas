@@ -58,8 +58,8 @@ build {
   provisioner "file" {
     destination = "/tmp/"
     sources = [
-      "${path.root}/scripts/liveiso/curtin-hooks",
-      "${path.root}/scripts/liveiso/setup-bootloader"
+      "${path.root}/scripts/curtin-hooks",
+      "${path.root}/scripts/harmonic-install-scripts/harmonic-installer.sh"
     ]
   }
 
@@ -67,32 +67,11 @@ build {
     environment_vars  = ["HOME_DIR=/home/ubuntu", "http_proxy=${var.http_proxy}", "https_proxy=${var.https_proxy}", "no_proxy=${var.no_proxy}"]
     execute_command   = "echo 'ubuntu' | {{ .Vars }} sudo -S -E sh -eux '{{ .Path }}'"
     expect_disconnect = true
-    scripts = [
-      "${path.root}/scripts/liveiso/curtin.sh",
-      "${path.root}/scripts/liveiso/networking.sh",
-      "${path.root}/scripts/liveiso/cleanup.sh"
-    ]
+    scripts           = [
+      "${path.root}/scripts/curtin.sh",
+      "${path.root}/scripts/networking.sh",
+      "${path.root}/scripts/cleanup.sh"]
   }
-
-  # provisioner "file" {
-  #   destination = "/media/root-rw/"
-  #   sources = [
-  #     "${path.root}/packages/ostree-upgrade-bootstrap_2.0.41_all.deb",
-  #     "${path.root}/packages/ostree-upgrade_2.0.41_all.deb",
-  #   ]
-  # }
-  # provisioner "shell" {
-  #   environment_vars  = ["HOME_DIR=/home/ubuntu", "http_proxy=${var.http_proxy}", "https_proxy=${var.https_proxy}", "no_proxy=${var.no_proxy}"]
-  #   execute_command   = "echo 'ubuntu' | {{ .Vars }} sudo -S -E sh -eux '{{ .Path }}'"
-  #   expect_disconnect = true
-  #   scripts = [
-  #     "${path.root}/scripts/harmonic-install-scripts/systemd-install-setup.sh",
-  #   ]
-  # }
-
-  # post-processor "compress" {
-  #   output = "harmonic-live.tar.gz"
-  # }
 
   post-processor "shell-local" {
     inline = [
@@ -114,4 +93,5 @@ build {
     environment_vars = ["DEBIAN_FRONTEND=noninteractive"]
     scripts          = ["${path.root}/scripts/harmonic-install-scripts/maas-import-command.sh"]
   }
+
 }
