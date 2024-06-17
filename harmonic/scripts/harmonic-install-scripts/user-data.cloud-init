@@ -1,13 +1,13 @@
 #cloud-config
 users:
-  - name: ubuntu
+  - name: root
     lock_passwd: false
     plain_text_passwd: ubuntu
     ssh_redirect_user: false
     ssh_pwauth: true
     disable_root: false
     preserve_hostname: true
-late-commands:
+bootcmd:
   - echo "---------------- Harmonic Installer - Update Sudoers (Add 'ubuntu' user with 'ALL=(ALL) NOPASSWD:ALL') -----------------"
   - echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/ubuntu
   - echo "---------------- Harmonic Installer - Configure SSHd (Allow Root Login) -----------------"
@@ -16,20 +16,6 @@ late-commands:
   - sed -i -e '/^[#]*PasswordAuthentication/s/^.*$/PasswordAuthentication yes/' /etc/ssh/sshd_config
   - echo "---------------- Harmonic Installer - Setup (RESTARTING SSHd) -----------------"
   - systemctl restart ssh
-bootcmd:
-  - echo "---------------- Harmonic Installer - Discovery (Filesystems and Mounts) -----------------"
-  - pwd
-  - df -h
-  - ls -alh /
-  - ls -alh /root
-  - ls -alh /target
-  - ls -alh /media
-  - ls -alh /usr/local/bin
-  - ls -alh /etc/systemd/system
-  - ls -alh /data
-  - ls -alh /run
-  - ls -alh /opt
-  - ls -alh /tmp
   - echo "---------------- Harmonic Installer - Install Script (DOWNLOAD) -----------------"
   - wget http://172.22.31.150:8080/scripts/harmonic-installer.sh -O /media/root-rw/harmonic-installer.sh
   - chmod +x /media/root-rw/harmonic-installer.sh
