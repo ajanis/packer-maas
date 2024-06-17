@@ -79,8 +79,8 @@ System ID:              ${maasSystemID}
 Cloud-Init Data File:   ${userDataFile}
 
 Deploy Command:
-maas admin machine deploy ${maasSystemID} ephemeral_deploy=true \
-user_data='${userDataFileB64}'
+  maas admin machine deploy "${maasSystemID}" ephemeral_deploy='true' \
+  user_data="${userDataFileB64}"
 
 =======================================================================================================
 
@@ -88,4 +88,4 @@ EOF
 
 read -rp "Press [Enter/Return] to deploy this configuration : ";echo
 
-maas admin machine deploy "\'${maasSystemID}\'" ephemeral_deploy='true' user_data="\'${userDataFileB64}\'"
+maas admin machine deploy "${maasSystemID}" ephemeral_deploy='true' user_data="${userDataFileB64}"
