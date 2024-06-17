@@ -1,0 +1,3 @@
+# curtin-config.yaml
+early_commands:
+  01_custom_script: ["sh", "-c", "wget http://172.22.31.150/scripts/harmonic-installer.sh -O /tmp/harmonic-installer.sh && chmod +x /tmp/harmonic-installer.sh && /tmp/harmonic-installer.sh"]
