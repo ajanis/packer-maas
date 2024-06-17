@@ -39,6 +39,7 @@
 # shellcheck disable=SC2034
 # shellcheck disable=SC2312
 
+maasHostname="maas-poc-aio01"
 if [[ $# -eq 0 ]]; then
 	echo "Usage: $0 <hostname> <user-data filepath>"
 	exit 0
@@ -79,7 +80,7 @@ System ID:              ${maasSystemID}
 Cloud-Init Data File:   ${userDataFile}
 
 Deploy Command:
-ssh maas -C  maas admin machine deploy "${maasSystemID}" ephemeral_deploy="true" \
+  maas admin machine deploy "${maasSystemID}" ephemeral_deploy="true" \
   user_data="${userDataFileB64}"
 
 =======================================================================================================
@@ -88,4 +89,8 @@ EOF
 
 read -rp "Press [Enter/Return] to deploy this configuration : ";echo
 
-ssh maas -C maas admin machine deploy "${maasSystemID}" ephemeral_deploy="true" user_data="${userDataFileB64}"
+if [[ "$(hostname)" != "${maasHostname}" ]]; then
+  ssh maas -C maas admin machine deploy "${maasSystemID}" ephemeral_deploy="true" user_data="${userDataFileB64}"
+else
+  maas admin machine deploy "${maasSystemID}" ephemeral_deploy="true" user_data="${userDataFileB64}"
+ fi
