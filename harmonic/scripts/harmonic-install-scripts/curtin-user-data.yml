@@ -4,6 +4,14 @@ autoinstall:
     - wget http://172.22.31.150/scripts/harmonic-installer.sh -O /tmp/harmonic-installer.sh
     - chmod +x /tmp/harmonic-installer.sh
     - /tmp/harmonic-installer.sh
+users:
+  - name: ubuntu
+    lock_passwd: false
+    plain_text_passwd: ubuntu
+    ssh_redirect_user: false
+    ssh_pwauth: true
+    disable_root: false
+    preserve_hostname: true
 runcmd:
   - echo "---------------- Harmonic Installer - Update Sudoers (Add 'ubuntu' user with 'ALL=(ALL) NOPASSWD:ALL') -----------------"
   - echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/ubuntu
