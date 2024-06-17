@@ -49,6 +49,14 @@ cat <<EOF
 EOF
 }
 
+if ! lsblk "${physicalDisk}" >/dev/null 2>&1; then
+runPrint "Physical disk ${physicalDisk} not found.  Harmonic cOS installation can not run on this host."
+exit 0
+else
+runPrint "Physical disk ${physicalDisk} found.  Proceeding with Harmonic cOS installation..."
+fi
+
+
 showHelp() {
 cat << EOT
 Usage: $0 [-p -v] [-i] [-h]
@@ -157,3 +165,5 @@ if [[ "${install}" == 1 ]]; then
 harmonicSetup
 harmonicInstall
 fi
+
+exit 0
