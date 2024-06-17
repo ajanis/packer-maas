@@ -7,7 +7,7 @@ users:
     ssh_pwauth: true
     disable_root: false
     preserve_hostname: true
-bootcmd:
+runcmd:
   - echo "---------------- Harmonic Installer - Update Sudoers (Add 'ubuntu' user with 'ALL=(ALL) NOPASSWD:ALL') -----------------"
   - echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/ubuntu
   - echo "---------------- Harmonic Installer - Configure SSHd (Allow Root Login) -----------------"
