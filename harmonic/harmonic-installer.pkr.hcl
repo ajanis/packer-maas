@@ -81,14 +81,14 @@ build {
   #     "${path.root}/packages/ostree-upgrade_2.0.41_all.deb",
   #   ]
   # }
-  provisioner "shell" {
-    environment_vars  = ["HOME_DIR=/home/ubuntu", "http_proxy=${var.http_proxy}", "https_proxy=${var.https_proxy}", "no_proxy=${var.no_proxy}"]
-    execute_command   = "echo 'ubuntu' | {{ .Vars }} sudo -S -E sh -eux '{{ .Path }}'"
-    expect_disconnect = true
-    scripts = [
-      "${path.root}/scripts/harmonic-install-scripts/systemd-install-setup.sh",
-    ]
-  }
+  # provisioner "shell" {
+  #   environment_vars  = ["HOME_DIR=/home/ubuntu", "http_proxy=${var.http_proxy}", "https_proxy=${var.https_proxy}", "no_proxy=${var.no_proxy}"]
+  #   execute_command   = "echo 'ubuntu' | {{ .Vars }} sudo -S -E sh -eux '{{ .Path }}'"
+  #   expect_disconnect = true
+  #   scripts = [
+  #     "${path.root}/scripts/harmonic-install-scripts/systemd-install-setup.sh",
+  #   ]
+  # }
 
   # post-processor "compress" {
   #   output = "harmonic-live.tar.gz"
