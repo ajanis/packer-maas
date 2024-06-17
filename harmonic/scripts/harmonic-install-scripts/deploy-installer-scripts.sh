@@ -1,7 +1,7 @@
 #!/bin/bash
 
 for host in maas maaspacker; do
-for i in harmonic-installer.sh ephemeral-deploy-command.sh harmonic-user-data-download.cloud-init user-data.cloud-init harmonic-user-data-writefile.cloud-init maas-import-command.sh curtin-user-data.yml 
+for i in harmonic-installer.sh ephemeral-deploy-command.sh user-data-bootcmd.yml user-data-curtin.yml user-data-late-commands.yml
 do              
 scp "${i}" "${host}":/opt/userdata/scripts/
 done
