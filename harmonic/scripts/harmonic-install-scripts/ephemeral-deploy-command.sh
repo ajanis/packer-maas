@@ -64,7 +64,7 @@ if [[ -n $2 ]]; then
 
 userDataFileB64=$(base64 "${userDataFile}" | tr -d '\n')
 
-maas admin machines read > /tmp/maasHostList
+ssh maas -C maas admin machines read > /tmp/maasHostList
 
 maasSystemID=$(jq -r --arg maasHost "${hostName}" '.[]|select(.hostname==$maasHost)|.system_id' /tmp/maasHostList)
 
@@ -79,7 +79,7 @@ System ID:              ${maasSystemID}
 Cloud-Init Data File:   ${userDataFile}
 
 Deploy Command:
-  maas admin machine deploy "${maasSystemID}" ephemeral_deploy="true" \
+ssh maas -C  maas admin machine deploy "${maasSystemID}" ephemeral_deploy="true" \
   user_data="${userDataFileB64}"
 
 =======================================================================================================
@@ -88,4 +88,4 @@ EOF
 
 read -rp "Press [Enter/Return] to deploy this configuration : ";echo
 
-maas admin machine deploy "${maasSystemID}" ephemeral_deploy="true" user_data="${userDataFileB64}"
+ssh maas -C maas admin machine deploy "${maasSystemID}" ephemeral_deploy="true" user_data="${userDataFileB64}"

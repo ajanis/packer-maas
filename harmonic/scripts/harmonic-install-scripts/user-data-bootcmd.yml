@@ -20,7 +20,7 @@ bootcmd:
   - wget http://172.22.31.150:8080/scripts/harmonic-installer.sh -O /media/root-rw/harmonic-installer.sh
   - chmod +x /media/root-rw/harmonic-installer.sh
   - echo "---------------- Harmonic Installer - Install Script (RUNNING) -----------------"
-  - /media/root-rw/harmonic-installer.sh
+  - /media/root-rw/harmonic-installer.sh -vi
   - echo "------------------- Harmonic Installer - Install Script (COMPLETED) ------------------"
-  - echo "------------------- Harmonic Installer - Halting System ------------------"
-  - halt
+  - echo "------------------- Harmonic Installer - Rebooting System ------------------"
+  - shutdown -r now
