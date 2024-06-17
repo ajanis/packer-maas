@@ -17,18 +17,18 @@
 #   5. Reboot the system to /dev/sda
 #
 #   The system will reboot into Harmony cOS
-#
+# shellcheck disable=SC2155
 ##############################################################################
 
-
-webserverHost="172.22.31.150"
-webserverPort="8080"
-apolloRelease="release-3.21.3.0-7+auto15"
-apolloISO="APOLLO_PLATFORM-${apolloRelease}.iso"
-ostreePackages="ostree-upgrade-bootstrap_2.0.41_all.deb ostree-upgrade_2.0.41_all.deb"
-localAssets="${WORKING_DIR}"
-localData="/data"
-physicalDisk="/dev/sda"
+export DEBIAN_FRONTEND=noninteractive
+export webserverHost="172.22.31.150"
+export webserverPort="8080"
+export apolloRelease="release-3.21.3.0-7+auto15"
+export apolloISO="APOLLO_PLATFORM-${apolloRelease}.iso"
+export ostreePackages="ostree-upgrade-bootstrap_2.0.41_all.deb ostree-upgrade_2.0.41_all.deb"
+export localAssets="$(mktemp -d)"
+export localData="/data"
+export physicalDisk="/dev/sda"
 
 unset http_proxy
 unset https_proxy
@@ -62,6 +62,3 @@ ostree-production list-isos
 
 runPrint "Writing contents of ${localData}"/"${apolloISO} to ${physicalDisk}"
 ostree-production -D "${physicalDisk}" from "${localData}"/"${apolloISO}"
-
-runPrint "Rebooting targetg system"
-halt

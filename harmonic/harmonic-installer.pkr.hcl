@@ -59,7 +59,7 @@ build {
     destination = "/tmp/"
     sources = [
       "${path.root}/scripts/curtin-hooks",
-      "${path.root}/scripts/harmonic-install-scripts/harmonic-installer.sh"
+      "${path.root}/scripts/setup-bootloader",
     ]
   }
 
