@@ -58,8 +58,8 @@ build {
   provisioner "file" {
     destination = "/tmp/"
     sources = [
-      "${path.root}/scripts/curtin-hooks",
-      "${path.root}/scripts/setup-bootloader",
+      "${path.root}/scripts/liveiso/curtin-hooks",
+      "${path.root}/scripts/liveiso/setup-bootloader",
     ]
   }
 
@@ -68,9 +68,9 @@ build {
     execute_command   = "echo 'ubuntu' | {{ .Vars }} sudo -S -E sh -eux '{{ .Path }}'"
     expect_disconnect = true
     scripts           = [
-      "${path.root}/scripts/curtin.sh",
-      "${path.root}/scripts/networking.sh",
-      "${path.root}/scripts/cleanup.sh"]
+      "${path.root}/scripts/liveiso/curtin.sh",
+      "${path.root}/scripts/liveiso/networking.sh",
+      "${path.root}/scripts/liveiso/cleanup.sh"]
   }
 
   post-processor "shell-local" {
