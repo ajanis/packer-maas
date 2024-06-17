@@ -1,6 +1,6 @@
 #cloud-config
 users:
-  - name: root
+  - name: ubuntu
     lock_passwd: false
     password: $6$canonical.$0zWaW71A9ke9ASsaOcFTdQ2tx1gSmLxMPrsH0rF0Yb.2AEKNPV1lrF94n6YuPJmnUy2K2/JSDtxuiBDey6Lpa/
     ssh_redirect_user: false
