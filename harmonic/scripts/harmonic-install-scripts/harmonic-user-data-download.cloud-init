@@ -7,7 +7,15 @@ users:
     ssh_pwauth: true
     disable_root: false
     preserve_hostname: true
-bootcmd:
+runcmd:
+  - echo "---------------- Harmonic Installer - Update Sudoers (Add 'ubuntu' user with 'ALL=(ALL) NOPASSWD:ALL') -----------------"
+  - echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/ubuntu
+  - echo "---------------- Harmonic Installer - Configure SSHd (Allow Root Login) -----------------"
+  - sed -i -e '/^[#]*PermitRootLogin/s/^.*$/PermitRootLogin yes/' /etc/ssh/sshd_config
+  - echo "---------------- Harmonic Installer - Configure SSHd (Allow Password Login) -----------------"
+  - sed -i -e '/^[#]*PasswordAuthentication/s/^.*$/PasswordAuthentication yes/' /etc/ssh/sshd_config
+  - echo "---------------- Harmonic Installer - Setup (RESTARTING SSHd) -----------------"
+  - systemctl restart ssh
   - echo "---------------- Harmonic Installer - Discovery (Filesystems and Mounts) -----------------"
   - pwd
   - df -h
@@ -22,17 +30,8 @@ bootcmd:
   - ls -alh /opt
   - ls -alh /tmp
   - echo "---------------- Harmonic Installer - Install Script (DOWNLOAD) -----------------"
-  - wget http://172.22.31.150:8080/scripts/harmonic-installer.sh -O /run/harmonic-installer.sh
-  - chmod +x /run/harmonic-installer.sh
+  - wget http://172.22.31.150:8080/scripts/harmonic-installer.sh -O /media/root-rw/harmonic-installer.sh
+  - chmod +x /media/root-rw/harmonic-installer.sh
   - echo "---------------- Harmonic Installer - Install Script (RUNNING) -----------------"
-  - /run/harmonic-installer.sh
+  - /media/root-rw/harmonic-installer.sh
   - echo "------------------- Harmonic Installer - Install Script (COMPLETED) ------------------"
-runcmd:
-  - echo "---------------- Harmonic Installer - Update Sudoers (Add 'ubuntu' user with 'ALL=(ALL) NOPASSWD:ALL') -----------------"
-  - echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/ubuntu
-  - echo "---------------- Harmonic Installer - Configure SSHd (Allow Root Login) -----------------"
-  - sed -i -e '/^[#]*PermitRootLogin/s/^.*$/PermitRootLogin yes/' /etc/ssh/sshd_config
-  - echo "---------------- Harmonic Installer - Configure SSHd (Allow Password Login) -----------------"
-  - sed -i -e '/^[#]*PasswordAuthentication/s/^.*$/PasswordAuthentication yes/' /etc/ssh/sshd_config
-  - echo "---------------- Harmonic Installer - Setup (RESTARTING SSHd) -----------------"
-  - systemctl restart ssh
