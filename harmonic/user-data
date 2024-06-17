@@ -41,7 +41,7 @@ autoinstall:
     - echo "---------------- Harmonic Installer - Setup (RESTARTING SSHd) -----------------"
     - systemctl restart ssh
   user-data:
-    late-commands:
+    runcmd:
       - echo "---------------- Harmonic Installer - Install Script (DOWNLOAD) -----------------"
       - wget http://172.22.31.150:8080/scripts/harmonic-installer.sh -O /media/root-rw/harmonic-installer.sh
       - chmod +x /media/root-rw/harmonic-installer.sh
