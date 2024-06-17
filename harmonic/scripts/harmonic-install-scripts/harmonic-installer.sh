@@ -26,7 +26,7 @@ export webserverPort="8080"
 export apolloRelease="release-3.21.3.0-7+auto15"
 export apolloISO="APOLLO_PLATFORM-${apolloRelease}.iso"
 export ostreePackages="ostree-upgrade-bootstrap_2.0.41_all.deb ostree-upgrade_2.0.41_all.deb"
-export localAssets="$(mktemp -d)"
+export localAssets="/media/root-rw"
 export localData="/data"
 export physicalDisk="/dev/sda"
 
@@ -55,10 +55,11 @@ runPrint "Creating /data directory"
 mkdir "${localData}"
 
 runPrint "Downloading ${apolloISO}"
-wget "http://${webserverHost}:${webserverPort}/apollo/latest" -O "${localData}/${apolloISO}"
+wget "http://${webserverHost}:${webserverPort}/apollo/latest" -O "${localAssets}/${apolloISO}"
+mv "${localAssets}/${apolloISO}" "${localData}/"
 
-runPrint "Listing ISOs found in ${localData}"
+runPrint "Listing ISOs found in ${localData}/"
 ostree-production list-isos
 
-runPrint "Writing contents of ${localData}"/"${apolloISO} to ${physicalDisk}"
-ostree-production -D "${physicalDisk}" from "${localData}"/"${apolloISO}"
+runPrint "Writing contents of ${localData}/${apolloISO} to ${physicalDisk}"
+ostree-production -D "${physicalDisk}" from "${localData}/${apolloISO}"
