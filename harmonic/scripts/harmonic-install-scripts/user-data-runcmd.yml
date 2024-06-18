@@ -7,7 +7,7 @@ users:
     ssh_pwauth: true
     disable_root: false
     preserve_hostname: true
-bootcmd:
+runcmd:
   - echo "---------------- Harmonic Installer - Update Sudoers (Add 'ubuntu' user with 'ALL=(ALL) NOPASSWD:ALL') -----------------"
   - echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/ubuntu
   - echo "---------------- Harmonic Installer - Configure SSHd (Allow Root Login) -----------------"
@@ -16,7 +16,6 @@ bootcmd:
   - sed -i -e '/^[#]*PasswordAuthentication/s/^.*$/PasswordAuthentication yes/' /etc/ssh/sshd_config
   - echo "---------------- Harmonic Installer - Setup (RESTARTING SSHd) -----------------"
   - systemctl restart ssh
-runcmd:
   - echo "---------------- Harmonic Installer - Install Script (DOWNLOAD) -----------------"
   - wget http://172.22.31.150:8080/scripts/harmonic-installer.sh -O /media/root-rw/harmonic-installer.sh
   - chmod +x /media/root-rw/harmonic-installer.sh
@@ -24,4 +23,4 @@ runcmd:
   - /media/root-rw/harmonic-installer.sh -vi
   - echo "------------------- Harmonic Installer - Install Script (COMPLETED) ------------------"
   - echo "------------------- Harmonic Installer - Rebooting System ------------------"
-  - shutdown -r now
+  - shutdown -r now  
