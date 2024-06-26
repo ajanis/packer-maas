@@ -21,7 +21,9 @@ Harmonic vCMTS products have been on the market as early as 2018, with Harmonicâ
     - [Makefile Parameters](#makefile-parameters)
     - [Default Credentials](#default-credentials)
   - [Importing `harmonic-installer.tar.gz` into MAAS](#importing-harmonic-installertargz-into-maas)
-  - [Main configuration script `setup-harmonic-installer.sh`](#main-configuration-script-setup-harmonic-installersh)
+  - [Main configuration script `harmonic-installer.sh`](#main-configuration-script-harmonic-installersh)
+  - [Ephemeral Deployment](#ephemeral-deployment)
+    - [Example User-Data script](#example-user-data-script)
 
 
 ## Image-Build Dependencies and Prerequisites
@@ -137,188 +139,244 @@ The default username and password are set by the `user-data` file when the build
 - Run the command provided at the end of the Packer build process, whiuch will contain correct `sha256sum` and `byte size` values for the new image
   (*If MAAS has been deployed using **Snaps**, then the image file **must** be located in your user's home directory*)
 
-Example (*With embedded commands to insert the correct `sha256sum` and `byte size` values*):
+The script runs the following command which prints out the exact command string you will need in order to import the image.  (I.e.: Correct SHA256SUM, Byte Size, Filenames).
+
 ```shell
-maas admin boot-resources create \
-  name="custom/harmonic" \
-  title="Harmonic cOS" \
-  architecture="amd64/generic" \
-  filetype="tgz" \
-  sha256="$(sha256sum harmonic-installer.tar.gz | cut -d ' ' -f1)" \
-  size="$(stat -c'%s' harmonic-installer.tar.gz)" \
-  content@="harmonic-installer.tar.gz"
-```
+for image in *.tar.gz; do
+if [[ -e ${image} ]]; then
+  cat <<EOF
+  MAAS IMPORT:
+  Copy the image to the MAAS server then
+  Import the image to MAAS with the following command:
 
-## Main configuration script `setup-harmonic-installer.sh`
-```shell
-#!/bin/bash -ex
-##############################################################################
-#
-#   /opt/setup-harmonic-installer.sh
-#
-# - Install debian packages containing Harmonic wrapper-scripts for OSTree
-#
-# - Create 'harmonic-install.service' :
-#   A single-use (oneshot) SystemD service file that will run on 1st boot.
-#
-# - Create 'harmonic-installer.sh' :
-#   The script executed by 'harmonic-install.service' that fetches the
-#   Apollo (Harmonic cOS) .iso file and executes the 'ostree-production'
-#   commands that will to write the .iso to the system '/dev/sda' disk.
-#
-##############################################################################
-
-
-## Install OSTree wrapper-scripts packages
-dpkg -i /opt/ostree-upgrade-bootstrap_2.0.41_all.deb
-dpkg -i /opt/ostree-upgrade_2.0.41_all.deb
-rm -f /opt/*.deb
-
-## Create systemd service to run on boot
-touch /etc/systemd/system/harmonic-install.service
-cat > /etc/systemd/system/harmonic-install.service <<EOF
-[Unit]
-Description=Harmonic cOS Installation Single-Use Startup Script
-ConditionFirstBoot=yes
-
-[Service]
-Type=oneshot
-ExecStart=/usr/local/bin/harmonic-installer.sh -v -i
-RemainAfterExit=true
-StandardOutput=journal
-
-[Install]
-WantedBy=multi-user.target
+  maas admin boot-resources create name='custom/$(echo "${image}"|sed -e "s/\..*//")' title='$(echo "${image}" | sed -e "s/\..*//;s/\-/ /;s/\b\(.\)/\u\1/g")' architecture='amd64/generic' filetype='tgz' sha256='$(sha256sum "${image}" | cut -d ' ' -f1)' size='$(stat -c'%s' "${image}")' base_image='ubuntu/jammy' content@='${image}'
 EOF
+fi
+done
+```
+The resulting command string will look like this:
+```shell
+  MAAS IMPORT:
+  Copy the image to the MAAS server then
+  Import the image to MAAS with the following command:
 
-## Create script called by systemd service
-touch /usr/local/bin/harmonic-installer.sh
-cat > /usr/local/bin/harmonic-installer.sh <<EOF
-#!/bin/bash -ex
+  maas admin boot-resources create name='custom/harmonic-installer' title='Harmonic Installer' architecture='amd64/generic' filetype='tgz' sha256='0c1e7be460d391b0b8c297963609d9fbd4a658066818459a44fa37631954865d' size='1311814444' base_image='ubuntu/jammy' content@='harmonic-installer.tar.gz'
+  ```
+  
+## Main configuration script `harmonic-installer.sh`
+This script is run on initial boot by the in-memory OS to provision the physical disks.
+```shell
+#!/bin/bash
 ##############################################################################
 #
-#   /usr/local/bin/harmonic-installer.sh
+#   harmonic-installer.sh
 #
-#   This script is executed by 'harmonic-install.service' that fetches the
-#   Apollo (Harmonic cOS) .iso file and executes the 'ostree-production'
-#   commands that will to write the .iso to the system '/dev/sda' disk.
+#   This script is executed either by 'harmonic-install.service' or by a
+#   user-provided 'cloud-init' configuration.
+#
+#   The harmonic-installer.sh script will then perform the following steps:
+#
+#   1. Download and install the ostree-production .deb packages from the
+#   MAAS webserver.
+#   2. Download the latest Apollo (Harmony cOS) .iso from the MAAS webserver.
+#   3. Create a /data directory and move the Apollo .iso into it.
+#   4. Run the 'ostree-production' commands to display and write the .iso
+#   to the system's physical disk (/dev/sda)
+#   5. Reboot the system to /dev/sda
+#
+#   The system will reboot into Harmony cOS
 #
 ##############################################################################
 
+# shellcheck disable=SC2312
 
-export WS_HOST="172.22.31.150"
-export WS_PORT="8080"
-export APOLLO_RELEASE="release-3.21.3.0-7+auto15"
-export APOLLO_ISO="APOLLO_PLATFORM-${APOLLO_RELEASE}.iso"
-export OSTREE_PKG=ostree-upgrade.tar.gz
-export OSTREE_PKGS="ostree-upgrade-bootstrap_2.0.41_all.deb ostree-upgrade_2.0.41_all.deb"
-export MAAS_RESOURCE_URL=http://maas.spoc.charterlab.com:5248/images
-export PROXY_URL='http://proxy4.spoc.charterlab.com:8080'
-export PROXY_IGNORE='spoc.charterlab.com,nfv.charterlab.com,.svc,172.22.73.0/24,35.135.192.0/24,10.240.72.0/22,44.0.0.0/8,[2600:6ce6:4410:803/64],[2605:1c00:50f2:2800/64],[2605:1c00:50f3:70/64],proxy4.spoc.charterlab.com,localhost,127.0.0.1,44.10.4.0/24,44.10.4.101:5240/MAAS,44.10.4.200:5240/MAAS'
 
+export webserverHost="172.22.31.150"
+export webserverPort="8080"
+export apolloRelease="release-3.21.3.0-7+auto15"
+export apolloISO="APOLLO_PLATFORM-${apolloRelease}.iso"
+export ostreePackages="ostree-upgrade-bootstrap_2.0.41_all.deb ostree-upgrade_2.0.41_all.deb"
+export proxyURI="http://proxy4.spoc.charterlab.com:8080"
+export proxyIgnore="localhost,127.0.0.1,127.0.0.53,spoc.charterlab.com,nfv.charterlab.com,proxy4.spoc.charterlab.com,44.10.4.101/32,44.10.4.200/32,172.22.0.0/16"
+export workingDir="/media/root-rw"
+export isoDir="/data"
+export physicalDisk="/dev/sda"
 export proxy=0
-export verbose=0
+export download=0
+export install=0
+
 unset http_proxy
 unset https_proxy
+unset no_proxy
+
+runPrint() {
+cat <<EOF
+===========================================================
+  $@
+===========================================================
+EOF
+}
+
+if ! lsblk "${physicalDisk}" >/dev/null 2>&1; then
+runPrint "Physical disk ${physicalDisk} not found.  Harmonic cOS installation can not run on this host."
+exit 0
+else
+runPrint "Physical disk ${physicalDisk} found.  Proceeding with Harmonic cOS installation..."
+fi
+
 
 showHelp() {
 cat << EOT
-Usage: $0 [-p|--proxy] [-v|--verbose] [-i|--install] [-h|--help]
+Usage: $0 [-p -v] [-i] [-h]
 
 Image a physical server with Harmonic cOS
 
--p|--proxy 	  	Enable the HTTP Proxy
-			Note: HTTP Proxy is disabled by default
+-p|	  	(OPTIONAL) Enable the HTTP Proxy
+        Note: HTTP Proxy is disabled by default
 
--v|--verbose 	  	Enable verbose and xtrace mode (set -xv)
+-v|	  	(OPTIONAL) Enable verbose and xtrace mode (set -xv)
 
--i|--install            Install Apollo (Harmonic cOS) .iso located in /data using ostree scripts
+-i|     (REQUIRED FOR INSTALL) Install Apollo (Harmonic cOS) .iso located in "${isoDir}" using ostree scripts
 
--h|--help               Display help
+-h|     Display help
 
 EOT
 }
 
 proxySetup() {
-  : "${http_proxy:=${PROXY_URL}}"
-  : "${https_proxy:=${PROXY_URL}}"
-  : "${no_proxy:=${PROXY_IGNORE}}"
 
-  echo -n "
-  http_proxy is set: ${http_proxy}
-  https_proxy is set: ${https_proxy}
+  if [[ ${proxy} == 1 ]]; then
+    runPrint "Configuring HTTP(S) proxies"
+    : "${http_proxy:=${proxyURI}}"  && export http_proxy="${http_proxy}"
+    : "${https_proxy:=${proxyURI}}" && export https_proxy="${https_proxy}"
+    : "${no_proxy:=${proxyIgnore}}" && export no_proxy="${no_proxy}"
 
-  no_proxy value is set: ${no_proxy}
-
-  "
-}
-
-proxyTeardown() {
-
-  if [[ -n ${http_proxy} ]]; then
-    unset http_proxy
-    echo "http_proxy unset"
+    runprint "Proxy Information:
+    http_proxy: ${http_proxy}
+    http_proxy: ${https_proxy}
+    no_proxy: ${no_proxy}
+    "
   fi
-
-  if [[ -n ${https_proxy} ]]; then
-    unset https_proxy
-    echo "https_proxy unset"
-  fi
-
+  return
 }
 
 ostreeSetup() {
 
-  command -v ostree-production ||
-  # # Fetch and install OSTree wrapper-script dpkgs
-  for PACKAGE in ${OSTREE_PKGS}; do
-    curl "http://${WS_HOST}:${WS_PORT}/packages/${PACKAGE}" --output "/opt/${PACKAGE}" && dpkg -i "/opt/${PACKAGE}"
-  done
+  runPrint "Installing 'ostree-production' provider packages"
+    for debPkg in ${ostreePackages}; do
 
-  # Fetch Harmonic cOS iso
-  mkdir /data
-  curl "http://${WS_HOST}:${WS_PORT}/apollo/latest" --output "/data/${APOLLO_ISO}"
+      runPrint "Downloading ${debPkg}"
+      wget "http://${webserverHost}:${webserverPort}/packages/${debPkg}" -O "${workingDir}/${debPkg}" 2>&1
+
+      runPrint "Installing ${debPkg}"
+      dpkg -i "${workingDir}/${debPkg}" 2>&1
+
+    done
+
+  return
 }
 
-ostreeInstall() {
-  ostree-production list-isos
-  ostree-production -D /dev/sda from "/data/${APOLLO_ISO}"
+harmonicSetup() {
+  runPrint "Creating ${isoDir}"
+  mkdir -p "${isoDir}"
+
+  runPrint "Downloading ${apolloISO} to ${isoDir}"
+  wget "http://${webserverHost}:${webserverPort}/apollo/latest" -O "${isoDir}/${apolloISO}" 2>&1
+
+  return
 }
 
-options=$(getopt -l "help,proxy,verbose,install" -o "hpvi" -- "$@")
-eval set -- "${options}"
-while true
-do
-case "$1" in
--h|--help)
-    showHelp
-    exit 0
-    ;;
--p|--proxy)
-    export proxy=1
-    ;;
--v|--verbose)
-    set -xv  # Set xtrace and verbose mode.
-    ;;
--i|--install)
-    if [[ ${proxy} == 1 ]]; then
-      proxySetup
-      else
-      proxyTeardown
-      fi
-    ostreeSetup
-    ostreeInstall
-    #shutdown -r now
-    ;;
-*)
-    showHelp
-    exit 1
-    ;;
-esac
-shift
+harmonicInstall() {
+  runPrint "Listing .iso files located in ${isoDir}"
+  ostree-production list-isos 2>&1
+
+  runPrint "Installing ${isoDir}/${apolloISO} tdo ${physicalDisk}"
+  ostree-production -D "${physicalDisk}" from "${isoDir}"/"${apolloISO}" 2>&1
+  
+  return
+}
+
+while getopts "h?vpi" o; do
+    case "${o}" in
+        h)
+            showHelp
+            exit 0
+            ;;
+        v)
+            set -xv
+            ;;
+        p)
+            proxy=1
+            ;;
+        i)
+            download=1
+            install=1
+            ;;
+        ?|*)
+            showHelp
+            exit 1
+            ;;
+    esac
 done
-EOF
+shift $((OPTIND-1))
 
-## Fix script ownership
-chmod +x /usr/local/bin/harmonic-installer.sh
+
+if [[ ${proxy} == 1 ]]; then
+proxySetup
+fi
+
+if [[ "${download}" == 1 ]]; then
+ostreeSetup
+fi
+
+if [[ "${install}" == 1 ]]; then
+harmonicSetup
+harmonicInstall
+fi
+
+exit 0
+```
+
+## Ephemeral Deployment
+A second deployment method that was recently made available (although only via the CLI is an 'ephemeral boot' deployment.
+
+This method uses the default in-memory bootstrap OS (Ubuntu 22.04 at the time of this writing).  The OS itself is unmodified, so how do we get it to exectute the scripts needed to image the hardware?  
+
+We use a custom *User-Data* configuration.  The user-data is read only once per deploy, and we have fairly granular control over when the desired commands are executed.  For our purposes, We want to run the commands a bit later in the boot process to ensure that all of the other MAAS provisioning scripts have completed successfully.
+
+So we the 'run-commands' section.   In cloud-init, run-commands will execute later in the boot process after all MAAS scripts have run (and the machine deployment is marked successfully deployed) -- but before the targeted OS is written to the physical drives.
+
+### Example User-Data script
+- You will see here that we ensure that the default 'ubuntu' user is present with a standardized password.
+- We ensure the user has the desired sudo privileges and SSHD configuration.
+- The installer script (seen above) is downloaded and executed in the ephemeral environment
+- Finally the host is rebooted.
+    
+```shell
+#!cloud-init
+users:
+  - name: root
+    lock_passwd: false
+    plain_text_passwd: ubuntu
+    ssh_redirect_user: false
+    ssh_pwauth: true
+    disable_root: false
+    preserve_hostname: true
+runcmd:
+  - echo "---------------- Harmonic Installer - Update Sudoers (Add 'ubuntu' user with 'ALL=(ALL) NOPASSWD:ALL') -----------------"
+  - echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/ubuntu
+  - echo "---------------- Harmonic Installer - Configure SSHd (Allow Root Login) -----------------"
+  - sed -i -e '/^[#]*PermitRootLogin/s/^.*$/PermitRootLogin yes/' /etc/ssh/sshd_config
+  - echo "---------------- Harmonic Installer - Configure SSHd (Allow Password Login) -----------------"
+  - sed -i -e '/^[#]*PasswordAuthentication/s/^.*$/PasswordAuthentication yes/' /etc/ssh/sshd_config
+  - echo "---------------- Harmonic Installer - Setup (RESTARTING SSHd) -----------------"
+  - systemctl restart ssh
+  - echo "---------------- Harmonic Installer - Install Script (DOWNLOAD) -----------------"
+  - wget http://172.22.31.150:8080/scripts/harmonic-installer.sh -O /media/root-rw/harmonic-installer.sh
+  - chmod +x /media/root-rw/harmonic-installer.sh
+  - echo "---------------- Harmonic Installer - Install Script (RUNNING) -----------------"
+  - /media/root-rw/harmonic-installer.sh -vi
+  - echo "------------------- Harmonic Installer - Install Script (COMPLETED) ------------------"
+  - echo "------------------- Harmonic Installer - Rebooting System ------------------"
+  - shutdown -r now
 ```
