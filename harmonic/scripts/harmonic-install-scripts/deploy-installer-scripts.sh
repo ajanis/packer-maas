@@ -1,13 +1,13 @@
-#!/bin/bash -x
+#!/bin/bash
 
 if [[ -f $1 ]]; then
 fileList=$1
 else
-fileList=(harmonic-installer.sh ephemeral-deploy-command.sh user-data-bootcmd.yml user-data-curtin.yml user-data-late-commands.yml)
+mapfile -d '' fileList < <(find * -type f ! -name '*.tgz') || true
 fi
 
+# for file in "${fileList[@]}"; do     
 for host in maas maaspacker; do
-for file in "${fileList[@]}"; do           
-scp "${file}" "${host}":/opt/userdata/scripts/
-done
+echo -e "\nUploading to ${host}:"
+scp ${fileList[@]}  "${host}:/opt/userdata/scripts/"
 done
