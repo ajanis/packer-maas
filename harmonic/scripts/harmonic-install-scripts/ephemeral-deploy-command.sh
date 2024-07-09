@@ -90,9 +90,7 @@ EOF
 read -rp "Press [Enter/Return] to deploy this configuration : ";echo
 
 if [[ "$(hostname)" != "${maasHostname}" ]]; then
-  ssh maas -C maas admin machine deploy "${maasSystemID}" ephemeral_deploy="true" user_data="${userDataFileB64}" > /tmp/deployData.txt 2>&1
+  ssh maas -C maas admin machine deploy "${maasSystemID}" ephemeral_deploy="true" user_data="${userDataFileB64}"
 else
-  maas admin machine deploy "${maasSystemID}" ephemeral_deploy="true" user_data="${userDataFileB64}" > /tmp/deployData.txt 2>&1
- fi
-
-jq '.' /tmp/deployData.txt
+  maas admin machine deploy "${maasSystemID}" ephemeral_deploy="true" user_data="${userDataFileB64}"
+fi

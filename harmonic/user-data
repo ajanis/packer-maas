@@ -30,23 +30,21 @@ autoinstall:
       name: direct
   package_update: false
   package_upgrade: false
-  late-commands:
-    - echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' > /target/etc/sudoers.d/ubuntu
-    - echo "---------------- Harmonic Installer - Update Sudoers (Add 'ubuntu' user with 'ALL=(ALL) NOPASSWD:ALL') -----------------"
-    - echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' > /target/etc/sudoers.d/ubuntu
-    - echo "---------------- Harmonic Installer - Configure SSHd (Allow Root Login) -----------------"
-    - sed -i -e '/^[#]*PermitRootLogin/s/^.*$/PermitRootLogin yes/' /target/etc/ssh/sshd_config
-    - echo "---------------- Harmonic Installer - Configure SSHd (Allow Password Login) -----------------"
-    - sed -i -e '/^[#]*PasswordAuthentication/s/^.*$/PasswordAuthentication yes/' /target/etc/ssh/sshd_config
-    - echo "---------------- Harmonic Installer - Setup (RESTARTING SSHd) -----------------"
-    - systemctl restart ssh
+  early-commands:
+    00-mkdir: [ "sudo", "mkdir", "-p", "/run/harmonic" ]
+    10-sudo: [ "echo", "ubuntu ALL=(ALL) NOPASSWD:ALL", "tee", "-a", "/target/etc/sudoers.d/ubuntu"]
+    20-rootlogin: [ "sed", "-i", "-e", "/^[#]*PermitRootLogin/s/^.*$/PermitRootLogin yes/", "/target/etc/ssh/sshd_config" ]
+    30-pwlogin: [ "sed", "-i", "-e", "/^[#]*PasswordAuthentication/s/^.*$/PasswordAuthentication yes/", "/target/etc/ssh/sshd_config" ]
+    40-sshrestart: [ "sudo", "systemctl", "restart", "ssh" ]
+    50-authkey: [ "sudo", "sed", "-r", "-i", "s/^.+(ssh-.+)$/\\1/", "/root/.ssh/authorized_keys"]
+
   user-data:
     runcmd:
       - echo "---------------- Harmonic Installer - Install Script (DOWNLOAD) -----------------"
-      - wget http://172.22.31.150:8080/scripts/harmonic-installer.sh -O /media/root-rw/harmonic-installer.sh
-      - chmod +x /media/root-rw/harmonic-installer.sh
+      - sudo wget http://172.22.31.150:8080/scripts/harmonic-installer.sh -O /run/harmonic/harmonic-installer.sh
+      - sudo chmod +x /run/harmonic/harmonic-installer.sh
       - echo "---------------- Harmonic Installer - Install Script (RUNNING) -----------------"
-      - /media/root-rw/harmonic-installer.sh -vi
+      - sudo /run/harmonic/harmonic-installer.sh -vi
       - echo "------------------- Harmonic Installer - Install Script (COMPLETED) ------------------"
       - echo "------------------- Harmonic Installer - Rebooting System ------------------"
-      - shutdown -r now
+      - sudo shutdown -r now

@@ -1,11 +1,19 @@
 #cloud-config
 autoinstall:
+  version: 1
+  identity:
+    hostname: harmonic-live
+    username: ubuntu
+    password: $6$canonical.$0zWaW71A9ke9ASsaOcFTdQ2tx1gSmLxMPrsH0rF0Yb.2AEKNPV1lrF94n6YuPJmnUy2K2/JSDtxuiBDey6Lpa/
   early-commands:
-  - echo "---------------- Harmonic Installer - Install Script (DOWNLOAD) -----------------"
-  - wget http://172.22.31.150:8080/scripts/harmonic-installer.sh -O /media/root-rw/harmonic-installer.sh
-  - chmod +x /media/root-rw/harmonic-installer.sh
-  - echo "---------------- Harmonic Installer - Install Script (RUNNING) -----------------"
-  - /media/root-rw/harmonic-installer.sh -vi
-  - echo "------------------- Harmonic Installer - Install Script (COMPLETED) ------------------"
-  - echo "------------------- Harmonic Installer - Rebooting System -----------------"
-  - shutdown -r now
+    10-sudo: [ "echo", "ubuntu ALL=(ALL) NOPASSWD:ALL", "tee", "-a", "/target/etc/sudoers.d/ubuntu"]
+    20-rootlogin: [ "sed", "-i", "-e", "/^[#]*PermitRootLogin/s/^.*$/PermitRootLogin yes/", "/target/etc/ssh/sshd_config" ]
+    30-pwlogin: [ "sed", "-i", "-e", "/^[#]*PasswordAuthentication/s/^.*$/PasswordAuthentication yes/", "/target/etc/ssh/sshd_config" ]
+    40-sshrestart: [ "sudo", "systemctl", "restart", "ssh" ]
+    50-authkey: [ "sudo", "sed", "-r", "-i", "s/^.+(ssh-.+)$/\\1/", "/root/.ssh/authorized_keys"]
+  late-commands:
+    10-mkdir: [ "sudo", "mkdir", "-p", "/run/harmonic" ]
+    20-download: ["wget", "--no-proxy", "http://172.22.31.150:8080/scripts/harmonic-installer.sh", "-O", "/run/harmonic/harmonic-installer.sh" ]
+    30-permissions: ["chmod", "+x", "/run/harmonic/harmonic-installer.sh" ]
+    40-execute: ["sudo", "/run/harmonic/harmonic-installer.sh", "-iv"]
+    50-reboot: ["sudo", "shutdown", "-r", "now"]
