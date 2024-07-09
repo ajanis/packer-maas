@@ -31,12 +31,12 @@ autoinstall:
   package_update: false
   package_upgrade: false
   early-commands:
-    00-mkdir: [ "sudo", "mkdir", "-p", "/run/harmonic" ]
-    10-sudo: [ "echo", "ubuntu ALL=(ALL) NOPASSWD:ALL", "tee", "-a", "/target/etc/sudoers.d/ubuntu"]
-    20-rootlogin: [ "sed", "-i", "-e", "/^[#]*PermitRootLogin/s/^.*$/PermitRootLogin yes/", "/target/etc/ssh/sshd_config" ]
-    30-pwlogin: [ "sed", "-i", "-e", "/^[#]*PasswordAuthentication/s/^.*$/PasswordAuthentication yes/", "/target/etc/ssh/sshd_config" ]
-    40-sshrestart: [ "sudo", "systemctl", "restart", "ssh" ]
-    50-authkey: [ "sudo", "sed", "-r", "-i", "s/^.+(ssh-.+)$/\\1/", "/root/.ssh/authorized_keys"]
+    00-mkdir: ["sudo", "mkdir", "-p", "/run/harmonic"]
+    10-sudo: ["echo", "ubuntu ALL=(ALL) NOPASSWD:ALL", "tee", "-a", "/target/etc/sudoers.d/ubuntu"]
+    20-rootlogin: ["sed", "-i", "-e", "/^[#]*PermitRootLogin/s/^.*$/PermitRootLogin yes/", "/target/etc/ssh/sshd_config"]
+    30-pwlogin: ["sed", "-i", "-e", "/^[#]*PasswordAuthentication/s/^.*$/PasswordAuthentication yes/", "/target/etc/ssh/sshd_config"]
+    40-sshrestart: ["sudo", "systemctl", "restart", "ssh"]
+    50-authkey: ["sudo", "sed", "-r", "-i", "s/^.+(ssh-.+)$/\\1/", "/root/.ssh/authorized_keys"]
 
   user-data:
     runcmd:
