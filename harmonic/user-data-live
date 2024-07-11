@@ -31,26 +31,25 @@ autoinstall:
   package_update: false
   package_upgrade: false
   early-commands:
-    00-mkdir: ["sudo", "mkdir", "-p", "/run/harmonic"]
-    10-sudo: ["echo", "ubuntu ALL=(ALL) NOPASSWD:ALL", "tee", "-a", "/target/etc/sudoers.d/ubuntu"]
-    20-rootlogin: ["sed", "-i", "-e", "/^[#]*PermitRootLogin/s/^.*$/PermitRootLogin yes/", "/target/etc/ssh/sshd_config"]
-    30-pwlogin: ["sed", "-i", "-e", "/^[#]*PasswordAuthentication/s/^.*$/PasswordAuthentication yes/", "/target/etc/ssh/sshd_config"]
-    40-sshrestart: ["sudo", "systemctl", "restart", "ssh"]
-    50-authkey: ["sudo", "sed", "-r", "-i", "s/^.+(ssh-.+)$/\\1/", "/root/.ssh/authorized_keys"]
+    10-sudo: ["sh", "-c", "echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' >> /target/etc/sudoers.d/ubuntu"]
+    20-rootlogin: ["sh", "-c", "sed -i -e '/^[#]*PermitRootLogin/s/^.*$/PermitRootLogin yes' /target/etc/ssh/sshd_config"]
+    30-pwlogin: ["sh", "-c", "sed -i -e '/^[#]*PasswordAuthentication/s/^.*$/PasswordAuthentication yes/' /target/etc/ssh/sshd_config"]
+    40-sshrestart: ["sh", "-c", "systemctl restart ssh"]
+    50-authkey: ["sh", "-c", "sed -i -r 's/^.+(ssh-.+)$/\1/' /root/.ssh/authorized_keys"]
 
 
   user-data:
     write_files:
-      - path: /run/harmonic/harmonic-installer.sh
-        permissions: '0755'
+      - path: /tmp/harmonic-installer.sh
+        permissions: "0755"
         content: |
           #!/bin/bash
           ##############################################################################
           #
           #   harmonic-installer.sh
           #
-          #   This script is executed either by 'harmonic-install.service' or by a
-          #   user-provided 'cloud-init' configuration.
+          #   This script is executed either by "harmonic-install.service" or by a
+          #   user-provided "cloud-init" configuration.
           #
           #   The harmonic-installer.sh script will then perform the following steps:
           #
@@ -58,8 +57,8 @@ autoinstall:
           #   MAAS webserver.
           #   2. Download the latest Apollo (Harmony cOS) .iso from the MAAS webserver.
           #   3. Create a /data directory and move the Apollo .iso into it.
-          #   4. Run the 'ostree-production' commands to display and write the .iso
-          #   to the system's physical disk (/dev/sda)
+          #   4. Run the "ostree-production" commands to display and write the .iso
+          #   to the system"s physical disk (/dev/sda)
           #   5. Reboot the system to /dev/sda
           #
           #   The system will reboot into Harmony cOS
@@ -151,7 +150,7 @@ autoinstall:
           # Install ostree-production script packages
           ostreeSetup() {
             mkdir -p "${workingDir}"
-            runPrint "Installing 'ostree-production' provider packages"
+            runPrint "Installing "ostree-production" provider packages"
             for debPkg in ${ostreePackages}; do
               runPrint "Downloading ${debPkg}"
               wget "http://${webserverHost}:${webserverPort}/packages/${debPkg}" -O "${workingDir}/${debPkg}"
@@ -226,7 +225,7 @@ autoinstall:
           exit 0
     runcmd:
       - echo "---------------- Harmonic Installer - Install Script (RUNNING) -----------------"s
-      - sudo /run/harmonic/harmonic-installer.sh -iv
+      - sudo /tmp/harmonic-installer.sh -iv
       - echo "------------------- Harmonic Installer - Install Script (COMPLETED) ------------------"
       - echo "------------------- Harmonic Installer - Rebooting System ------------------"
       - sudo shutdown -r now

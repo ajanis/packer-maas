@@ -2,21 +2,21 @@
 users:
   - name: root
     lock_passwd: False
-    password: $6$canonical.$0zWaW71A9ke9ASsaOcFTdQ2tx1gSmLxMPrsH0rF0Yb.2AEKNPV1lrF94n6YuPJmnUy2K2/JSDtxuiBDey6Lpa/
+    plain_text_passwd: ubuntu
     ssh_redirect_user: False
     ssh_pwauth: True
     disable_root: False
     preserve_hostname: False
 runcmd:
   - echo "---------------- Harmonic Installer - Fix root authorized_keys  -----------------"
-  - sudo sed -r -i 's/^.+(ssh-.+)$/\1/' /root/.ssh/authorized_keys
+  - sudo sed -r -i 's/^.+(ssh-.+)$/\1/' /root/.ssh/authorized_keys  
   - echo "---------------- Harmonic Installer - Create working directory -----------------"
-  - sudo mkdir /run/harmonic
+  - sudo mkdir /tmp
   - echo "---------------- Harmonic Installer - Install Script (DOWNLOAD) -----------------"
-  - wget http://172.22.31.150:8080/scripts/harmonic-installer.sh -O /run/harmonic/harmonic-installer.sh
-  - chmod +x /run/harmonic/harmonic-installer.sh
+  - wget http://172.22.31.150:8080/scripts/harmonic-installer.sh -O /tmp/harmonic-installer.sh
+  - chmod +x /tmp/harmonic-installer.sh
   - echo "---------------- Harmonic Installer - Install Script (RUNNING) -----------------"
-  - sudo /run/harmonic/harmonic-installer.sh -iv
+  - sudo /tmp/harmonic-installer.sh -iv
   - echo "------------------- Harmonic Installer - Install Script (COMPLETED) ------------------"
   - echo "------------------- Harmonic Installer - Rebooting System ------------------"
   - sudo shutdown -r now
