@@ -1,6 +1,6 @@
 #cloud-config
 users:
-  - name: root
+  - name: ubuntu
     lock_passwd: False
     plain_text_passwd: ubuntu
     ssh_redirect_user: False
@@ -11,7 +11,6 @@ runcmd:
   - echo "---------------- Harmonic Installer - Fix root authorized_keys  -----------------"
   - sudo sed -r -i 's/^.+(ssh-.+)$/\1/' /root/.ssh/authorized_keys  
   - echo "---------------- Harmonic Installer - Create working directory -----------------"
-  - sudo mkdir /tmp
   - echo "---------------- Harmonic Installer - Install Script (DOWNLOAD) -----------------"
   - wget http://172.22.31.150:8080/scripts/harmonic-installer.sh -O /tmp/harmonic-installer.sh
   - chmod +x /tmp/harmonic-installer.sh

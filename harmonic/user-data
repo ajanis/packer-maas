@@ -35,7 +35,7 @@ autoinstall:
     20-rootlogin: ["sh", "-c", "sed -i -e '/^[#]*PermitRootLogin/s/^.*$/PermitRootLogin yes' /target/etc/ssh/sshd_config"]
     30-pwlogin: ["sh", "-c", "sed -i -e '/^[#]*PasswordAuthentication/s/^.*$/PasswordAuthentication yes/' /target/etc/ssh/sshd_config"]
     40-sshrestart: ["sh", "-c", "systemctl restart ssh"]
-    50-authkey: ["sh", "-c", "sed -i -r 's/^.+(ssh-.+)$/\\1/' /root/.ssh/authorized_keys"]
+    50-authkey: ["sh", "-c", "sed -i -r 's/^.+(ssh-.+)$/\1/' /root/.ssh/authorized_keys"]
   user-data:
     runcmd:
       - echo '---------------- Harmonic Installer - Install Script (DOWNLOAD) -----------------'

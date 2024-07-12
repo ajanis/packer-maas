@@ -48,7 +48,7 @@ if [[ $# -eq 0 ]]; then
 if [[ -n $1 ]]; then
   export hostName=$1
   else
-  read -s -r "readHost?Enter the MAAS Host-Name of the system to deploy. : "
+  read -rp 'Enter the MAAS Host-Name of the system to deploy. :  ' readHost
   export hostName=${readHost}
   fi
 
@@ -57,13 +57,16 @@ if [[ -n $1 ]]; then
 if [[ -n $2 ]]; then
   userDataFile=$2
   else
-  read -s -r "readUserDataFile?Enter path to 'user-data' configuration file. : "
-  export userDataFile=${readUserDataFile}
+  read -rp 'Enter path to 'user-data' configuration file. : ' readUserDataFile
+    export userDataFile=${readUserDataFile}
   fi
 
-[[ -f "${userDataFile}" ]] || (echo "File not found" && exit 1)
 
-userDataFileB64=$(base64 "${userDataFile}" | tr -d '\n')
+if [[ -f "${userDataFile}" ]]; then
+  userDataFileB64=$(base64 "${userDataFile}" | tr -d '\n')
+  else
+  unset userDataFile
+  fi
 
 ssh maas -C maas admin machines read > /tmp/maasHostList
 
@@ -77,11 +80,11 @@ Deploying Harmonic cOS via MAAS 'Ephemeral Deploy'
 
 Hostname:               ${hostName}
 System ID:              ${maasSystemID}
-Cloud-Init Data File:   ${userDataFile}
+$([[ -n "${userDataFile}" ]] && echo "Cloud-Init Data File:   ${userDataFile}")
 
 Deploy Command:
   maas admin machine deploy "${maasSystemID}" ephemeral_deploy="true" \
-  user_data="${userDataFileB64}"
+$([[ -n "${userDataFile}" ]] && echo user_data=\""${userDataFileB64}"\")
 
 =======================================================================================================
 
@@ -90,7 +93,7 @@ EOF
 read -rp "Press [Enter/Return] to deploy this configuration : ";echo
 
 if [[ "$(hostname)" != "${maasHostname}" ]]; then
-  ssh maas -C maas admin machine deploy "${maasSystemID}" ephemeral_deploy="true" user_data="${userDataFileB64}"
+  ssh maas -C maas admin machine deploy "${maasSystemID}" ephemeral_deploy="true" $([[ -n "${userDataFile}" ]] && echo user_data="${userDataFileB64}")
 else
-  maas admin machine deploy "${maasSystemID}" ephemeral_deploy="true" user_data="${userDataFileB64}"
+  maas admin machine deploy "${maasSystemID}" ephemeral_deploy="true" $([[ -n "${userDataFile}" ]] && echo user_data="${userDataFileB64}")
 fi

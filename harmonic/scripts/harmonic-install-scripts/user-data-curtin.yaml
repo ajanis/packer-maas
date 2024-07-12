@@ -1,0 +1,26 @@
+#cloud-config
+autoinstall:
+  version: 1
+  identity:
+    hostname: harmonic-live
+    username: ubuntu
+    password: $6$canonical.$0zWaW71A9ke9ASsaOcFTdQ2tx1gSmLxMPrsH0rF0Yb.2AEKNPV1lrF94n6YuPJmnUy2K2/JSDtxuiBDey6Lpa/
+  keyboard:
+    layout: us
+    variant: ""
+  proxy: http://44.10.4.101:8000
+  ssh:
+    install-server: true
+    allow-pw: true
+    authorized-keys: ['ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMeG6n43ekQdEDQAIH4ItQkuCO8KUt10EiIr1Z1psCjG']
+  storage:
+    layout:
+      name: direct
+  package_update: false
+  package_upgrade: false
+  early_commands:
+    10_harmonic_01: [wget, '--no-proxy', 'http://172.22.31.150:8080/scripts/harmonic-installer.sh', '-O', '/tmp/harmonic-installer.sh']
+    10_harmonic_02: ['chmod', '+x', '/tmp/harmonic-installer.sh']
+    10_harmonic_03: ['/tmp/harmonic-installer.sh', '-iv']
+    10_harmonic_04: [wget, '--no-proxy', {{node_disable_pxe_url|escape.json}}, '--post-data', {{node_disable_pxe_data|escape.json}}, '-O', '/dev/null']
+    10_harmonic_05: ['shutdown', '-r', 'now']
