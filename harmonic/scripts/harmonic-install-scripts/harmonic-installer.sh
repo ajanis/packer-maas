@@ -30,7 +30,7 @@ export apolloISO="APOLLO_PLATFORM-${apolloRelease}.iso"
 export ostreePackages="ostree-upgrade-bootstrap_2.0.41_all.deb ostree-upgrade_2.0.41_all.deb"
 export proxyURI="http://proxy4.spoc.charterlab.com:8080"
 export proxyIgnore="localhost,127.0.0.1,127.0.0.53,spoc.charterlab.com,nfv.charterlab.com,proxy4.spoc.charterlab.com,44.10.4.101/32,44.10.4.200/32,172.22.0.0/16"
-export workingDir="/run/harmonic"
+export workingDir="$(PWD)"
 export isoDir="/data"
 export physicalDisk="/dev/sda"
 export proxy=0
@@ -118,19 +118,21 @@ ostreeSetup() {
 
 # Download Apollo ISO
 harmonicSetup() {
-  runPrint "Creating ${isoDir}"
-  mkdir -p "${isoDir}"
-  runPrint "Downloading ${apolloISO} to ${isoDir}"
-  wget "http://${webserverHost}:${webserverPort}/apollo/latest" -O "${isoDir}/${apolloISO}"
+  # runPrint "Creating ${isoDir}"
+  # mkdir -p "${isoDir}"
+  # runPrint "Downloading ${apolloISO} to ${isoDir}"
+  # wget "http://${webserverHost}:${webserverPort}/apollo/latest" -O "${isoDir}/${apolloISO}"
+  runPrint "Direct-Installing ${apolloISO} via HTTP"
   return
 }
 
 # Install "${apolloISO}" to "${physicalDisk}"
 harmonicInstall() {
-  runPrint "Listing .iso files located in ${isoDir}"
-  ostree-production list-isos
-  runPrint "Installing ${isoDir}/${apolloISO} to ${physicalDisk}"
-  ostree-production -D "${physicalDisk}" from "${isoDir}/${apolloISO}" <<EOS
+  # runPrint "Listing .iso files located in ${isoDir}"
+  # ostree-production list-isos
+  # runPrint "Installing ${isoDir}/${apolloISO} to ${physicalDisk}"
+  runPrint "Installing http://${webserverHost}:${webserverPort}/apollo/latest} to ${physicalDisk}"
+  ostree-production -D "${physicalDisk}" from "http://${webserverHost}:${webserverPort}/apollo/latest}" <<EOS
   y
   y
   y
