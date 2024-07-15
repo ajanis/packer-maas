@@ -118,21 +118,22 @@ ostreeSetup() {
 
 # Download Apollo ISO
 harmonicSetup() {
-  # runPrint "Creating ${isoDir}"
-  # mkdir -p "${isoDir}"
-  # runPrint "Downloading ${apolloISO} to ${isoDir}"
-  # wget "http://${webserverHost}:${webserverPort}/apollo/latest" -O "${isoDir}/${apolloISO}"
-  runPrint "Direct-Installing ${apolloISO} via HTTP"
+  runPrint "Creating ${isoDir}"
+  mkdir -p "${isoDir}"
+  runPrint "Downloading ${apolloISO} to ${isoDir}"
+  wget "http://${webserverHost}:${webserverPort}/apollo/latest" -O "${isoDir}/${apolloISO}"
+  # runPrint "Direct-Installing ${apolloISO} via HTTP"
   return
 }
 
 # Install "${apolloISO}" to "${physicalDisk}"
 harmonicInstall() {
-  # runPrint "Listing .iso files located in ${isoDir}"
-  # ostree-production list-isos
-  # runPrint "Installing ${isoDir}/${apolloISO} to ${physicalDisk}"
-  runPrint "Installing http://${webserverHost}:${webserverPort}/apollo/latest} to ${physicalDisk}"
-  ostree-production -D "${physicalDisk}" from "http://${webserverHost}:${webserverPort}/apollo/latest}" <<EOS
+  runPrint "Listing .iso files located in ${isoDir}"
+  ostree-production list-isos
+  runPrint "Installing ${isoDir}/${apolloISO} to ${physicalDisk}"
+  # runPrint "Installing http://${webserverHost}:${webserverPort}/apollo/latest} to ${physicalDisk}"
+  # ostree-production -D "${physicalDisk}" from "http://${webserverHost}:${webserverPort}/apollo/latest}"
+  ostree-production -D "${physicalDisk}" from "${isoDir}/${apolloISO}" <<EOS
   y
   y
   y
