@@ -174,10 +174,11 @@ fi
 
 if [[ "${download}" == 1 ]]; then
   ostreeSetup
+  harmonicSetup
+
 fi
 
 if [[ "${install}" == 1 ]]; then
-  harmonicSetup
   harmonicInstall
 fi
 
