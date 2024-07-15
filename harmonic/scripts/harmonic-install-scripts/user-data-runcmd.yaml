@@ -12,8 +12,8 @@ runcmd:
   - sudo sed -r -i 's/^.+(ssh-.+)$/\1/' /root/.ssh/authorized_keys  
   - echo "---------------- Harmonic Installer - Create working directory -----------------"
   - echo "---------------- Harmonic Installer - Install Script (DOWNLOAD) -----------------"
-  - wget http://172.22.31.150:8080/scripts/harmonic-installer.sh -O /tmp/harmonic-installer.sh
-  - chmod +x /tmp/harmonic-installer.sh
+  - sudo wget http://172.22.31.150:8080/scripts/harmonic-installer.sh -O /tmp/harmonic-installer.sh
+  - sudo chmod +x /tmp/harmonic-installer.sh
   - echo "---------------- Harmonic Installer - Install Script (RUNNING) -----------------"
   - sudo /tmp/harmonic-installer.sh -iv
   - echo "------------------- Harmonic Installer - Install Script (COMPLETED) ------------------"
