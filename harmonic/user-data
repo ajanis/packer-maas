@@ -7,7 +7,7 @@ autoinstall:
     password: $6$canonical.$0zWaW71A9ke9ASsaOcFTdQ2tx1gSmLxMPrsH0rF0Yb.2AEKNPV1lrF94n6YuPJmnUy2K2/JSDtxuiBDey6Lpa/
   keyboard:
     layout: us
-    variant: ''
+    variant: ""
   proxy: http://44.10.4.101:8000
   apt:
     geoip: true
