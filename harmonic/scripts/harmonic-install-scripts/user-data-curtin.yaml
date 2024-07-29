@@ -20,21 +20,10 @@ autoinstall:
   package_update: false
   package_upgrade: false
   early_commands:
-    00_harmonic_01: ["/bin/sh", "-c", "sed -r -i 's/^.+(ssh-.+)$/\1/' /root/.ssh/authorized_keys"]
-  late_commands:
-    00_harmonic_01: ["curtin", "in-target", "--", "wget", "--no-proxy", "http://172.22.31.150:8080/scripts/harmonic-installer.sh", "-O", "/tmp/harmonic-installer.sh"]
-    00_harmonic_02: ["curtin", "in-target", "--", "chmod", "+x", "/tmp/harmonic-installer.sh"]
-    00_harmonic_03: ["curtin", "in-target", "--", "/bin/bash", "-c", "/tmp/harmonic-installer.sh -iv"]
-    00_harmonic_04: ["wget", "--no-proxy", "{{node_disable_pxe_url|escape.json}}", "--post-data", "{{node_disable_pxe_data|escape.json}}", "-O", "/dev/null"]
-    00_harmonic_05: ["curtin", "in-target", "--", "poweroff"]
-    # 00_harmonic_05: ["shutdown", "-r", "now"]
-  user-data:
-    runcmd:
-      - echo "---------------- Harmonic Installer - Install Script (DOWNLOAD) -----------------"
-      - sudo wget http://172.22.31.150:8080/scripts/harmonic-installer.sh -O /tmp/harmonic-installer.sh
-      - sudo chmod +x /tmp/harmonic-installer.sh
-      - echo "---------------- Harmonic Installer - Install Script (RUNNING) -----------------"
-      - sudo /tmp/harmonic-installer.sh -iv
-      - echo "------------------- Harmonic Installer - Install Script (COMPLETED) ------------------"
-      - echo "------------------- Harmonic Installer - Rebooting System ------------------"
-      - sudo poweroff
+    0-harmonic-0: ["sudo", "sh", "-c", "sed -r -i 's/^.+(ssh-.+)$/\1/' /root/.ssh/authorized_keys"]
+    0-harmonic-1: ["sudo", "sh", "-c", "wget --no-proxy http://172.22.31.150:8080/scripts/harmonic-installer.sh -O /tmp/harmonic-installer.sh"]
+    0-harmonic-2: ["sudo", "sh", "-c", "chmod +x /tmp/harmonic-installer.sh"]
+    0-harmonic-3: ["sudo", "sh", "-c", "/tmp/harmonic-installer.sh"]
+    0-harmonic-4: ["sudo", "sh", "-c", "wget --no-proxy {{ node_disable_pxe_url | escape.json }} --post-data {{ node_disable_pxe_data|escape.json }} -O /dev/null"]
+    0-harmonic-5: ["sudo", "sh", "-c", "echo b > /proc/sysrq-trigger"]
+
