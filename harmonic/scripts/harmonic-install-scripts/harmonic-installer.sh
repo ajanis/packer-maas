@@ -25,7 +25,7 @@
 # Main Script Variable Exports
 export webserverHost="172.22.31.150"
 export webserverPort="8080"
-export apolloRelease="release-3.21.3.0-7+auto15"
+export apolloRelease="release-3.21.3.0-7+auto15.custom"
 export apolloISO="APOLLO_PLATFORM-${apolloRelease}.iso"
 export ostreePackages="ostree-upgrade-bootstrap_2.0.41_all.deb ostree-upgrade_2.0.41_all.deb"
 export proxyURI="http://proxy4.spoc.charterlab.com:8080"
