@@ -25,7 +25,9 @@
 # Main Script Variable Exports
 export webserverHost="172.22.31.150"
 export webserverPort="8080"
-export apolloRelease="release-3.21.3.0-7+auto15.custom"
+export artifactoryURL="https://artifactory.charterlab.com"
+export artifactoryPath="artifactory/scgp-generic-files/pub/harmonic/custom"
+export apolloRelease="release-3.21.3.0-7+auto15"
 export apolloISO="APOLLO_PLATFORM-${apolloRelease}.iso"
 export ostreePackages="ostree-upgrade-bootstrap_2.0.41_all.deb ostree-upgrade_2.0.41_all.deb"
 export proxyURI="http://proxy4.spoc.charterlab.com:8080"
@@ -59,7 +61,11 @@ else
   runPrint "Physical disk ${physicalDisk} found.  Proceeding with Harmonic cOS installation..."
   vgchange -an
   umount -lf "${physicalDisk}"
+  vgremove cos-slice-vg
+  pvremove "${physicalDisk}3"
+  wipefs -f -a "${physicalDisk}"
   dd if=/dev/zero of="${physicalDisk}" bs=1M count=100
+  partprobe "${physicalDisk}"
 fi
 
 # Unset HTTP Proxies by default
@@ -121,8 +127,7 @@ harmonicSetup() {
   runPrint "Creating ${isoDir}"
   mkdir -p "${isoDir}"
   runPrint "Downloading ${apolloISO} to ${isoDir}"
-  wget "http://${webserverHost}:${webserverPort}/apollo/latest" -O "${isoDir}/${apolloISO}"
-  # runPrint "Direct-Installing ${apolloISO} via HTTP"
+  wget "${artifactoryURL}/${artifactoryPath}/${apolloISO}" -O "${isoDir}/${apolloISO}"
   return
 }
 
