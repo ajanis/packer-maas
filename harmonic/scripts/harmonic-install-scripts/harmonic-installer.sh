@@ -110,13 +110,13 @@ proxySetup() {
     : "${no_proxy:=${proxyIgnore}}" && export no_proxy="${no_proxy}"
  
     runPrint "
-    
-    Current HTTP(s) proxy environment:
 
+    Current HTTP(s) proxy environment:
+    
     http_proxy: ${http_proxy}
     http_proxy: ${https_proxy}
     no_proxy: ${no_proxy}
-    
+
     "
   fi
   return
