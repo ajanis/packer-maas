@@ -35,6 +35,8 @@ export proxyIgnore="localhost,127.0.0.1,127.0.0.53,spoc.charterlab.com,nfv.chart
 export workingDir="${PWD}"
 export isoDir="/data"
 export physicalDisk="/dev/sda"
+export harmonicPV="${physicalDisk}3"
+export harmonicVG=${cos-slice-vg}
 export proxy=0
 export download=0
 export install=0
@@ -47,31 +49,24 @@ cat << EOF
 EOF
 }
 
-# Set up script logging
-: > /var/log/harmonic
-exec 2> >(tee -a /var/log/harmonic >&2) > >(tee -a /var/log/harmonic)
-
-# Check for "${physicalDisk}
-# Remove any existing LVMs and zero boot partition if found
-# Otherwise exit
-if ! lsblk "${physicalDisk}" >/dev/null 2>&1; then
-  runPrint "Physical disk ${physicalDisk} not found.  Harmonic cOS installation can not run on this host."
-  exit 1
-else
-  runPrint "Physical disk ${physicalDisk} found.  Proceeding with Harmonic cOS installation..."
+# Remove existing partitions, logical volumes and volume groups
+diskSetup() {
+  runPrint "Disabling logical volumes ..."
   vgchange -an
+  runPrint "Unmounting ${physicalDisk} ..."
   umount -lf "${physicalDisk}"
+  runPrint "Removing VG ${harmonicVG} ..."
   vgremove cos-slice-vg
+  runPrint "Removing PV ${physicalDisk}3 ..."
   pvremove "${physicalDisk}3"
+  runPrint "Removing any filesystem data from ${physicalDisk} ..."
   wipefs -f -a "${physicalDisk}"
+  runPrint "Forceably overwriting boot sector of ${physicalDisk} ..."
   dd if=/dev/zero of="${physicalDisk}" bs=1M count=100
+  runPrint "Reloadin ${physicalDisk} partition map ..."
   partprobe "${physicalDisk}"
-fi
+}
 
-# Unset HTTP Proxies by default
-unset http_proxy
-unset https_proxy
-unset no_proxy
 
 # Script Help Function
 showHelp() {
@@ -92,17 +87,36 @@ Image a physical server with Harmonic cOS
 EOH
 }
 
+if ! (lsblk "${physicalDisk}" >/dev/null 2>&1); then
+  runPrint "Physical disk ${physicalDisk} not found.  Can not proceed with Harmonic installation ..."
+  exit 1
+else
+  runPrint "Physical disk ${physicalDisk} detected.  Performing pre-install disk preparation ..."
+  diskSetup >(tee -a /var/log/harmonic >&2) > >(tee -a /var/log/harmonic)
+  fi
+
+runPrint "Unset any http(s) proxy configurations or environment variables by default ..."
+unset http_proxy
+unset https_proxy
+unset no_proxy
+
+
 # Proxy setup function
 proxySetup() {
   if [[ ${proxy} == 1 ]]; then
-    runPrint "Configuring HTTP(S) proxies"
+    runPrint "Setting up HTTP(S) proxy environment ..."
     : "${http_proxy:=${proxyURI}}"  && export http_proxy="${http_proxy}"
     : "${https_proxy:=${proxyURI}}" && export https_proxy="${https_proxy}"
     : "${no_proxy:=${proxyIgnore}}" && export no_proxy="${no_proxy}"
-    runprint "Proxy Information:
+ 
+    runPrint "
+    
+    Current HTTP(s) proxy environment:
+
     http_proxy: ${http_proxy}
     http_proxy: ${https_proxy}
     no_proxy: ${no_proxy}
+    
     "
   fi
   return
@@ -110,13 +124,13 @@ proxySetup() {
 
 # Install ostree-production script packages
 ostreeSetup() {
-  runPrint "Creating ${workingDir}"
+  runPrint "Creating ${workingDir} ..."
   mkdir -p "${workingDir}"
-  runPrint "Installing 'ostree-production' provider packages"
+  runPrint "Installing 'ostree-production' provider packages ..."
   for debPkg in ${ostreePackages}; do
-    runPrint "Downloading ${debPkg}"
-    wget "http://${webserverHost}:${webserverPort}/packages/${debPkg}" -O "${workingDir}/${debPkg}"
-    runPrint "Installing ${debPkg}"
+    runPrint "Downloading ${debPkg} ..."
+    wget "http://${webserverHost}:${webserverPort}/packages/${debPkg}" -O "${workingDir}/${debPkg}" > /dev/null 2>&1
+    runPrint "Installing ${debPkg} ..."
     dpkg -i "${workingDir}/${debPkg}"
   done
   return
@@ -124,21 +138,21 @@ ostreeSetup() {
 
 # Download Apollo ISO
 harmonicSetup() {
-  runPrint "Creating ${isoDir}"
+  runPrint "Creating ${isoDir} ..."
   mkdir -p "${isoDir}"
-  runPrint "Downloading ${apolloISO} to ${isoDir}"
-  wget "${artifactoryURL}/${artifactoryPath}/${apolloISO}" -O "${isoDir}/${apolloISO}"
+  runPrint "Downloading ${apolloISO} to ${isoDir} ..."
+  wget "${artifactoryURL}/${artifactoryPath}/${apolloISO}" -O "${isoDir}/${apolloISO}" > /dev/null 2>&1
   return
 }
 
 # Install "${apolloISO}" to "${physicalDisk}"
 harmonicInstall() {
-  runPrint "Listing .iso files located in ${isoDir}"
+  runPrint "Listing .iso files located in ${isoDir} ..."
   ostree-production list-isos
-  runPrint "Installing ${isoDir}/${apolloISO} to ${physicalDisk}"
-  # runPrint "Installing http://${webserverHost}:${webserverPort}/apollo/latest} to ${physicalDisk}"
-  # ostree-production -D "${physicalDisk}" from "http://${webserverHost}:${webserverPort}/apollo/latest}"
+  runPrint "Installing ${isoDir}/${apolloISO} to ${physicalDisk} ..."
   ostree-production -D "${physicalDisk}" from "${isoDir}/${apolloISO}" <<EOS
+  y
+  y
   y
   y
   y
@@ -174,17 +188,17 @@ shift $((OPTIND-1))
 
 # Main Runners
 if [[ ${proxy} == 1 ]]; then
-  proxySetup
+  proxySetup  >(tee -a /var/log/harmonic >&2) > >(tee -a /var/log/harmonic)
 fi
 
 if [[ "${download}" == 1 ]]; then
-  ostreeSetup
-  harmonicSetup
+  ostreeSetup >(tee -a /var/log/harmonic >&2) > >(tee -a /var/log/harmonic)
+  harmonicSetup >(tee -a /var/log/harmonic >&2) > >(tee -a /var/log/harmonic)
 
 fi
 
 if [[ "${install}" == 1 ]]; then
-  harmonicInstall
+  harmonicInstall >(tee -a /var/log/harmonic >&2) > >(tee -a /var/log/harmonic)
 fi
 
 exit 0
