@@ -56,14 +56,14 @@ diskSetup() {
   runPrint "Unmounting ${physicalDisk} ..."
   umount -lf "${physicalDisk}"
   runPrint "Removing VG ${harmonicVG} ..."
-  vgremove cos-slice-vg
+  vgremove -y cos-slice-vg
   runPrint "Removing PV ${physicalDisk}3 ..."
-  pvremove "${physicalDisk}3"
+  pvremove -y "${physicalDisk}3"
   runPrint "Removing any filesystem data from ${physicalDisk} ..."
   wipefs -f -a "${physicalDisk}"
   runPrint "Forceably overwriting boot sector of ${physicalDisk} ..."
   dd if=/dev/zero of="${physicalDisk}" bs=1M count=100
-  runPrint "Reloadin ${physicalDisk} partition map ..."
+  runPrint "Reloading ${physicalDisk} partition map ..."
   partprobe "${physicalDisk}"
 }
 
@@ -112,7 +112,7 @@ proxySetup() {
     runPrint "
 
     Current HTTP(s) proxy environment:
-    
+
     http_proxy: ${http_proxy}
     http_proxy: ${https_proxy}
     no_proxy: ${no_proxy}
@@ -141,7 +141,8 @@ harmonicSetup() {
   runPrint "Creating ${isoDir} ..."
   mkdir -p "${isoDir}"
   runPrint "Downloading ${apolloISO} to ${isoDir} ..."
-  wget "${artifactoryURL}/${artifactoryPath}/${apolloISO}" -O "${isoDir}/${apolloISO}" > /dev/null 2>&1
+  # wget "${artifactoryURL}/${artifactoryPath}/${apolloISO}" -O "${isoDir}/${apolloISO}" > /dev/null 2>&1
+  wget "http://${webserverHost}:${webserverPort}/apollo/latest" -O "${isoDir}/${apolloISO}" > /dev/null 2>&1
   return
 }
 
@@ -150,14 +151,7 @@ harmonicInstall() {
   runPrint "Listing .iso files located in ${isoDir} ..."
   ostree-production list-isos
   runPrint "Installing ${isoDir}/${apolloISO} to ${physicalDisk} ..."
-  ostree-production -D "${physicalDisk}" from "${isoDir}/${apolloISO}" <<EOS
-  y
-  y
-  y
-  y
-  y
-  y
-EOS
+  yes | ostree-production -D "${physicalDisk}" from "${isoDir}/${apolloISO}"
   return
 }
 
