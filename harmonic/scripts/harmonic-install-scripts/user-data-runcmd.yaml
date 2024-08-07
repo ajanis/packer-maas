@@ -15,7 +15,8 @@ runcmd:
   - sudo wget http://172.22.31.150:8080/scripts/harmonic-installer.sh -O /tmp/harmonic-installer.sh
   - sudo chmod +x /tmp/harmonic-installer.sh
   - echo "---------------- Harmonic Installer - Install Script (RUNNING) -----------------"
-  - sudo /tmp/harmonic-installer.sh -ivp
+  - sudo /tmp/harmonic-installer.sh -vip
   - echo "------------------- Harmonic Installer - Install Script (COMPLETED) ------------------"
+  - sudo wget --no-proxy {{ node_disable_pxe_url | escape.json }} --post-data {{ node_disable_pxe_data|escape.json }} -O /dev/null || true
   - echo "------------------- Harmonic Installer - Rebooting System ------------------"
-  - sudo shutdown -r now
+  - sudo systemctl --message="Harmonic Post-Install Reboot" reboot

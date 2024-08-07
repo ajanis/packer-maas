@@ -23,7 +23,7 @@ autoinstall:
     0-harmonic-0: ["sudo", "sh", "-c", "sed -r -i 's/^.+(ssh-.+)$/\1/' /root/.ssh/authorized_keys"]
     0-harmonic-1: ["sudo", "sh", "-c", "wget --no-proxy http://172.22.31.150:8080/scripts/harmonic-installer.sh -O /tmp/harmonic-installer.sh"]
     0-harmonic-2: ["sudo", "sh", "-c", "chmod +x /tmp/harmonic-installer.sh"]
-    0-harmonic-3: ["sudo", "sh", "-c", "/tmp/harmonic-installer.sh"]
+    0-harmonic-3: ["sudo", "sh", "-c", "/tmp/harmonic-installer.sh -vip"]
     0-harmonic-4: ["sudo", "sh", "-c", "wget --no-proxy {{ node_disable_pxe_url | escape.json }} --post-data {{ node_disable_pxe_data|escape.json }} -O /dev/null"]
-    0-harmonic-5: ["sudo", "sh", "-c", "echo b > /proc/sysrq-trigger"]
+    0-harmonic-5: ["sudo", "sh", "-c", "systemctl --message='Harmonic Post-Install Reboot' reboot"]
 
