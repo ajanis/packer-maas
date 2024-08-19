@@ -51,7 +51,7 @@ source "qemu" "cloudimg" {
     ["-drive", "file=output-cloudimg/packer-cloudimg,format=qcow2"],
     ["-drive", "file=seeds-cloudimg.iso,format=raw"]
   ]
-  shutdown_command       = "sudo -S shutdown -P now"
+  shutdown_command       = var.shutdown
   ssh_handshake_attempts = 500
   ssh_password           = var.ssh_password
   ssh_timeout            = var.timeout
@@ -76,6 +76,7 @@ build {
 build {
   name    = "cloudimg.image"
   sources = ["source.qemu.cloudimg"]
+
 
   provisioner "shell" {
     environment_vars = concat(local.proxy_env, ["DEBIAN_FRONTEND=noninteractive"])

@@ -49,6 +49,7 @@ build {
     scripts           = ["${path.root}/scripts/curtin.sh", "${path.root}/scripts/networking.sh", "${path.root}/scripts/cleanup.sh"]
   }
 
+
   post-processor "shell-local" {
     inline = [
       "SOURCE=flat",

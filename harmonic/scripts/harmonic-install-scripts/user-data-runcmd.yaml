@@ -1,0 +1,22 @@
+#cloud-config
+users:
+  - name: ubuntu
+    lock_passwd: False
+    plain_text_passwd: ubuntu
+    ssh_redirect_user: False
+    ssh_pwauth: True
+    disable_root: False
+    preserve_hostname: False
+runcmd:
+  - echo "---------------- Harmonic Installer - Fix root authorized_keys  -----------------"
+  - sudo sed -r -i 's/^.+(ssh-.+)$/\1/' /root/.ssh/authorized_keys  
+  - echo "---------------- Harmonic Installer - Create working directory -----------------"
+  - echo "---------------- Harmonic Installer - Install Script (DOWNLOAD) -----------------"
+  - sudo wget http://172.22.31.150:8080/scripts/harmonic-installer.sh -O /tmp/harmonic-installer.sh
+  - sudo chmod +x /tmp/harmonic-installer.sh
+  - echo "---------------- Harmonic Installer - Install Script (RUNNING) -----------------"
+  - sudo /tmp/harmonic-installer.sh -vip
+  - echo "------------------- Harmonic Installer - Install Script (COMPLETED) ------------------"
+  - sudo wget --no-proxy {{ node_disable_pxe_url | escape.json }} --post-data {{ node_disable_pxe_data|escape.json }} -O /dev/null || true
+  - echo "------------------- Harmonic Installer - Rebooting System ------------------"
+  - sudo systemctl --message="Harmonic Post-Install Reboot" reboot

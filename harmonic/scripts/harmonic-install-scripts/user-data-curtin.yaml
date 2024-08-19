@@ -1,0 +1,29 @@
+#cloud-config
+autoinstall:
+  version: 1
+  identity:
+    hostname: harmonic-live
+    username: ubuntu
+    password: $6$canonical.$0zWaW71A9ke9ASsaOcFTdQ2tx1gSmLxMPrsH0rF0Yb.2AEKNPV1lrF94n6YuPJmnUy2K2/JSDtxuiBDey6Lpa/
+  keyboard:
+    layout: us
+    variant: ""
+  ssh:
+    install-server: true
+    allow-pw: true
+    authorized-keys: ['ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMeG6n43ekQdEDQAIH4ItQkuCO8KUt10EiIr1Z1psCjG']
+  storage:
+    grub:
+      update_nvram: true
+    layout:
+      name: direct
+  package_update: false
+  package_upgrade: false
+  early_commands:
+    0-harmonic-0: ["sudo", "sh", "-c", "sed -r -i 's/^.+(ssh-.+)$/\1/' /root/.ssh/authorized_keys"]
+    0-harmonic-1: ["sudo", "sh", "-c", "wget --no-proxy http://172.22.31.150:8080/scripts/harmonic-installer.sh -O /tmp/harmonic-installer.sh"]
+    0-harmonic-2: ["sudo", "sh", "-c", "chmod +x /tmp/harmonic-installer.sh"]
+    0-harmonic-3: ["sudo", "sh", "-c", "/tmp/harmonic-installer.sh -vip"]
+    0-harmonic-4: ["sudo", "sh", "-c", "wget --no-proxy {{ node_disable_pxe_url | escape.json }} --post-data {{ node_disable_pxe_data|escape.json }} -O /dev/null"]
+    0-harmonic-5: ["sudo", "sh", "-c", "systemctl --message='Harmonic Post-Install Reboot' reboot"]
+
