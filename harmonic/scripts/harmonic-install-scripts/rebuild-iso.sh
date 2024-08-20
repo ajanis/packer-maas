@@ -8,10 +8,10 @@
 #
 ##############################################################################
 
-export buildTemp="${pwd}/buildtmp"
+export buildTemp="${PWD}/buildtmp"
 export newSquashfs="${buildTemp}/rootfs.squashfs"
 export chrootMounts=("proc" "sys" "dev")
-
+export buildLog="${PWD}/harmonic-iso.log"
 
 runPrint() {
 cat << EOF
@@ -72,13 +72,13 @@ function rebuildIso() {
   runPrint "No source iso found!!"
   exit 1
   fi
-  if [[ ! -e ${newSquashFs} ]]; then
-  runprint "No squashFS found!!"
+  if [[ ! -f ${newSquashfs} ]]; then
+  runPrint "No squashFS found!!"
   exit 1
   fi
 
   export newIso="${buildTemp}/${isoFile}"
-  xorriso -overwrite on -indev "${originalIsoPath}" -outdev "${newIso}" -pathspecs on -add rootfs.squashfs="${newSquashFS}"
+  xorriso -overwrite on -indev "${originalIsoPath}" -outdev "${newIso}" -pathspecs on -add rootfs.squashfs="${newSquashfs}"
   return
 }
 
@@ -122,17 +122,38 @@ shift $((OPTIND-1))
 
 if [[ ${doChroot} == 1 ]]; then
   # shellcheck disable=SC2312
-  setupChroot  >(tee -a "${buildlog}" >&2) > >(tee -a "${buildlog}")
+  setupChroot  >(tee -a "${buildLog}" >&2) > >(tee -a "${buildLog}")
   trap cleanupChroot EXIT
   chroot "${chrootPath}"
 fi
 
 if [[ "${doBuildRootfs}" == 1 ]]; then
   # shellcheck disable=SC2312
-  resquashRootfs >(tee -a  "${buildlog}" >&2) > >(tee -a  "${buildlog}")
+  resquashRootfs >(tee -a  "${buildLog}" >&2) > >(tee -a  "${buildLog}")
 fi
 
 if [[ "${doBuildIso}" == 1 ]]; then
   # shellcheck disable=SC2312
-  rebuildIso >(tee -a "${buildlog}">&2) > >(tee -a "${buildlog}")
+  rebuildIso >(tee -a "${buildLog}">&2) > >(tee -a "${buildLog}")
+
+cat <<EOF
+
+=====================================================================================
+                          Build Complete!
+
+Generated ${newIso} from ${originalIsoPath} and ${newSquashfs}
+        Activity log can be viewed at ${buildLog} ...
+
+Would you like to deploy this new image to /opt/userdata/apollo/${isoFile} ?
+
+            (Note: Soon this will be deployed to artifactory)
+
+======================================================================================
+
+EOF
+
+read -rp "Press [Enter/Return] to deploy new ISO : ";echo
+mv "${newIso}" "/opt/userdata/apollo/${isoFile}"
+
 fi
+
