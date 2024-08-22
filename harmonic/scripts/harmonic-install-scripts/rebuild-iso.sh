@@ -15,6 +15,8 @@ export buildTemp="${buildRoot}/buildtmp"
 export newSquashfs="${buildTemp}/rootfs.squashfs"
 export chrootMounts=("sys" "dev")
 export buildLog="${buildRoot}/harmonic-iso.log"
+export artifactoryURL="https://artifactory.charterlab.com"
+export artifactoryPath="artifactory/upload/harmonic"
 
 runPrint() {
 cat << EOF
@@ -160,7 +162,7 @@ read -rp "Press [Enter/Return] to deploy new ISO : ";echo || return 1
 read -r -p "Enter Jfrog Username : " artifactUser || return 1 
 read -s -p "Enter JFrog Password : " artifactPassword || return 1
 
-curl -u "${artifactUser}:${artifactPassword}" -T "${newIso}" "https://artifactory.charterlab.com/artifactory/upload/harmonic/apollo/${isoFile}" || return 1
+curl -u "${artifactUser}:${artifactPassword}" -T "${newIso}" "${artifactoryURL}/${artifactoryPath}/apollo/${isoFile}" || return 1
 
 return
 }
