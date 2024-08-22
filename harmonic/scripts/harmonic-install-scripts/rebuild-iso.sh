@@ -7,11 +7,14 @@
 #   a modified squashfs root filesystem.
 #
 ##############################################################################
-
-export buildTemp="${PWD}/buildtmp"
+export buildRoot="/opt/harmonic-image-build"
+export isoMount="${buildRoot}/iso.mount"
+export chrootPath="${buildRoot}/squashfs-root"
+export buildDirs=("buildtmp" "iso.mount" "squashfs-root")
+export buildTemp="${buildRoot}/buildtmp"
 export newSquashfs="${buildTemp}/rootfs.squashfs"
-export chrootMounts=("proc" "sys" "dev")
-export buildLog="${PWD}/harmonic-iso.log"
+export chrootMounts=("sys" "dev")
+export buildLog="${buildRoot}/harmonic-iso.log"
 
 runPrint() {
 cat << EOF
@@ -21,87 +24,176 @@ cat << EOF
 EOF
 }
 
+
 # Script Help Function
 showHelp() {
 cat << EOH
-Usage: $0 [-c <chroot directory>] [-r <rootfs source directory> ] [-i <Original Unmodified ISO>] [-h]
+Usage: $0 -i <source iso> [-x -c -r -b -d] [-h] 
 
 Rebuild Apollo ISO
 
--c|     Setup Chroot Environment in provided directory path
+-i <path to source iso> | 
+        Create working directories
+        Mount source iso and extract rootfs.squashfs
 
--r|     Use provided rootfs directory to create new  rootfs.squashfs squashfile
+-x |    Extract rootfs from original ISO image
 
--i|     Create a modified ISO file from the original ISO and the modified rootfs.squashfs squashfile.
+-c |    Customize rootfs in chroot environment
 
--h|     Display help
+-r |    Generate new root.squashfs from modified rootfs files
+
+-b |    Build new iso image from source image and new rootfs.squashfs
+
+-d |    Deploy iso to Artifactory
+
+-h |    Display help
 
 EOH
+
 }
 
 
+function createWorkspace() {
+  for dir in "${buildDirs[@]}"; do
+    if [[ ! -d "${buildRoot}/${dir}" ]]; then
+      runPrint "Creating ${buildRoot}/${dir}"
+      mkdir -p "${buildRoot}/${dir}"
+      fi
+    done
+  return
+}
+
+
+function extractRootfs() {
+  
+  runPrint "Mounting ${originalIsoPath} at ${isoMount}"
+  mount -o loop "${originalIsoPath}" "${isoMount}"
+
+  runPrint "Removing old ${chrootPath}"
+  rm -rf squashfs-root
+
+  runPrint "Extract ${isoMount}/rootfs.squashfs to ${chrootPath}"
+  unsquashfs -d "${chrootPath}" "${isoMount}/rootfs.squashfs"
+
+  umount -f "${isoMount}"
+
+}
+
 
 function setupChroot() {
+
   for mount in "${chrootMounts[@]}"; do
     runPrint "Bind mounting /${mount} at ${chrootPath}/${mount}"
     mount --bind "/${mount}" "${chrootPath}/${mount}"
     done
+
+  runPrint "Mounting /proc at ${chrootPath}/proc"
+  mount -t proc /proc "${chrootPath}/proc"
+
   return
 }
 
+
 function cleanupChroot() {
+  
   for mount in "${chrootMounts[@]}"; do
     runPrint "Unmounting ${chrootPath}/${mount}"
     umount "${chrootPath}/${mount}"
     done
-    return
-}
+  
+  runPrint "Unmounting ${chrootPath}/proc"
+  umount "${chrootPath}/proc"
 
-function resquashRootfs() {
-  if [[ ! -d ${rootfsSourcePath} ]]; then 
-  runPrint "No root source found!!"
-  exit 1
-  fi
-  runPrint "Creating new squashfs at ${newSquashfs} from ${rootfsSourcePath} ..."
-  mksquashfs "${rootfsSourcePath}" "${newSquashfs}" -noappend
   return
 }
 
-function rebuildIso() {
-  if [[ ! -f ${originalIsoPath} ]]; then
-  runPrint "No source iso found!!"
-  exit 1
-  fi
-  if [[ ! -f ${newSquashfs} ]]; then
-  runPrint "No squashFS found!!"
-  exit 1
-  fi
+function resquashRootfs() {
+  
+  if [[ ! -d ${chrootPath} ]]; then 
+    runPrint "No root source found!!"
+    exit 1
+    fi
+  
+  rm -f "${newSquashfs}"
+  
+  runPrint "Creating new squashfs at ${newSquashfs} from ${chrootPath} ..."
 
+  mksquashfs "${chrootPath}" "${newSquashfs}" -noappend
+
+  return
+}
+
+function buildIso() {
+
+  if [[ ! -f ${newSquashfs} ]]; then
+    runPrint "No squashFS found!!"
+    return 1
+    fi
   export newIso="${buildTemp}/${isoFile}"
+  rm -f "${newIso}"
   xorriso -overwrite on -indev "${originalIsoPath}" -outdev "${newIso}" -pathspecs on -add rootfs.squashfs="${newSquashfs}"
   return
 }
 
+function deployIso() {
 
-while getopts ":hc:r:i:" o; do
+  export newIso="${buildTemp}/${isoFile}"
+  
+  if [[ ! -f ${newIso} ]]; then
+    runPrint "No ISO found at ${newIso} to deploy !!"
+    return 1
+    fi
+
+cat <<EOD
+
+=====================================================================================
+
+Would you like to deploy ${newIso} to Artifactory?
+
+(You will be prompted for your JFrog username and password)
+
+======================================================================================
+
+EOD
+
+read -rp "Press [Enter/Return] to deploy new ISO : ";echo || return 1
+read -r -p "Enter Jfrog Username : " artifactUser || return 1 
+read -s -p "Enter JFrog Password : " artifactPassword || return 1
+
+curl -u "${artifactUser}:${artifactPassword}" -T "${newIso}" "https://artifactory.charterlab.com/artifactory/upload/harmonic/apollo/${isoFile}" || return 1
+
+return
+}
+
+while getopts ":hxcrbdi:" o; do
     case "${o}" in
         h)
             showHelp
             exit 0
             ;;
-        c)
-            chrootPath=${OPTARG}
-            export doChroot=1
-            ;;
-        r)
-            rootfsSourcePath=${OPTARG}
-            export doBuildRootfs=1
-            ;;
         i)
             originalIsoPath=${OPTARG}
             isoFile=$(basename "${originalIsoPath}")
+            if [[ ! -f ${originalIsoPath} ]]; then
+              runPrint "No source iso found at ${originalIsoPath} !!"
+              fi
+            ;;
+        x)
+            export doSetup=1
+            ;;
+        c)
+            export doChroot=1
+            ;;
+        r)
+            export doBuildRootfs=1
+            ;;
+        b)
             export doBuildIso=1
             ;;
+        d)
+            export doDeployIso=1
+            ;;
+
         :)
             runPrint "Invalid option: -${OPTARG} requires an argument" 1>&2
             showHelp
@@ -117,8 +209,14 @@ done
 shift $((OPTIND-1))
 
 
-
 # Main Runners
+
+createWorkspace
+
+if [[ ${doSetup} == 1 ]]; then
+  # shellcheck disable=SC2312
+  extractRootfs  >(tee -a "${buildLog}" >&2) > >(tee -a "${buildLog}")
+fi
 
 if [[ ${doChroot} == 1 ]]; then
   # shellcheck disable=SC2312
@@ -134,26 +232,34 @@ fi
 
 if [[ "${doBuildIso}" == 1 ]]; then
   # shellcheck disable=SC2312
-  rebuildIso >(tee -a "${buildLog}">&2) > >(tee -a "${buildLog}")
+  buildIso >(tee -a "${buildLog}">&2) > >(tee -a "${buildLog}")
 
-cat <<EOF
-
+cat <<EOB
 =====================================================================================
-                          Build Complete!
+Build Complete!
 
-Generated ${newIso} from ${originalIsoPath} and ${newSquashfs}
-        Activity log can be viewed at ${buildLog} ...
+Generated ${newIso} from:
 
-Would you like to deploy this new image to /opt/userdata/apollo/${isoFile} ?
-
-            (Note: Soon this will be deployed to artifactory)
+iso: ${originalIsoPath}
+squashfs: ${newSquashfs}
+        
+Activity log can be viewed at ${buildLog} ...
 
 ======================================================================================
-
-EOF
-
-read -rp "Press [Enter/Return] to deploy new ISO : ";echo
-mv "${newIso}" "/opt/userdata/apollo/${isoFile}"
+EOB
 
 fi
+
+if [[ "${doDeployIso}" == 1 ]]; then
+  # shellcheck disable=SC2312
+  deployIso >(tee -a "${buildLog}">&2) > >(tee -a "${buildLog}")
+  # shellcheck disable=SC2181
+  if [[ $? == 0 ]]; then
+    echo -e "\n\nDone!\n\n"
+    else
+    echo -e "\n\nFailed - Check ${buildLog}\n\n"
+
+    fi
+fi
+
 
