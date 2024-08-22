@@ -13,11 +13,12 @@ export chrootPath="${buildRoot}/squashfs-root"
 export buildDirs=("buildtmp" "iso.mount" "squashfs-root")
 export buildTemp="${buildRoot}/buildtmp"
 export newSquashfs="${buildTemp}/rootfs.squashfs"
-export chrootMounts=("sys" "dev")
+export bindMounts=("run" "dev")
+export chrootMounts=('chrootArray["proc"]="/proc"' 'chrootArray["sysfs"]="/sys"' 'chrootArray["devpts"]="/dev/pts"')
 export buildLog="${buildRoot}/harmonic-iso.log"
 export artifactoryURL="https://artifactory.charterlab.com"
 export artifactoryPath="artifactory/upload/harmonic"
-
+declare -A chrootArray
 runPrint() {
 cat << EOF
 ===========================================================
@@ -25,7 +26,6 @@ cat << EOF
 ===========================================================
 EOF
 }
-
 
 # Script Help Function
 showHelp() {
@@ -54,7 +54,6 @@ EOH
 
 }
 
-
 function createWorkspace() {
   for dir in "${buildDirs[@]}"; do
     if [[ ! -d "${buildRoot}/${dir}" ]]; then
@@ -64,7 +63,6 @@ function createWorkspace() {
     done
   return
 }
-
 
 function extractRootfs() {
   
@@ -81,30 +79,37 @@ function extractRootfs() {
 
 }
 
-
 function setupChroot() {
 
-  for mount in "${chrootMounts[@]}"; do
-    runPrint "Bind mounting /${mount} at ${chrootPath}/${mount}"
-    mount --bind "/${mount}" "${chrootPath}/${mount}"
+  for bmount in "${bindMounts[@]}"; do
+    runPrint "Bind mounting /${bmount} at ${chrootPath}/${bmount}"
+    mount --bind "/${bmount}" "${chrootPath}/${bmount}"
     done
 
-  runPrint "Mounting /proc at ${chrootPath}/proc"
-  mount -t proc /proc "${chrootPath}/proc"
+  for arraymount in "${chrootMounts[@]}"; do
+    eval "${arraymount}"
+    done
+
+  runPrint "${!chrootArray[@]}"
+  for cmount in "${!chrootArray[@]}"; do
+    runPrint "Mounting ${cmount} at ${chrootPath}${chrootArray[${cmount}]}"
+    mount -t "${cmount}" none "${chrootPath}${chrootArray[${cmount}]}"
+    done
 
   return
 }
 
-
 function cleanupChroot() {
   
-  for mount in "${chrootMounts[@]}"; do
-    runPrint "Unmounting ${chrootPath}/${mount}"
-    umount "${chrootPath}/${mount}"
+  for cmount in "${!chrootArray[@]}"; do
+    runPrint "Unounting ${cmount} at ${chrootArray[${cmount}]}"
+    umount "${chrootPath}${chrootArray[${cmount}]}"
     done
-  
-  runPrint "Unmounting ${chrootPath}/proc"
-  umount "${chrootPath}/proc"
+
+  for bmount in "${bindMounts[@]}"; do
+    runPrint "Unmounting bindmount ${bmount} at ${chrootPath}/${bmount}"
+    umount "${chrootPath}/${bmount}"
+    done
 
   return
 }
@@ -160,6 +165,7 @@ EOD
 
 read -rp "Press [Enter/Return] to deploy new ISO : ";echo || return 1
 read -r -p "Enter Jfrog Username : " artifactUser || return 1 
+# shellcheck disable=SC2162
 read -s -p "Enter JFrog Password : " artifactPassword || return 1
 
 curl -u "${artifactUser}:${artifactPassword}" -T "${newIso}" "${artifactoryURL}/${artifactoryPath}/apollo/${isoFile}" || return 1
