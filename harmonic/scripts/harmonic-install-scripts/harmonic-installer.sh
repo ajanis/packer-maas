@@ -26,7 +26,7 @@
 export webserverHost="172.22.31.150"
 export webserverPort="8080"
 export artifactoryURL="https://artifactory.charterlab.com"
-export artifactoryPath="artifactory/scgp-generic-files/pub/harmonic/custom"
+export artifactoryPath="artifactory/upload/harmonic/apollo"
 export apolloRelease="release-3.21.3.0-7+auto15"
 export apolloISO="APOLLO_PLATFORM-${apolloRelease}.iso"
 export ostreePackages="ostree-upgrade-bootstrap_2.0.41_all.deb ostree-upgrade_2.0.41_all.deb"
@@ -141,8 +141,8 @@ harmonicSetup() {
   runPrint "Creating ${isoDir} ..."
   mkdir -p "${isoDir}"
   runPrint "Downloading ${apolloISO} to ${isoDir} ..."
-  # wget "${artifactoryURL}/${artifactoryPath}/${apolloISO}" -O "${isoDir}/${apolloISO}" > /dev/null 2>&1
-  wget "http://${webserverHost}:${webserverPort}/apollo/latest" -O "${isoDir}/${apolloISO}" > /dev/null 2>&1
+  wget "${artifactoryURL}/${artifactoryPath}/${apolloISO}" -O "${isoDir}/${apolloISO}" > /dev/null 2>&1
+  # wget "http://${webserverHost}:${webserverPort}/apollo/latest" -O "${isoDir}/${apolloISO}" > /dev/null 2>&1
   return
 }
 
