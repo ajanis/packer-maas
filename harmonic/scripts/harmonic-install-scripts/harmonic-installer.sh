@@ -26,7 +26,7 @@
 export webserverHost="172.22.31.150"
 export webserverPort="8080"
 export artifactoryURL="https://artifactory.charterlab.com"
-export artifactoryPath="artifactory/upload/harmonic/apollo"
+export artifactoryPath="artifactory/upload/harmonic"
 export apolloRelease="release-3.21.3.0-7+auto15"
 export apolloISO="APOLLO_PLATFORM-${apolloRelease}.iso"
 export ostreePackages="ostree-upgrade-bootstrap_2.0.41_all.deb ostree-upgrade_2.0.41_all.deb"
@@ -129,7 +129,8 @@ ostreeSetup() {
   runPrint "Installing 'ostree-production' provider packages ..."
   for debPkg in ${ostreePackages}; do
     runPrint "Downloading ${debPkg} ..."
-    wget "http://${webserverHost}:${webserverPort}/packages/${debPkg}" -O "${workingDir}/${debPkg}" > /dev/null 2>&1
+    wget "${artifactoryURL}/${artifactoryPath}/packages/${debPkg}" -O "${workingDir}/${debPkg}" > /dev/null 2>&1
+    # wget "http://${webserverHost}:${webserverPort}/packages/${debPkg}" -O "${workingDir}/${debPkg}" > /dev/null 2>&1
     runPrint "Installing ${debPkg} ..."
     dpkg -i "${workingDir}/${debPkg}"
   done
@@ -141,7 +142,7 @@ harmonicSetup() {
   runPrint "Creating ${isoDir} ..."
   mkdir -p "${isoDir}"
   runPrint "Downloading ${apolloISO} to ${isoDir} ..."
-  wget "${artifactoryURL}/${artifactoryPath}/${apolloISO}" -O "${isoDir}/${apolloISO}" > /dev/null 2>&1
+  wget "${artifactoryURL}/${artifactoryPath}/apollo/${apolloISO}" -O "${isoDir}/${apolloISO}" > /dev/null 2>&1
   # wget "http://${webserverHost}:${webserverPort}/apollo/latest" -O "${isoDir}/${apolloISO}" > /dev/null 2>&1
   return
 }
