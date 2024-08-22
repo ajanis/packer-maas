@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 set -e
 
@@ -46,20 +46,26 @@ EOF
     echo "grub.cfg created."
 }
 
-# Function to create EFI directory structure
-create_efi_structure() {
+# Function to create BIOS and EFI directory structure
+create_bios_efi_structure() {
     mkdir -p iso/EFI/BOOT
     cp /usr/lib/grub/x86_64-efi/{bootx64.efi,grubx64.efi} iso/EFI/BOOT/
-    echo "EFI structure created."
+    grub-mkstandalone --format=i386-pc --output=iso/boot/grub/i386-pc/core.img --install-modules="linux normal iso9660 biosdisk memdisk search tar ls" --modules="linux normal iso9660 biosdisk search" --locales="" --fonts="" "boot/grub/grub.cfg=iso/boot/grub/grub.cfg"
+    cat /usr/lib/grub/i386-pc/cdboot.img iso/boot/grub/i386-pc/core.img > iso/boot/grub/i386-pc/eltorito.img
+    echo "BIOS and EFI structure created."
 }
 
 # Function to create the ISO
 create_iso() {
     xorriso -as mkisofs \
         -iso-level 3 \
-        -o bootable-uefi.iso \
+        -o bootable-uefi-bios.iso \
         -full-iso9660-filenames \
         -volid "CustomISO" \
+        -eltorito-boot boot/grub/i386-pc/eltorito.img \
+        -no-emul-boot \
+        -boot-load-size 4 \
+        -boot-info-table \
         -eltorito-alt-boot \
         -e EFI/BOOT/bootx64.efi \
         -no-emul-boot \
@@ -68,18 +74,13 @@ create_iso() {
         -partition_cyl_align on \
         -partition_offset 16 \
         -append_partition 2 0xef iso/EFI/BOOT/bootx64.efi \
-        -c boot.cat \
-        -b boot/grub/i386-pc/eltorito.img \
-        -no-emul-boot \
-        -boot-load-size 4 \
-        -boot-info-table \
         iso
     echo "Bootable ISO created."
 }
 
 # Main script execution
 main() {
-    if [ "$#" -ne 3 ]; then
+    if [[ "$#" -ne 3 ]]; then
         echo "Usage: $0 <path_to_kernel> <path_to_initrd> <path_to_squashfs>"
         exit 1
     fi
@@ -89,7 +90,7 @@ main() {
     copy_kernel_initrd "$1" "$2"
     copy_squashfs "$3"
     create_grub_cfg
-    create_efi_structure
+    create_bios_efi_structure
     create_iso
 
     echo "Bootable ISO creation completed successfully."
