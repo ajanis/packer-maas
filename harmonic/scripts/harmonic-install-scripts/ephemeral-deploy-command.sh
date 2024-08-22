@@ -38,7 +38,8 @@
 ##############################################################################
 # shellcheck disable=SC2034
 # shellcheck disable=SC2312
-
+export sshHost=44.10.4.101
+export maasPath="/snap/bin/maas"
 maasHostname="maas-poc-aio01"
 if [[ $# -eq 0 ]]; then
 	echo "Usage: $0 <hostname> <user-data filepath>"
@@ -68,7 +69,7 @@ if [[ -f "${userDataFile}" ]]; then
   unset userDataFile
   fi
 
-ssh maas -C maas admin machines read > /tmp/maasHostList
+ssh "${sshHost}" -C "${maasPath}" admin machines read > /tmp/maasHostList
 
 maasSystemID=$(jq -r --arg maasHost "${hostName}" '.[]|select(.hostname==$maasHost)|.system_id' /tmp/maasHostList)
 
@@ -92,8 +93,9 @@ EOF
 
 read -rp "Press [Enter/Return] to deploy this configuration : ";echo
 
-if [[ "$(hostname)" != "${maasHostname}" ]]; then
-  ssh maas -C maas admin machine deploy "${maasSystemID}" ephemeral_deploy="true" "$([[ -n "${userDataFile}" ]] && echo user_data="${userDataFileB64}")"
+if [[ "$(hostname -s)" != "${maasHostname}" ]]; then
+  ssh "${sshHost}" -C "${maasPath}" admin machine deploy "${maasSystemID}" ephemeral_deploy="true" "$([[ -n "${userDataFile}" ]] && echo user_data="${userDataFileB64}")"
 else
   maas admin machine deploy "${maasSystemID}" ephemeral_deploy="true" "$([[ -n "${userDataFile}" ]] && echo user_data="${userDataFileB64}")"
 fi
+
