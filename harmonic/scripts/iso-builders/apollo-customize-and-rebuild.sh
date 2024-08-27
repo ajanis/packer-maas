@@ -7,11 +7,13 @@
 #   a modified squashfs root filesystem.
 #
 ##############################################################################
-eexport buildRoot="/opt/harmonic-image-build"
+# shellcheck disable=SC2155
+export buildRoot="$(realpath .)"
 export isoMount="${buildRoot}/iso.mount"
 export chrootPath="${buildRoot}/filesystem.tmp"
-export buildDirs=("build.tmp" "iso.mount" "filesystem.tmp")
+export buildDirs=("build.tmp" "iso.mount" "filesystem.tmp" "iso.tmp")
 export buildTemp="${buildRoot}/build.tmp"
+export isoTemp="${buildRoot}/iso.tmp"
 export bindMounts=("run" "dev")
 export chrootMounts=('chrootArray["proc"]="/proc"' 'chrootArray["sysfs"]="/sys"' 'chrootArray["devpts"]="/dev/pts"')
 export buildLog="${buildRoot}/harmonic-iso.log"
@@ -20,9 +22,11 @@ export artifactoryPath="artifactory/upload/harmonic"
 declare -A chrootArray
 runPrint() {
 cat << EOF
+
 ===========================================================
   $@
 ===========================================================
+
 EOF
 }
 
@@ -64,8 +68,7 @@ function createWorkspace() {
     done
   return
 }
-
-function extractRootfs() {
+function mountIso() {
   if mountpoint "${isoMount}"; then
     runPrint "Unmounting ${isoMount}"
     umount -lf "${isoMount}"
@@ -73,21 +76,34 @@ function extractRootfs() {
 
   runPrint "Mounting ${originalIsoPath} at ${isoMount}"
   mount -o loop "${originalIsoPath}" "${isoMount}"
+  return
+}
 
+
+function extractRootfs() {
   if [[ ! -f "${isoMount}/${squashfsIsoPath}" ]]; then
     runPrint "No SquashFS Archive found at ${isoMount}/${squashfsIsoPath}!!"
     runPrint "Leaving ${isoMount} mounted for debugging"
     exit 1
     fi
-
-  runPrint "Removing old ${chrootPath}"
+  
+  if [[ -d "${chrootPath}" ]]; then
+  runPrint "Removing old files from ${chrootPath}"
   rm -rf "${chrootPath}"
+  fi
 
   runPrint "Extract ${isoMount}/${squashfsIsoPath} to ${chrootPath}"
   unsquashfs -d "${chrootPath}" "${isoMount}/${squashfsIsoPath}"
-
-  umount -f "${isoMount}"
-
+  return
+}
+function extractIso() {
+  runPrint "Extract ${isoMount} to ${isoTemp}"
+  if [[ -d "${isoTemp}" ]]; then
+    runPrint "Removing old files from ${isoTemp}"
+    rm -rf "${isoTemp:?}/*"
+    fi
+  rsync -avp "${isoMount}/" "${isoTemp}/"
+  return
 }
 
 function setupChroot() {
@@ -132,12 +148,52 @@ function resquashRootfs() {
     exit 1
     fi
 
-  rm -f "${newSquashfs}"
+  if [[ -e "${newSquashfs}" ]]; then
+    runPrint "Removing old squashfile at ${newSquashfs}"
+    rm -f "${newSquashfs}"
+    fi
 
   runPrint "Creating new squashfs at ${newSquashfs} from ${chrootPath} ..."
-
   mksquashfs "${chrootPath}" "${newSquashfs}" -noappend
 
+  return
+}
+
+function updateIsoFiles() {
+  runPrint "Updating ${isoTemp}/boot/grub/grub.cfg"
+
+  cat << 'EOG' > "${isoTemp}/boot/grub/grub.cfg"
+if loadfont /boot/grub/font.pf2 ; then
+	set gfxmode=auto
+	insmod efi_gop
+	insmod efi_uga
+	insmod gfxterm
+	terminal_output gfxterm
+fi
+
+set menu_color_normal=white/black
+set menu_color_highlight=black/light-gray
+
+set timeout=5
+menuentry "Ubuntu 20.04 Live-Only" {
+   rmmod tpm
+   linux /casper/vmlinuz boot=casper iso-scan/filename=${iso_path} noprompt noeject nopersistent maybe-ubiquity nomodeset quiet splash fsck.mode=skip toram
+   initrd /casper/initrd
+}
+EOG
+
+  runPrint "Updating ${isoTemp}/isolinux/txt.cfg"
+
+  cat << 'EOI' > "${isoTemp}/isolinux/txt.cfg"
+default ubuntu2004live
+label ubuntu2004live
+  menu label ^Ubuntu 20.04 Live-Only
+  kernel /casper/vmlinuz
+  append   initrd=/casper/initrd quiet splash fsck.mode=skip toram
+EOI
+
+  runPrint "Updating ${isoTemp}/${squashfsIsoPath}"
+  cp "${newSquashfs}" "${isoTemp}/${squashfsIsoPath}"
   return
 }
 
@@ -147,38 +203,48 @@ function buildIso() {
     runPrint "No squashFS found!!"
     return 1
     fi
-  export newIso="${buildTemp}/${isoFile}"
-  rm -f "${newIso}"
+  if [[ -e "${newIso}" ]]; then
+    runPrint "Removing existing file ${newIso}"
+    rm -f "${newIso}"
+    fi
+  
 cat <<EOG
 
 =====================================================================================
 
-Would you like to add Ubuntu Live Image files?  (live iso ONLY!)
+!!ATTENTION!!  If you are building a Ubuntu Live Iso, custom grub and isolinux files
+will be added in the following step before creating the bootable ISO.
+
+Are you building a Live Iso [y/n] ?
 
 ======================================================================================
+
 EOG
-read -r -p "Add Live Image Files? [y/n] : " yesno || return 1
+  read -r -p "Build Live Iso? [y/n] : " yesno || return 1
 
-if [[ ${yesno} =~ (y|Y|es?) ]]; then
-  xorriso -overwrite on -indev "${originalIsoPath}" -outdev "${newIso}" -pathspecs on -add "${squashfsIsoPath}=${newSquashfs}" "boot/grub/grub.cfg=${buildTemp}/grub.cfg" "isolinux/txt.cfg=${buildTemp}/txt.cfg"
+  if [[ ${yesno} =~ (y|Y|es?) ]]; then
+    extractIso
+    updateIsoFiles
+    xorriso -as mkisofs \
+    -r -V "ubuntu-custom" -J -l -b isolinux/isolinux.bin \
+    -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table \
+    -eltorito-alt-boot -e EFI/BOOT/BOOTx64.EFI -no-emul-boot \
+    -isohybrid-gpt-basdat -o "${newIso}" "${isoTemp}/."
+    else
+    xorriso -overwrite on -indev "${originalIsoPath}" -outdev "${newIso}" -pathspecs on -add "${squashfsIsoPath}=${newSquashfs}"
+    fi
+  umount -f "${isoMount}"
   return
-  else
-  xorriso -overwrite on -indev "${originalIsoPath}" -outdev "${newIso}" -pathspecs on -add "${squashfsIsoPath}=${newSquashfs}"
-  return
-  fi
-
 }
 
 function deployIso() {
-
-  export newIso="${buildTemp}/${isoFile}"
 
   if [[ ! -f ${newIso} ]]; then
     runPrint "No ISO found at ${newIso} to deploy !!"
     return 1
     fi
 
-cat <<EOD
+  cat <<EOD
 
 =====================================================================================
 
@@ -189,14 +255,14 @@ Would you like to deploy ${newIso} to Artifactory? [y/n]
 ======================================================================================
 EOD
 
-read -rp "Press [Enter/Return] to deploy new ISO : ";echo || return 1
-read -r -p "Enter Jfrog Username : " artifactUser || return 1
-# shellcheck disable=SC2162
-read -s -p "Enter JFrog Password : " artifactPassword || return 1
+  read -rp "Press [Enter/Return] to deploy new ISO : ";echo || return 1
+  read -r -p "Enter Jfrog Username : " artifactUser || return 1
+  # shellcheck disable=SC2162
+  read -s -p "Enter JFrog Password : " artifactPassword || return 1
 
-curl -u "${artifactUser}:${artifactPassword}" -T "${newIso}" "${artifactoryURL}/${artifactoryPath}/apollo/${isoFile}" || return 1
+  curl -u "${artifactUser}:${artifactPassword}" -T "${newIso}" "${artifactoryURL}/${artifactoryPath}/apollo/${isoFile}" || return 1
 
-return
+  return
 }
 
 while getopts ":hxcrbdi:f:" o; do
@@ -215,7 +281,7 @@ while getopts ":hxcrbdi:f:" o; do
               runPrint "No source iso found at ${originalIsoPath} !!"
               fi
             isoFile=$(basename "${originalIsoPath}")
-
+            newIso="${buildTemp}/${isoFile}"
             ;;
         f)
             squashfsIsoPath=${OPTARG}
@@ -264,6 +330,8 @@ createWorkspace
 
 if [[ ${doSetup} == 1 ]]; then
   # shellcheck disable=SC2312
+  mountIso  >(tee -a "${buildLog}" >&2) > >(tee -a "${buildLog}")  
+  # shellcheck disable=SC2312
   extractRootfs  >(tee -a "${buildLog}" >&2) > >(tee -a "${buildLog}")
 fi
 
@@ -284,7 +352,9 @@ if [[ "${doBuildIso}" == 1 ]]; then
   buildIso >(tee -a "${buildLog}">&2) > >(tee -a "${buildLog}")
 
 cat <<EOB
+
 =====================================================================================
+
 Build Complete!
 
 Generated ${newIso} from:
@@ -295,6 +365,7 @@ squashfs: ${newSquashfs}
 Activity log can be viewed at ${buildLog} ...
 
 ======================================================================================
+
 EOB
 
 fi
