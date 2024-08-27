@@ -1,99 +1,312 @@
-#!/bin/bash -x
-
-set -e
-
-# Function to check for required tools
-check_tools() {
-    for tool in xorriso grub-mkstandalone; do
-        if ! command -v $tool &> /dev/null; then
-            echo "Error: $tool is not installed. Please install it and try again."
-            exit 1
-        fi
-    done
-}
-
-# Function to prepare the directory structure
-prepare_directories() {
-    mkdir -p iso/boot/grub
-    mkdir -p iso/boot/{kernel,initrd}
-    echo "Directory structure prepared."
-}
-
-# Function to copy kernel and initrd
-copy_kernel_initrd() {
-    cp "$1" iso/boot/kernel/vmlinuz
-    cp "$2" iso/boot/initrd/initrd.img
-    echo "Kernel and initrd copied."
-}
-
-# Function to copy squashfs file
-copy_squashfs() {
-    cp "$1" iso/boot/
-    echo "Squashfs file copied."
-}
-
-# Function to create grub.cfg
-create_grub_cfg() {
-    cat <<EOF > iso/boot/grub/grub.cfg
-set timeout=10
-set default=0
-
-menuentry "Custom Linux" {
-    linux /boot/kernel/vmlinuz boot=live toram
-    initrd /boot/initrd/initrd.img
-}
+#!/bin/bash
+##############################################################################
+#
+#   rebuild-iso.sh
+#
+#   This script is executed by a user to rebuild the Apollo ISO using
+#   a modified squashfs root filesystem.
+#
+##############################################################################
+export buildRoot="/opt/harmonic-image-build"
+export isoMount="${buildRoot}/iso.mount"
+export chrootPath="${buildRoot}/filesystem.tmp"
+export buildDirs=("build.tmp" "iso.mount" "filesystem.tmp")
+export buildTemp="${buildRoot}/build.tmp"
+export bindMounts=("run" "dev")
+export chrootMounts=('chrootArray["proc"]="/proc"' 'chrootArray["sysfs"]="/sys"' 'chrootArray["devpts"]="/dev/pts"')
+export buildLog="${buildRoot}/harmonic-iso.log"
+export artifactoryURL="https://artifactory.charterlab.com"
+export artifactoryPath="artifactory/upload/harmonic"
+declare -A chrootArray
+runPrint() {
+cat << EOF
+===========================================================
+  $@
+===========================================================
 EOF
-    echo "grub.cfg created."
 }
 
-# Function to create BIOS and EFI directory structure
-create_bios_efi_structure() {
-    mkdir -p iso/EFI/BOOT
-    cp /usr/lib/grub/x86_64-efi/{bootx64.efi,grubx64.efi} iso/EFI/BOOT/
-    grub-mkstandalone --format=i386-pc --output=iso/boot/grub/i386-pc/core.img --install-modules="linux normal iso9660 biosdisk memdisk search tar ls" --modules="linux normal iso9660 biosdisk search" --locales="" --fonts="" "boot/grub/grub.cfg=iso/boot/grub/grub.cfg"
-    cat /usr/lib/grub/i386-pc/cdboot.img iso/boot/grub/i386-pc/core.img > iso/boot/grub/i386-pc/eltorito.img
-    echo "BIOS and EFI structure created."
+# Script Help Function
+showHelp() {
+cat << EOH
+Usage: $0 -i <source iso> -f <squashfs path in source iso | default('/rootfs.squashfs')> [-x -c -r -b -d] [-h]
+
+Rebuild Apollo ISO
+
+-i | [REQUIRED] <path to source iso> | ISO image to rebuild (will be used as source and destination filenames)
+
+-f | [REQUIRED] <path to squashfs in source iso> | Path to SquashFS archive in source ISO (used for Chroot customizations)
+
+-x |    Extract squashfs filesystem from original ISO image
+
+-c |    Customize filesystem in chroot environment
+
+-r |    Generate new squashfs from modified filesystem
+
+-b |    Build new iso image from source image and new squashfs
+
+-d |    Deploy iso to Artifactory
+
+-h |    Display help
+
+EOH
+
 }
 
-# Function to create the ISO
-create_iso() {
-    xorriso -as mkisofs \
-        -iso-level 3 \
-        -o bootable-uefi-bios.iso \
-        -full-iso9660-filenames \
-        -volid "CustomISO" \
-        -eltorito-boot boot/grub/i386-pc/eltorito.img \
-        -no-emul-boot \
-        -boot-load-size 4 \
-        -boot-info-table \
-        -eltorito-alt-boot \
-        -e EFI/BOOT/bootx64.efi \
-        -no-emul-boot \
-        -isohybrid-gpt-basdat \
-        -isohybrid-apm-hfsplus \
-        -partition_cyl_align on \
-        -partition_offset 16 \
-        -append_partition 2 0xef iso/EFI/BOOT/bootx64.efi \
-        iso
-    echo "Bootable ISO created."
+
+
+function createWorkspace() {
+  for dir in "${buildDirs[@]}"; do
+    if [[ ! -d "${buildRoot}/${dir}" ]]; then
+      runPrint "Creating ${buildRoot}/${dir}"
+      mkdir -p "${buildRoot}/${dir}"
+      fi
+    done
+  return
 }
 
-# Main script execution
-main() {
-    if [[ "$#" -ne 3 ]]; then
-        echo "Usage: $0 <path_to_kernel> <path_to_initrd> <path_to_squashfs>"
-        exit 1
+function extractRootfs() {
+  if mountpoint "${isoMount}"; then
+    runPrint "Unmounting ${isoMount}"
+    umount -lf "${isoMount}"
     fi
 
-    check_tools
-    prepare_directories
-    copy_kernel_initrd "$1" "$2"
-    copy_squashfs "$3"
-    create_grub_cfg
-    create_bios_efi_structure
-    create_iso
+  runPrint "Mounting ${originalIsoPath} at ${isoMount}"
+  mount -o loop "${originalIsoPath}" "${isoMount}"
 
-    echo "Bootable ISO creation completed successfully."
+  if [[ ! -f "${isoMount}/${squashfsIsoPath}" ]]; then
+    runPrint "No SquashFS Archive found at ${isoMount}/${squashfsIsoPath}!!"
+    runPrint "Leaving ${isoMount} mounted for debugging"
+    exit 1
+    fi
+
+  runPrint "Removing old ${chrootPath}"
+  rm -rf "${chrootPath}"
+
+  runPrint "Extract ${isoMount}/${squashfsIsoPath} to ${chrootPath}"
+  unsquashfs -d "${chrootPath}" "${isoMount}/${squashfsIsoPath}"
+
+  umount -f "${isoMount}"
+
 }
 
-main "$@"
+function setupChroot() {
+
+  for bmount in "${bindMounts[@]}"; do
+    runPrint "Bind mounting /${bmount} at ${chrootPath}/${bmount}"
+    mount --bind "/${bmount}" "${chrootPath}/${bmount}"
+    done
+
+  for arraymount in "${chrootMounts[@]}"; do
+    eval "${arraymount}"
+    done
+
+  runPrint "${!chrootArray[@]}"
+  for cmount in "${!chrootArray[@]}"; do
+    runPrint "Mounting ${cmount} at ${chrootPath}${chrootArray[${cmount}]}"
+    mount -t "${cmount}" none "${chrootPath}${chrootArray[${cmount}]}"
+    done
+
+  return
+}
+
+function cleanupChroot() {
+
+  for cmount in "${!chrootArray[@]}"; do
+    runPrint "Unounting ${cmount} at ${chrootArray[${cmount}]}"
+    umount "${chrootPath}${chrootArray[${cmount}]}"
+    done
+
+  for bmount in "${bindMounts[@]}"; do
+    runPrint "Unmounting bindmount ${bmount} at ${chrootPath}/${bmount}"
+    umount "${chrootPath}/${bmount}"
+    done
+
+  return
+}
+
+function resquashRootfs() {
+
+  if [[ ! -d ${chrootPath} ]]; then
+    runPrint "No root source found!!"
+    exit 1
+    fi
+
+  rm -f "${newSquashfs}"
+
+  runPrint "Creating new squashfs at ${newSquashfs} from ${chrootPath} ..."
+
+  mksquashfs "${chrootPath}" "${newSquashfs}" -noappend
+
+  return
+}
+
+function buildIso() {
+
+  if [[ ! -f ${newSquashfs} ]]; then
+    runPrint "No squashFS found!!"
+    return 1
+    fi
+  export newIso="${buildTemp}/${isoFile}"
+  rm -f "${newIso}"
+cat <<EOG
+
+=====================================================================================
+
+Would you like to add Ubuntu Live Image files?  (live iso ONLY!)
+
+======================================================================================
+EOG
+read -r -p "Add Live Image Files? [y/n] : " yesno || return 1
+
+if [[ ${yesno} =~ (y|Y|es?) ]]; then
+  xorriso -overwrite on -indev "${originalIsoPath}" -outdev "${newIso}" -pathspecs on -add "${squashfsIsoPath}=${newSquashfs}" "boot/grub/grub.cfg=${buildTemp}/grub.cfg" "isolinux/txt.cfg=${buildTemp}/txt.cfg"
+  return
+  else
+  xorriso -overwrite on -indev "${originalIsoPath}" -outdev "${newIso}" -pathspecs on -add "${squashfsIsoPath}=${newSquashfs}"
+  return
+  fi
+
+}
+
+function deployIso() {
+
+  export newIso="${buildTemp}/${isoFile}"
+
+  if [[ ! -f ${newIso} ]]; then
+    runPrint "No ISO found at ${newIso} to deploy !!"
+    return 1
+    fi
+
+cat <<EOD
+
+=====================================================================================
+
+Would you like to deploy ${newIso} to Artifactory? [y/n]
+
+(You will be prompted for your JFrog username and password)
+
+======================================================================================
+EOD
+
+read -rp "Press [Enter/Return] to deploy new ISO : ";echo || return 1
+read -r -p "Enter Jfrog Username : " artifactUser || return 1
+# shellcheck disable=SC2162
+read -s -p "Enter JFrog Password : " artifactPassword || return 1
+
+curl -u "${artifactUser}:${artifactPassword}" -T "${newIso}" "${artifactoryURL}/${artifactoryPath}/apollo/${isoFile}" || return 1
+
+return
+}
+
+while getopts ":hxcrbdi:f:" o; do
+    case "${o}" in
+        h)
+            showHelp
+            exit 0
+            ;;
+        i)
+            originalIsoPath=${OPTARG}
+            if [[ -z "${originalIsoPath}" ]]; then
+              echo "Error: Must define -i <original iso path>"
+              exit 1
+              fi
+            if [[ ! -f ${originalIsoPath} ]]; then
+              runPrint "No source iso found at ${originalIsoPath} !!"
+              fi
+            isoFile=$(basename "${originalIsoPath}")
+
+            ;;
+        f)
+            squashfsIsoPath=${OPTARG}
+
+            if [[ -z "${squashfsIsoPath}" ]]; then
+              echo "Error: Must define -f <squashfs path>"
+              exit 1
+              fi
+            squashfsFilename=$(basename "${squashfsIsoPath}")
+            newSquashfs="${buildTemp}/${squashfsFilename}"
+            ;;
+        x)
+            export doSetup=1
+            ;;
+        c)
+            export doChroot=1
+            ;;
+        r)
+            export doBuildRootfs=1
+            ;;
+        b)
+            export doBuildIso=1
+            ;;
+        d)
+            export doDeployIso=1
+            ;;
+
+        :)
+            runPrint "Invalid option: -${OPTARG} requires an argument" 1>&2
+            showHelp
+            exit 1
+            ;;
+        \?|*)
+            runPrint "Invalid option: -${OPTARG}" 1>&2
+            showHelp
+            exit 1
+            ;;
+    esac
+done
+shift $((OPTIND-1))
+
+
+# Main Runners
+
+createWorkspace
+
+if [[ ${doSetup} == 1 ]]; then
+  # shellcheck disable=SC2312
+  extractRootfs  >(tee -a "${buildLog}" >&2) > >(tee -a "${buildLog}")
+fi
+
+if [[ ${doChroot} == 1 ]]; then
+  # shellcheck disable=SC2312
+  setupChroot  >(tee -a "${buildLog}" >&2) > >(tee -a "${buildLog}")
+  trap cleanupChroot EXIT
+  chroot "${chrootPath}"
+fi
+
+if [[ "${doBuildRootfs}" == 1 ]]; then
+  # shellcheck disable=SC2312
+  resquashRootfs >(tee -a  "${buildLog}" >&2) > >(tee -a  "${buildLog}")
+fi
+
+if [[ "${doBuildIso}" == 1 ]]; then
+  # shellcheck disable=SC2312
+  buildIso >(tee -a "${buildLog}">&2) > >(tee -a "${buildLog}")
+
+cat <<EOB
+=====================================================================================
+Build Complete!
+
+Generated ${newIso} from:
+
+iso: ${originalIsoPath}
+squashfs: ${newSquashfs}
+
+Activity log can be viewed at ${buildLog} ...
+
+======================================================================================
+EOB
+
+fi
+
+if [[ "${doDeployIso}" == 1 ]]; then
+  # shellcheck disable=SC2312
+  deployIso >(tee -a "${buildLog}">&2) > >(tee -a "${buildLog}")
+  # shellcheck disable=SC2181
+  if [[ $? == 0 ]]; then
+    echo -e "\n\nDone!\n\n"
+    else
+    echo -e "\n\nFailed - Check ${buildLog}\n\n"
+
+    fi
+fi
