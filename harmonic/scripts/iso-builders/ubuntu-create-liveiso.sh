@@ -14,16 +14,16 @@ sudo apt update
 sudo apt install -y xorriso squashfs-tools genisoimage
 
 # Mount the ISO
-mkdir -p $MOUNT_DIR
-sudo mount -o loop $ISO_NAME $MOUNT_DIR
+mkdir -p "${MOUNT_DIR}"
+sudo mount -o loop "${ISO_NAME}" "${MOUNT_DIR}"
 
 # Copy ISO contents
-mkdir -p $WORK_DIR
-rsync -a $MOUNT_DIR/ $WORK_DIR/
-sudo umount $MOUNT_DIR
+mkdir -p "${WORK_DIR}"
+rsync -a "${MOUNT_DIR}"/ "${WORK_DIR}"/
+sudo umount "${MOUNT_DIR}"
 
 # Make filesystem writable
-chmod -R u+w $WORK_DIR
+chmod -R u+w "${WORK_DIR}"
 
 cat << 'EOG' >> "${WORK_DIR}/boot/grub/grub.cfg"
 menuentry "Ubuntu 22.04 Live-Only" {
