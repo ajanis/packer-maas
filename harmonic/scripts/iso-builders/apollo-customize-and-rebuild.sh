@@ -177,7 +177,7 @@ set menu_color_highlight=black/light-gray
 set timeout=5
 menuentry "Ubuntu 20.04 Live-Only" {
    rmmod tpm
-   linux /casper/vmlinuz boot=casper iso-scan/filename=${iso_path} noprompt noeject nopersistent maybe-ubiquity nomodeset quiet splash fsck.mode=skip toram
+   linux /casper/vmlinuz boot=casper noprompt noeject nopersistent maybe-ubiquity nomodeset quiet splash fsck.mode=skip toram ---
    initrd /casper/initrd
 }
 EOG
