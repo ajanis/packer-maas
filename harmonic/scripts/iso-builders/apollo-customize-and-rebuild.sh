@@ -189,12 +189,17 @@ default ubuntu2004live
 label ubuntu2004live
   menu label ^Ubuntu 20.04 Live-Only
   kernel /casper/vmlinuz
-  append   initrd=/casper/initrd quiet splash fsck.mode=skip toram
+  append   initrd=/casper/initrd quiet
 EOI
 
   runPrint "Updating ${isoTemp}/${squashfsIsoPath}"
   cp "${newSquashfs}" "${isoTemp}/${squashfsIsoPath}"
+
+  runPrint "Updating ${isoTemp}/md5sums.txt"
+  ( cd "${isoTemp}" && (find . -type f -exec md5sum {} + | grep -v isolinux/boot.cat | tee md5sum.txt || true) )
+
   return
+
 }
 
 function buildIso() {
