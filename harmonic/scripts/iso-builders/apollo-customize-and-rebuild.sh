@@ -154,8 +154,8 @@ function resquashRootfs() {
     fi
 
   runPrint "Creating new squashfs at ${newSquashfs} from ${chrootPath} ..."
-  mksquashfs "${chrootPath}" "${newSquashfs}" -noappend
-
+  # mksquashfs "${chrootPath}" "${newSquashfs}" -noappend
+  mksquashfs "${chrootPath}" "${newSquashfs}" -noappend -comp xz -e boot
   return
 }
 
