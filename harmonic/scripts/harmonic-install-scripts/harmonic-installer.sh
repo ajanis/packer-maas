@@ -130,7 +130,6 @@ ostreeSetup() {
   for debPkg in ${ostreePackages}; do
     runPrint "Downloading ${debPkg} ..."
     wget "${artifactoryURL}/${artifactoryPath}/packages/${debPkg}" -O "${workingDir}/${debPkg}" > /dev/null 2>&1
-    # wget "http://${webserverHost}:${webserverPort}/packages/${debPkg}" -O "${workingDir}/${debPkg}" > /dev/null 2>&1
     runPrint "Installing ${debPkg} ..."
     dpkg -i "${workingDir}/${debPkg}"
   done
@@ -143,7 +142,6 @@ harmonicSetup() {
   mkdir -p "${isoDir}"
   runPrint "Downloading ${apolloISO} to ${isoDir} ..."
   wget "${artifactoryURL}/${artifactoryPath}/apollo/${apolloISO}" -O "${isoDir}/${apolloISO}" > /dev/null 2>&1
-  # wget "http://${webserverHost}:${webserverPort}/apollo/latest" -O "${isoDir}/${apolloISO}" > /dev/null 2>&1
   return
 }
 

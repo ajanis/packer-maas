@@ -154,7 +154,6 @@ function resquashRootfs() {
     fi
 
   runPrint "Creating new squashfs at ${newSquashfs} from ${chrootPath} ..."
-  # mksquashfs "${chrootPath}" "${newSquashfs}" -noappend
   mksquashfs "${chrootPath}" "${newSquashfs}" -noappend -comp xz -e boot
   return
 }
@@ -163,22 +162,22 @@ function updateIsoFiles() {
   runPrint "Updating ${isoTemp}/boot/grub/grub.cfg"
 
   cat << 'EOG' > "${isoTemp}/boot/grub/grub.cfg"
-if loadfont /boot/grub/font.pf2 ; then
-	set gfxmode=auto
-	insmod efi_gop
-	insmod efi_uga
-	insmod gfxterm
-	terminal_output gfxterm
-fi
-
+loadfont unicode
+insmod all_video
+insmod efi_gop
+insmod efi_uga
+insmod gfxterm
+terminal_output gfxterm
+set gfxmode=auto
+set gfxpayload=text
 set menu_color_normal=white/black
 set menu_color_highlight=black/light-gray
-
-set timeout=5
-menuentry "Ubuntu 20.04 Live-Only" {
-   rmmod tpm
-   linux /casper/vmlinuz boot=casper noprompt noeject nopersistent maybe-ubiquity nomodeset quiet splash fsck.mode=skip toram ---
-   initrd /casper/initrd
+set timeout=15
+set default=0
+menuentry "Harmonic Installer Live ISO (Ubuntu 20.04)" {
+  rmmod tpm
+  linux /casper/vmlinuz boot=casper noprompt noeject nopersistent nomodeset quiet splash fsck.mode=skip --
+  initrd /casper/initrd
 }
 EOG
 
@@ -189,7 +188,7 @@ default ubuntu2004live
 label ubuntu2004live
   menu label ^Ubuntu 20.04 Live-Only
   kernel /casper/vmlinuz
-  append   initrd=/casper/initrd quiet
+  append initrd=/casper/initrd boot=casper noprompt noeject nopersistent nomodeset quiet splash fsck.mode=skip
 EOI
 
   runPrint "Updating ${isoTemp}/${squashfsIsoPath}"
@@ -230,11 +229,17 @@ EOG
   if [[ ${yesno} =~ (y|Y|es?) ]]; then
     extractIso
     updateIsoFiles
+
     xorriso -as mkisofs \
-    -r -V "ubuntu-custom" -J -l -b isolinux/isolinux.bin \
-    -c isolinux/boot.cat -no-emul-boot -boot-load-size 4 -boot-info-table \
-    -eltorito-alt-boot -e EFI/BOOT/BOOTx64.EFI -no-emul-boot \
-    -isohybrid-gpt-basdat -o "${newIso}" "${isoTemp}/."
+      -r -V "ubuntu" \
+      -J -joliet-long -l -cache-inodes \
+      -b isolinux/isolinux.bin \
+      -c isolinux/boot.cat \
+      -no-emul-boot -boot-load-size 4 -boot-info-table \
+      -eltorito-alt-boot -e boot/grub/efi.img -no-emul-boot \
+      -isohybrid-gpt-basdat \
+      -o "${newIso}" "${isoTemp}/."
+
     else
     xorriso -overwrite on -indev "${originalIsoPath}" -outdev "${newIso}" -pathspecs on -add "${squashfsIsoPath}=${newSquashfs}"
     fi
