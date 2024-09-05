@@ -232,7 +232,7 @@ EOG
 
     xorriso -as mkisofs \
       -r -V "ubuntu" \
-      -J -joliet-long -l -cache-inodes \
+      -l -cache-inodes \
       -b isolinux/isolinux.bin \
       -c isolinux/boot.cat \
       -no-emul-boot -boot-load-size 4 -boot-info-table \
