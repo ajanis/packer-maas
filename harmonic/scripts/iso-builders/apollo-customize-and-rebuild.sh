@@ -97,11 +97,12 @@ function extractRootfs() {
   return
 }
 function extractIso() {
-  runPrint "Extract ${isoMount} to ${isoTemp}"
   if [[ -d "${isoTemp}" ]]; then
     runPrint "Removing old files from ${isoTemp}"
     rm -rf "${isoTemp:?}/*"
     fi
+    
+  runPrint "Extract ${isoMount} to ${isoTemp}"
   rsync -avp "${isoMount}/" "${isoTemp}/"
   return
 }
@@ -176,7 +177,7 @@ set timeout=15
 set default=0
 menuentry "Harmonic Installer Live ISO (Ubuntu 20.04)" {
   rmmod tpm
-  linux /casper/vmlinuz boot=casper noprompt noeject nopersistent nomodeset quiet splash fsck.mode=skip --
+  linux /casper/vmlinuz boot=casper noeject fsck.mode=skip nomodeset nopersistent --- console=tty0 console=ttyS0,115200n8
   initrd /casper/initrd
 }
 EOG
@@ -188,7 +189,7 @@ default ubuntu2004live
 label ubuntu2004live
   menu label ^Ubuntu 20.04 Live-Only
   kernel /casper/vmlinuz
-  append initrd=/casper/initrd boot=casper noprompt noeject nopersistent nomodeset quiet splash fsck.mode=skip
+  append initrd=/casper/initrd boot=casper noeject nomodeset fsck.mode=skip nopersistent console=tty0 console=ttyS0,115200n8
 EOI
 
   runPrint "Updating ${isoTemp}/${squashfsIsoPath}"
@@ -211,7 +212,7 @@ function buildIso() {
     runPrint "Removing existing file ${newIso}"
     rm -f "${newIso}"
     fi
-  
+
 cat <<EOG
 
 =====================================================================================
@@ -231,7 +232,7 @@ EOG
     updateIsoFiles
 
     xorriso -as mkisofs \
-      -r -V "ubuntu" \
+      -r -V "UBUNTU" -J \
       -l -cache-inodes \
       -b isolinux/isolinux.bin \
       -c isolinux/boot.cat \
@@ -247,7 +248,7 @@ EOG
   return
 }
 
-function deployIso() {
+function deployIso() { 
 
   if [[ ! -f ${newIso} ]]; then
     runPrint "No ISO found at ${newIso} to deploy !!"
