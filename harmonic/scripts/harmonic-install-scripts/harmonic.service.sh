@@ -1,16 +1,21 @@
-#!/bin/bash -x
-
-echo "====================================================================================="
+#!/bin/bash
+echo "==================================================================="
 echo "Harmonic Installer: Setup"
-echo "====================================================================================="
-echo "Harmonic Installer: Download 'harmonic-installer.sh' from Artifactory"
-wget https://artifactory.charterlab.com:443/artifactory/upload/harmonic/scripts/harmonic-installer.sh -O /opt/harmonic-installer.sh
-chmod +x /opt/harmonic-installer.sh
-echo "====================================================================================="
-echo "Harmonic Installer: Running"
-/opt/harmonic-installer.sh -vip
-echo "====================================================================================="
-echo "Harmonic Installer: Complete"
-echo "====================================================================================="
-echo "Harmonic Installer: Rebooting System"
-systemctl --message="Harmonic Post-Install Reboot" reboot
+echo "==================================================================="
+echo "Harmonic Installer: Downloading 'harmonic-installer.sh'"
+echo "==================================================================="
+if (sudo wget https://artifactory.charterlab.com:443/artifactory/upload/harmonic/scripts/harmonic-installer.sh -O /opt/harmonic-installer.sh && sudo chmod +x /opt/harmonic-installer.sh); then
+  echo "Harmonic Installer: Running"
+  else
+  echo "Harmonic Installer: Failed to download 'harmonic-installer.sh'"
+  exit 1
+  fi
+echo "==================================================================="
+if (sudo /opt/harmonic-installer.sh -ip); then
+  echo "==================================================================="
+  echo "Harmonic Installer: Installation Complete"
+  else
+  echo "==================================================================="
+  echo "Harmonic Installer: Installation Failed"
+  exit 1
+  fi

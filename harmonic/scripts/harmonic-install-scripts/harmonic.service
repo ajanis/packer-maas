@@ -8,6 +8,7 @@ Wants=network-online.target
 
 [Service]
 Type=oneshot
+Environment="http_proxy=http://proxy4.spoc.charterlab.com:8080" "https_proxy=http://proxy4.spoc.charterlab.com:8080"
 ExecStart=/opt/harmonic.service.sh
 RemainAfterExit=true
 KillMode=process

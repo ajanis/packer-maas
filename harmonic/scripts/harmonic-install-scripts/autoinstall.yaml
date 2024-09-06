@@ -1,0 +1,42 @@
+#cloud-config
+autoinstall:
+  version: 1
+  early-commands:
+  - echo "====================================================================================="
+  - echo "Harmonic Installer: Setup"
+  - echo "====================================================================================="
+  - echo "Harmonic Installer: Download 'harmonic-installer.sh' from Artifactory"
+  - sudo wget https://artifactory.charterlab.com:443/artifactory/upload/harmonic/scripts/harmonic-installer.sh -O /opt/harmonic-installer.sh
+  - sudo chmod +x /opt/harmonic-installer.sh
+  - echo "====================================================================================="
+  - echo "Harmonic Installer: Running"
+  - sudo /opt/harmonic-installer.sh -vip
+  - echo "====================================================================================="
+  - echo "Harmonic Installer: Complete"
+  - echo "====================================================================================="
+  - echo "Harmonic Installer: Rebooting System"
+  - sudo systemctl --message="Harmonic Post-Install Reboot" reboot
+  - ping -c1 198.162.1.1
+  locale: en_US
+  network:
+    version: 2
+    ethernets:
+      # opaque ID for physical interfaces, only referred to by other stanzas
+      eno1:
+        dhcp4: true
+        dhcp6: true
+        nameservers:
+          search: [charterlab.com, spoc.charterlab.com]
+          addresses: [172.22.73.19, '2605:1c00:50f2:2800:172:22:73:19']
+  proxy: http://proxy4.spoc.charterlab.com:8080
+  identity:
+    password: $6$canonical.$0zWaW71A9ke9ASsaOcFTdQ2tx1gSmLxMPrsH0rF0Yb.2AEKNPV1lrF94n6YuPJmnUy2K2/JSDtxuiBDey6Lpa/
+  ssh:
+    install-server: yes
+    authorized-keys:
+    - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMeG6n43ekQdEDQAIH4ItQkuCO8KUt10EiIr1Z1psCjG
+    - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIF3ooNAnBljFn8SV9XkwrLA2NNtlnmcY3LUews317oGu
+    allow-pw: yes
+  user-data:
+    disable_root: false
+    preserve_hostname: false

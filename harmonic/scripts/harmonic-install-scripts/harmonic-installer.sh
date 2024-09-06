@@ -34,12 +34,13 @@ export proxyURI="http://proxy4.spoc.charterlab.com:8080"
 export proxyIgnore="localhost,44.10.4.101,44.10.4.200,172.22.31.150,10.41.64.0/24,spoc.charterlab.com,nfv.charterlab.com,.svc,172.22.73.0/24,35.135.192.0/24,10.240.72.0/22,44.0.0.0/8,[2600:6ce6:4410:803/64],[2605:1c00:50f2:2800/64],[2605:1c00:50f3:70/64]"
 export workingDir="/opt"
 export isoDir="/data"
-export physicalDisk="/dev/sda"
-export harmonicPV="${physicalDisk}3"
-export harmonicVG=${cos-slice-vg}
 export proxy=0
 export download=0
 export install=0
+physicalDiskDetected=$(lsblk | grep -Eo '^sd[a-z]')
+export physicalDisk="/dev/${physicalDiskDetected}"
+export harmonicPV="${physicalDisk}3"
+export harmonicVG=${cos-slice-vg}
 
 runPrint() {
 cat << EOF
@@ -67,7 +68,6 @@ diskSetup() {
   partprobe "${physicalDisk}"
 }
 
-
 # Script Help Function
 showHelp() {
 cat << EOH
@@ -88,7 +88,7 @@ EOH
 }
 
 if ! (lsblk "${physicalDisk}" >/dev/null 2>&1); then
-  runPrint "Physical disk ${physicalDisk} not found.  Can not proceed with Harmonic installation ..."
+  runPrint "Physical disk not found.  Can not proceed with Harmonic installation ..."
   exit 1
 else
   runPrint "Physical disk ${physicalDisk} detected.  Performing pre-install disk preparation ..."
